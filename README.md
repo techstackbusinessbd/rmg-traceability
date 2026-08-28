@@ -25,10 +25,10 @@ This software is composed of 12 primary modules, built using **Domain-Driven Des
 
 ## 🏗️ Architecture & Tech Stack
 
-- **Backend:** Laravel 13 (API-First, Repository Pattern, Redis Caching)
-- **Frontend:** React with Vite (Custom UI, TailwindCSS, No third-party generators)
+- **Backend:** Laravel 13 (API-First, Repository Pattern, Redis Caching, Laravel Horizon, Reverb)
+- **Frontend:** React with Vite (Custom UI, TailwindCSS, Zustand/Redux, TanStack Query)
 - **Hardware:** Android Tablets (Offline-First via PWA/IndexedDB), Bluetooth Barcode Scanners
-- **Database:** MySQL + Redis
+- **Database:** PostgreSQL + Redis
 
 ## 📚 Documentation
 
