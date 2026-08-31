@@ -59,6 +59,7 @@ export default function AdminConsolePage() {
   const [newUserPassword, setNewUserPassword] = useState('Password123!');
   const [newUserConfirmPassword, setNewUserConfirmPassword] = useState('Password123!');
   const [newUserRole, setNewUserRole] = useState('Line Supervisor');
+  const [newUserStatus, setNewUserStatus] = useState(true);
 
   const [newDevName, setNewDevName] = useState('');
   const [newDevCode, setNewDevCode] = useState('');
@@ -111,7 +112,7 @@ export default function AdminConsolePage() {
         password: newUserPassword,
         password_confirmation: newUserConfirmPassword,
         role: newUserRole,
-        is_active: true
+        is_active: newUserStatus
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       toast.success('User registered successfully by Admin!');
@@ -120,6 +121,7 @@ export default function AdminConsolePage() {
       setNewUserEmail('');
       setNewUserPassword('Password123!');
       setNewUserConfirmPassword('Password123!');
+      setNewUserStatus(true);
       setShowNewUserModal(false);
       fetchAdminData();
     } catch (err) {
@@ -629,22 +631,38 @@ export default function AdminConsolePage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold block mb-1">Assign Role</label>
-                <select
-                  value={newUserRole}
-                  onChange={(e) => setNewUserRole(e.target.value)}
-                  className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                  }`}
-                >
-                  <option value="Cutting Master">Cutting Master</option>
-                  <option value="Line Supervisor">Line Supervisor</option>
-                  <option value="QC Inspector">QC Inspector</option>
-                  <option value="Packing Operator">Packing Operator</option>
-                  <option value="Store Keeper">Store Keeper</option>
-                  <option value="Super Admin">Super Admin</option>
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold block mb-1">Assign Role</label>
+                  <select
+                    value={newUserRole}
+                    onChange={(e) => setNewUserRole(e.target.value)}
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                      isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                    }`}
+                  >
+                    <option value="Cutting Master">Cutting Master</option>
+                    <option value="Line Supervisor">Line Supervisor</option>
+                    <option value="QC Inspector">QC Inspector</option>
+                    <option value="Packing Operator">Packing Operator</option>
+                    <option value="Store Keeper">Store Keeper</option>
+                    <option value="Super Admin">Super Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold block mb-1">Account Status</label>
+                  <select
+                    value={newUserStatus ? 'active' : 'suspended'}
+                    onChange={(e) => setNewUserStatus(e.target.value === 'active')}
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                      isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                    }`}
+                  >
+                    <option value="active">ACTIVE (Operational)</option>
+                    <option value="suspended">SUSPENDED (Locked)</option>
+                  </select>
+                </div>
               </div>
 
               <div className="flex items-center space-x-2 pt-3">
