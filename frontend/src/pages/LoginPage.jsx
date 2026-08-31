@@ -88,45 +88,45 @@ export default function LoginPage() {
         </div>
 
         {/* Clean Single Card Container */}
-        <div className={`border rounded-lg p-6 sm:p-8 transition-colors duration-200 backdrop-blur-xs ${
+        <div className={`border rounded-lg p-7 sm:p-9 transition-colors duration-200 backdrop-blur-xs ${
           isDark 
-            ? 'bg-slate-900/90 border-slate-800 shadow-xl' 
-            : 'bg-white/95 border-slate-200 shadow-md ring-1 ring-slate-900/5'
+            ? 'bg-slate-900/95 border-slate-800 shadow-xl' 
+            : 'bg-white border-slate-200 shadow-sm ring-1 ring-slate-900/5'
         }`}>
           
           {/* Brand Header */}
-          <div className="text-center mb-6">
-            <div className="inline-flex h-10 w-10 bg-blue-600 rounded-md items-center justify-center font-bold text-white text-lg mb-3 shadow-xs">
+          <div className="text-center mb-7">
+            <div className="inline-flex h-11 w-11 bg-blue-600 rounded-md items-center justify-center font-bold text-white text-xl mb-3 shadow-xs">
               R
             </div>
-            <h1 className={`text-lg font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            <h1 className={`text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
               RMG Traceability ERP
             </h1>
-            <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Admin Authentication
+            <p className={`text-xs font-medium mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              Enterprise Authentication Portal
             </p>
           </div>
 
           {/* Error Notification */}
           {error && (
-            <div className="mb-4 p-3 rounded bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center space-x-2">
+            <div className="mb-4 p-3 rounded bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium flex items-center space-x-2">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4.5">
             <div>
-              <label className={`text-xs font-semibold block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+              <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 Employee ID / Username / Email
               </label>
               <input
                 type="text"
                 value={loginIdentifier}
                 onChange={(e) => setLoginIdentifier(e.target.value)}
-                placeholder="e.g. EMP-1001 or admin"
-                className={`w-full px-3 py-2 rounded text-xs border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                placeholder="e.g. EMP-SUPERADMIN"
+                className={`w-full px-3.5 py-2.5 rounded-md text-sm border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium ${
                   isDark 
                     ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' 
                     : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
@@ -135,7 +135,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className={`text-xs font-semibold block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+              <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 Password
               </label>
               <div className="relative">
@@ -143,20 +143,20 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full px-3 py-2 pr-9 rounded text-xs border font-mono transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  className={`w-full px-3.5 py-2.5 pr-10 rounded-md text-sm border font-mono transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent ${
                     isDark 
                       ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' 
-                      : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                    : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className={`absolute right-2.5 top-2.5 cursor-pointer ${
+                  className={`absolute right-3 top-3 cursor-pointer ${
                     isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700'
                   }`}
                 >
-                  {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold shadow-xs cursor-pointer transition-colors disabled:opacity-50 mt-2"
+              className="w-full py-2.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-bold shadow-xs cursor-pointer transition-colors disabled:opacity-50 mt-2"
             >
               {loading ? 'Authenticating...' : 'Sign In'}
             </button>
@@ -173,7 +173,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className={`text-center mt-6 text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <div className={`text-center mt-6 text-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
           &copy; 2026 RMG Traceability ERP. All Rights Reserved.
         </div>
 
