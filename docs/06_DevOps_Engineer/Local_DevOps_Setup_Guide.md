@@ -38,10 +38,10 @@ Copy the example file to `.env`:
 ```bash
 cp .env.example .env
 ```
-*(Note: The default `.env` already has the database set to `mysql` and the DB name set to `rmg_tracking`.)*
+*(Note: The default `.env` is configured for PostgreSQL (`pgsql`) and Redis.)*
 
 ### Step 2.4. Start Laravel Sail (Docker Containers)
-Boot up the Docker containers (Laravel, MySQL, Redis):
+Boot up the Docker containers (Laravel, PostgreSQL, Redis):
 ```bash
 ./vendor/bin/sail up -d
 ```

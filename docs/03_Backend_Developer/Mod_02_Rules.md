@@ -1,16 +1,19 @@
-# Module 02: Backend Rules (Order Management)
+# Module 02: Backend Rules (Master Data)
 **Role:** Backend Developer
 **Status:** Approved
 
-## 1. Cloud Storage Architecture (Tech Packs)
-- Never store PDF files in the local `storage/app/public` folder.
-- Use Laravel's `Storage::disk('s3')` or `gcs` for all file uploads.
-- Tech Packs are confidential. Files must be private, and the API should generate a Temporary Signed URL (`Storage::temporaryUrl`) valid for 30 minutes when downloading.
+## 1. Repository Pattern Implementation
+- Do NOT inject Eloquent Models directly into the Controller.
+- Create `BuyerRepositoryInterface` and `BuyerRepository`.
+- **Reason:** If we switch from PostgreSQL to MongoDB for any reason, controllers remain untouched.
 
-## 2. Database Transaction strictly required
-- Creating a PO involves inserting 1 row into `purchase_orders` and potentially 50+ rows into `po_breakdowns`.
-- This MUST be wrapped in a `DB::transaction()`. If the breakdown fails to insert, the PO header must be rolled back.
+## 2. API Caching Strategy (Redis)
+- Endpoint: `GET /api/v1/master-data/buyers/active`
+- Cache Key: `master_data:buyers:active`
+- Cache Duration: `3600 seconds` (1 hour).
+- **Invalidation:** Listen to `BuyerCreated`, `BuyerUpdated`, `BuyerDeleted` events. Inside the listener, call `Cache::forget('master_data:buyers:active')`.
 
-## 3. Mathematical Validation inside FormRequest
-- Create a Custom Rule inside `StorePurchaseOrderRequest`.
-- Before hitting the controller, loop through the `$request->breakdowns` array, sum the `qty`, and assert it equals `$request->total_qty`. If it fails, throw standard Laravel ValidationException.
+## 3. Database Transactions
+- When creating a Buyer, wrap the query in `DB::transaction(function() { ... })`.
+- If an exception occurs, Laravel automatically rolls back.
+- Log error: `Log::error('Failed to create buyer', ['data' => $request->all(), 'error' => $e->getMessage()]);`

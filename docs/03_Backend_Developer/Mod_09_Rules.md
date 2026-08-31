@@ -1,19 +1,14 @@
-# Module 09: Backend Rules (Finishing & Packing)
+# Module 09: Backend Rules (Washing)
 **Role:** Backend Developer
 **Status:** Approved
 
-## 1. Mismatch Prevention Logic (Strict)
-When a single piece QR is scanned:
-1. Lookup the `single_piece_id` to find its `po_id`, `color_id`, and `size_id`.
-2. Lookup the active `carton_id` requirements.
-3. Compare them. If the carton is meant for `Red-M` and the scanned piece is `Blue-L`, throw a hard `Exception` (422 Unprocessable Entity).
-4. Do NOT insert into `carton_contents`.
+## 1. Bulk State Update (Performance)
+- **Problem:** Updating 5000 rows in the `single_piece_qrs` table one by one will take too long and cause DB locks.
+- **Solution:** 
+  - Validate all UUIDs first: `whereIn('id', $ids)->where('status', 'QC_Pass')->count()`. If the count doesn't match the input array length, throw an error.
+  - Perform a single bulk UPDATE query: `DB::table('single_piece_qrs')->whereIn('id', $ids)->update(['status' => 'At Wash'])`.
+  - Use Laravel's `chunk()` if the array size exceeds database limits (e.g., chunk by 1000).
 
-## 2. Auto-Seal Transaction
-When the scanned piece is valid:
-- Insert into `carton_contents`.
-- Count total items in the carton: `carton_contents()->count()`.
-- If `count == capacity`:
-  - Update `cartons` status to `Sealed`.
-  - Update all `single_piece_qrs` inside this carton to `status = Packed`.
-- ALL of these checks and updates MUST occur inside a `DB::transaction()` to prevent race conditions where 21 pieces get packed into a 20-capacity carton.
+## 2. Transaction Integrity
+- When receiving pieces, you must insert rows into `wash_transactions` AND update the `single_piece_qrs` statuses (to `Wash_Pass` or `Wash_Reject`) AND update `wash_batches.status` to 'Received'.
+- ALL of these operations MUST be wrapped in a `DB::transaction()`.

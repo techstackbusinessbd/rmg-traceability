@@ -1,14 +1,16 @@
-# Module 08: Backend Rules (Washing)
+# Module 08: Backend Rules (Quality Control)
 **Role:** Backend Developer
 **Status:** Approved
 
-## 1. Bulk State Update (Performance)
-- **Problem:** Updating 5000 rows in the `single_piece_qrs` table one by one will take too long and cause DB locks.
-- **Solution:** 
-  - Validate all UUIDs first: `whereIn('id', $ids)->where('status', 'QC_Pass')->count()`. If the count doesn't match the input array length, throw an error.
-  - Perform a single bulk UPDATE query: `DB::table('single_piece_qrs')->whereIn('id', $ids)->update(['status' => 'At Wash'])`.
-  - Use Laravel's `chunk()` if the array size exceeds database limits (e.g., chunk by 1000).
+## 1. Single Piece State Machine
+You must strictly manage the `status` column in the `single_piece_qrs` table.
+- **Initial State:** `Sewn` (Comes from Module 06 Line Out).
+- **If marked Pass:** Update status to `QC_Pass`.
+- **If marked Alter/Spot:** Update status to `QC_Alter`.
+- **If marked Reject:** Update status to `QC_Reject`.
+- **Rework Logic:** If a piece is currently `QC_Alter`, it CAN be scanned again. If the new scan is `Pass`, update the status to `QC_Pass`.
 
-## 2. Transaction Integrity
-- When receiving pieces, you must insert rows into `wash_transactions` AND update the `single_piece_qrs` statuses (to `Wash_Pass` or `Wash_Reject`) AND update `wash_batches.status` to 'Received'.
-- ALL of these operations MUST be wrapped in a `DB::transaction()`.
+## 2. Dashboard Event Broadcasting
+- Every time a QC log is created, fire a Laravel Event (e.g., `PieceInspected`).
+- A Listener should calculate the current DHU for that line for the current hour.
+- If DHU > 5%, dispatch a WebSocket/Pusher event to immediately turn the TV Dashboard RED without requiring a page refresh.

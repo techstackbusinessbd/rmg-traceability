@@ -1,22 +1,15 @@
-# Module 11: Backend Rules (Auth & Admin)
+# Module 11: Backend Rules (Inventory & Store)
 **Role:** Backend Developer
 **Status:** Approved
 
-## 1. Middleware Architecture
-- **Global Auth:** All routes EXCEPT `/api/v1/auth/login` must be wrapped in `Route::middleware('auth:sanctum')`.
-- **Role Permissions:** Use Laravel Gates for checking JSON permissions.
-  - Example in `AuthServiceProvider.php`:
-    ```php
-    Gate::define('create-po', function ($user) {
-        if ($user->role->name === 'Super Admin') return true;
-        return in_array('create-po', $user->role->permissions);
-    });
-    ```
-- **Controller Enforcement:** Controllers must call `$this->authorize('create-po');` on specific actions. Throws `403 Forbidden` automatically if unauthorized.
+## 1. Double-Entry Ledger Logic (Raw Materials)
+Never store inventory balances as a simple integer that you just update (`qty = qty - 5`). This leads to data corruption during concurrent requests.
+- **Rule:** Every movement must INSERT a new row into `inventory_ledgers`.
+- **Calculation:** To find the current balance for an item, the backend must calculate:
+  `$balance = Ledger::where('item_id', $id)->sum('qty_in') - Ledger::where('item_id', $id)->sum('qty_out');`
+- Or, store the running `$balance` in the ledger row itself, but wrap the insert in an exclusive database lock (`lockForUpdate()`) to prevent race conditions when two operators issue the same item at the same millisecond.
 
-## 2. Password Security
-- Do not log passwords in `Log::error`. Ensure `password` is added to `$dontFlash` in `Exceptions/Handler.php`.
-- Strictly enforce `Hash::make()` before saving to the database.
-
-## 3. Token Revocation
-- When a user's role is updated or they are marked `is_active = false` by an admin, the system MUST revoke all their existing Sanctum tokens using `$user->tokens()->delete();`.
+## 2. Location Mapping Validation
+Before updating `cartons.location_id`:
+- Ensure `cartons.status` === 'Sealed'. (You cannot store an open carton).
+- Check if `location_id` is already set. If yes, throw a 409 Conflict (prevent accidental overwriting of location).

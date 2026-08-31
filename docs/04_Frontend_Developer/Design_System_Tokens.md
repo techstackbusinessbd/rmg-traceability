@@ -57,15 +57,16 @@ Used strictly for Badges, Alerts, and Toasts.
 - **Card Padding:** `p-6` (24px) for desktop, `p-4` (16px) for mobile.
 - **Element Gap:** `gap-4` (16px) between buttons or form fields.
 
-### 4.2. Borders & Radius
-We want a modern, soft look. Sharp corners are not allowed.
-- **Border Radius:** All cards, buttons, and inputs must use `rounded-lg` (8px).
-- **Border Color:** `border border-slate-200`.
+### 4.2. Borders & Corner Radius (Strict Industrial Standard)
+To ensure a compact, sharp, enterprise-grade industrial ERP appearance:
+- **Buttons, Badges & Small Inputs:** `rounded` (4px) or `rounded-md` (6px).
+- **Cards, KPI Blocks, Tables & Containers:** `rounded-md` (6px) or `rounded-lg` (8px max).
+- **Border Color:** `border border-slate-200/90`.
+- **🚫 Prohibited:** `rounded-xl`, `rounded-2xl`, `rounded-3xl` (24px+) are strictly banned on Web UI to avoid toyish/overly rounded look.
 
 ### 4.3. Shadows
-To create depth on a light background.
-- **Cards & Tables:** `shadow-sm`.
-- **Modals & Dropdowns:** `shadow-lg`.
+- **Cards & Tables:** `shadow-2xs` or `shadow-xs`.
+- **Modals & Dropdowns:** `shadow-md`.
 
 ---
 *(End of Design System Tokens)*

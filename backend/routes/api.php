@@ -1,0 +1,51 @@
+<?php
+
+use App\Domains\AuthAdmin\Controllers\AuthController;
+use App\Domains\AuthAdmin\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API v1 Routes - RMG Traceability Suite
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('v1')->group(function () {
+
+    // -------------------------------------------------------------
+    // MODULE 01: PUBLIC AUTH ROUTES
+    // -------------------------------------------------------------
+    Route::prefix('auth')->group(function () {
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/device-login', [AuthController::class, 'deviceLogin']);
+    });
+
+    // -------------------------------------------------------------
+    // MODULE 01: PROTECTED ROUTES (SANCTUM BEARER TOKEN)
+    // -------------------------------------------------------------
+    Route::middleware('auth:sanctum')->group(function () {
+        
+        // Current User Profile & Logout
+        Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+        // Admin-Only Protected User Management
+        Route::prefix('admin')->group(function () {
+            Route::get('/users', [UserController::class, 'index']);
+            Route::post('/users', [UserController::class, 'store']); // Only Admin can register users
+            Route::put('/users/{id}', [UserController::class, 'update']);
+            
+            // Roles & Permissions List
+            Route::get('/roles', [UserController::class, 'roles']);
+            
+            // Floor Devices (Tablets)
+            Route::get('/devices', [UserController::class, 'devices']);
+            Route::post('/devices', [UserController::class, 'storeDevice']); // Only Admin can register floor tablets
+            
+            // Immutable Audit Trail
+            Route::get('/audit-logs', [UserController::class, 'auditLogs']);
+        });
+
+    });
+
+});

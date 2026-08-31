@@ -21,23 +21,23 @@ Before coding any business logic, the foundation must be solid.
 ## 3. Phase 2: Agile Sprints Breakdown (Development Phase)
 
 ### Sprint 1: Foundation (Weeks 2-3)
-- **Module 11 (Auth & Admin):** Implement Spatie RBAC (Roles & Permissions), User Login (Sanctum API).
-- **Module 01 (Master Data):** Buyers, Styles, Colors, Sizes, Factory Lines.
+- **Module 01 (Auth & Admin):** Implement Spatie RBAC (Roles & Permissions), User Login (Sanctum API).
+- **Module 02 (Master Data):** Buyers, Styles, Colors, Sizes, Factory Lines.
 
 ### Sprint 2: Planning & Upstream (Weeks 4-5)
-- **Module 02 & 03 (Order Mgmt & Planning):** PO creation, BOM, Production Routing.
-- **Module 04 (Cutting & Bundling):** The absolute core. Generating the Master Bundle QR and the Child Single-Piece QRs.
+- **Module 03 & 04 (Order Mgmt & Planning):** PO creation, BOM, Production Routing.
+- **Module 05 (Cutting & Bundling):** The absolute core. Generating the Master Bundle QR and the Child Single-Piece QRs.
 
 ### Sprint 3: The High-Traffic Core (Weeks 6-7)
-- **Module 05 (Value Addition):** Print/Embroidery dispatch and receive.
-- **Module 06 (Sewing Line Tracking):** Implementing the Offline-First Tablet API and Redis Queues to handle extreme concurrency (Line In / Line Out).
+- **Module 06 (Value Addition):** Print/Embroidery dispatch and receive.
+- **Module 07 (Sewing Line Tracking):** Implementing the Offline-First Tablet API and Redis Queues to handle extreme concurrency (Line In / Line Out).
 
 ### Sprint 4: Quality & Downstream (Weeks 8-9)
-- **Module 07 (Quality Control):** SVG Body Map UI for defect tracking, WebSockets (Reverb) for real-time DHU alerts.
-- **Module 08 & 09 (Washing & Packing):** Carton generation and mapping Single Pieces to Cartons.
+- **Module 08 (Quality Control):** SVG Body Map UI for defect tracking, WebSockets (Reverb) for real-time DHU alerts.
+- **Module 09 & 10 (Washing & Packing):** Carton generation and mapping Single Pieces to Cartons.
 
 ### Sprint 5: Inventory & Export (Weeks 10-11)
-- **Module 10 (Inventory):** Double-entry ledger logic, DB Transactions for concurrent stock updates.
+- **Module 11 (Inventory & Store):** Double-entry ledger logic, DB Transactions for concurrent stock updates.
 - **Module 12 (Export & Analytics):** Loading containers, generating Commercial Invoices, and BI Dashboards.
 
 ---

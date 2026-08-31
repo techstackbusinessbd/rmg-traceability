@@ -1,14 +1,16 @@
-# Module 05: UI/UX Specifications (Value Addition)
+# Module 05: UI/UX Specifications (Cutting)
 **Role:** Frontend Developer
 **Status:** Approved
 
-## 1. Scanner-Optimized UI (Auto-focus)
-- **The Challenge:** Operators in the factory floor scan hundreds of QR codes quickly. They do not have time to click the mouse into the input field after every scan.
+## 1. QR Code Sticker Printable View
+- **The Challenge:** QR codes must fit exactly on a Thermal Barcode Printer sticker (e.g., Zebra printers, usually 2x1 inches).
 - **Solution:** 
-  - Create a hidden (or styled) input field that listens for barcode scanner input (scanners act like a keyboard rapidly typing strings followed by `Enter`).
-  - Use React's `useRef` and `useEffect` to force `autoFocus` on the input field at all times.
-  - If the user clicks away, the UI should automatically refocus on the input box.
+  - Create a dedicated React route: `/cutting/print/{cut_register_id}`.
+  - Hide all sidebars, headers, and navigation menus using CSS `@media print { .no-print { display: none; } }`.
+  - Use a library like `qrcode.react` to render the `bundles.id` UUID as a QR image.
+  - Layout: Flexbox grid. Each sticker `div` must have strict `width` and `height` matching physical sticker dimensions (e.g., `width: 50mm; height: 25mm`).
+  - Below the QR code, print human-readable metadata: "PO: 1234, Size: M, Bundle: 12".
 
-## 2. Double Scan Alert
-- If a scanned UUID already exists in the current session's state array, do NOT add it again.
-- Trigger an HTML5 `<audio>` element to play a short "error beep" sound to physically alert the operator.
+## 2. Generate Bundles Loader
+- Generating thousands of bundles takes 2-4 seconds.
+- The UI MUST show a non-dismissible full-screen overlay loader: "Generating Bundles... Please do not close this window."

@@ -1,15 +1,15 @@
-# Module 08: UI/UX Specifications (Wash Scanner App)
+# Module 08: UI/UX Specifications (QC Tablet App)
 **Role:** Frontend Developer
 **Status:** Approved
 
-## 1. High-Speed Scanner UI
-- **The Challenge:** Operators will scan thousands of pieces continuously. The UI cannot freeze, and network delays shouldn't slow them down.
+## 1. The Visual Body Map (Grid)
+- **The Challenge:** Inspectors need to log *where* the defect is very quickly. Dropdowns are too slow.
 - **Solution:** 
-  - Use React state to hold the array of scanned UUIDs locally.
-  - The UI only pushes to the Backend API when the operator explicitly clicks "Submit Batch".
-  - **Duplicate Prevention:** Before adding a scanned UUID to the local array, check if it already exists. If yes, play a loud `Error Beep` and flash the screen red. 
-  - **Counter:** Display a massive, highly visible counter (e.g., `Scanned: 1,452`) so the operator knows their progress.
+  - The tablet UI must display a vector image (SVG) of a generic T-shirt or Pant (based on the PO type).
+  - The SVG is divided into clickable zones (Left Sleeve, Right Sleeve, Front Body, Back Body, Collar, Hem).
+  - When the inspector taps "Alter", the Body Map pops up. They tap the exact zone (e.g., Left Sleeve), which highlights in Red, and then they tap the defect type from a quick-list (e.g., "Hole").
 
-## 2. Reject Toggle (Receive Flow)
-- By default, scanning a piece during receive marks it as `Good`.
-- Provide a physical-looking "Defect Mode" toggle button. When turned on, the screen background changes to a dark red warning color. Any piece scanned in this mode is marked as `is_rejected: true`.
+## 2. Rapid "Pass" Flow
+- 90% of garments will pass. 
+- The UI MUST be optimized for this: Scanning a QR code should immediately log it as `Pass` without requiring any extra button clicks, *unless* the user toggles a "Defect Mode" button first.
+- Success beep (high pitch) for Pass. Error beep (low buzz) if it's already scanned.

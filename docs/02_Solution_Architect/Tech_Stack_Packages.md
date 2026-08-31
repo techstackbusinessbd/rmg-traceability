@@ -24,7 +24,7 @@ To ensure consistency, security, and performance, only the following pre-approve
 - **`laravel/sanctum`**: 
   - **Use Case:** Token-based API authentication for the Tablet Apps (React) used on the factory floor (Cutting, Sewing, QC, Packing).
 - **`spatie/laravel-permission`**: 
-  - **Use Case:** Role-Based Access Control (RBAC). Managing Super Admin, QA Manager, Store Keeper, etc. (Module 11).
+  - **Use Case:** Role-Based Access Control (RBAC). Managing Super Admin, QA Manager, Store Keeper, etc. (Module 02).
 
 ### 2.2. Traceability & Barcoding
 - **`simplesoftwareio/simple-qrcode`**: 
@@ -40,7 +40,7 @@ To ensure consistency, security, and performance, only the following pre-approve
 
 ### 2.5. Reporting & Document Generation
 - **`maatwebsite/excel`**: 
-  - **Use Case:** Importing initial Master Data (Module 01) and exporting Production Reports.
+  - **Use Case:** Importing initial Master Data (Module 02) and exporting Production Reports.
 - **`barryvdh/laravel-dompdf`**: 
   - **Use Case:** Generating the Commercial Invoice and Packing List PDFs for Export (Module 12).
 

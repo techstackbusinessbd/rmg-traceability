@@ -27,7 +27,7 @@ The RMG Traceability Software tracks every single garment piece individually. In
 Do not hit the database for static data.
 
 ### 3.1. Master Data Caching
-Data that rarely changes (Module 01: Buyers, Colors, Styles, Lines) must be cached using Laravel's `Cache::remember()`.
+Data that rarely changes (Module 02: Buyers, Colors, Styles, Lines) must be cached using Laravel's `Cache::remember()`.
 
 **Example:**
 ```php

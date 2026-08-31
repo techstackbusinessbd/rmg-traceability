@@ -1,13 +1,15 @@
-# Module 09: UI/UX Specifications (Packing App)
+# Module 09: UI/UX Specifications (Wash Scanner App)
 **Role:** Frontend Developer
 **Status:** Approved
 
-## 1. Packing Progress UI (Visual Feedback)
-- **The Challenge:** The operator needs to know exactly how many pieces are left to fill the box without constantly looking closely at the screen.
+## 1. High-Speed Scanner UI
+- **The Challenge:** Operators will scan thousands of pieces continuously. The UI cannot freeze, and network delays shouldn't slow them down.
 - **Solution:** 
-  - Display a massive circular or linear **Progress Bar** in the center of the screen (e.g., `15 / 20`).
-  - As each piece is scanned, the bar fills up.
-  - When the bar hits 100% (20/20), the screen flashes Green, plays a "Tada" success sound, and automatically triggers the browser's print dialog to print the Master Carton QR sticker.
+  - Use React state to hold the array of scanned UUIDs locally.
+  - The UI only pushes to the Backend API when the operator explicitly clicks "Submit Batch".
+  - **Duplicate Prevention:** Before adding a scanned UUID to the local array, check if it already exists. If yes, play a loud `Error Beep` and flash the screen red. 
+  - **Counter:** Display a massive, highly visible counter (e.g., `Scanned: 1,452`) so the operator knows their progress.
 
-## 2. Invalid Scan Alert
-- If the backend returns a 422 Mismatch Error (wrong color/size), the screen must turn bright Red, and play a loud, distinct "Buzzer" sound to stop the operator from dropping the wrong piece into the box.
+## 2. Reject Toggle (Receive Flow)
+- By default, scanning a piece during receive marks it as `Good`.
+- Provide a physical-looking "Defect Mode" toggle button. When turned on, the screen background changes to a dark red warning color. Any piece scanned in this mode is marked as `is_rejected: true`.

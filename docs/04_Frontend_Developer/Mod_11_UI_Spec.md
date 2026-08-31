@@ -1,19 +1,14 @@
-# Module 11: UI/UX Specifications (Auth)
+# Module 11: UI/UX Specifications (Store Tablet App)
 **Role:** Frontend Developer
 **Status:** Approved
 
-## 1. Login Interface
-- Clean, minimalist design. Centered login card with Factory Logo.
-- **Form Fields:** Email (input type `email`), Password (input type `password` with eye-toggle to show/hide).
-- **Error Handling:** If API returns `401`, display a red alert box: "Incorrect email or password."
+## 1. The 2-Step Forklift UI
+- **The Challenge:** Operators driving forklifts have limited attention. The UI must guide them sequentially.
+- **Step 1:** Big prompt: "Scan Carton QR".
+  - (User scans carton). UI shows a green checkmark and loads Step 2.
+- **Step 2:** Big prompt: "Scan Bin QR".
+  - (User scans rack sticker). 
+- **Confirmation:** UI flashes green: "Stored in Rack-A!" and immediately resets to Step 1.
 
-## 2. Token Storage & State
-- **Web App:** Store token in `HttpOnly` cookies (preferred) or `localStorage`. 
-- **Zustand/Redux State:** Store the user profile and permissions array globally.
-- **App Hydration:** On page refresh, dispatch an action to call `GET /api/v1/auth/me`. Show a full-screen loading spinner while hydrating. If `401` is returned, redirect to `/login`.
-
-## 3. RBAC Route Guarding (React Router)
-- Create a `<ProtectedRoute requiredPermission="create-po">` wrapper component.
-- If user does not have permission:
-  - If navigating via URL: Render a `403 Forbidden` page.
-  - If viewing a menu: The menu item itself should not render.
+## 2. Inventory Alert UI
+- In the Raw Materials issue screen, if the user types a quantity greater than the available balance, the input field border turns red, and the "Issue" button disables automatically (client-side validation before hitting the API).

@@ -1,15 +1,19 @@
-# Module 06: Backend Rules (Sewing)
+# Module 06: Backend Rules (Value Addition)
 **Role:** Backend Developer
 **Status:** Approved
 
-## 1. High Concurrency Architecture (Redis Queues)
-- **Problem:** If 100 sewing lines each scan a bundle at the exact same second, firing 100 DB Transactions simultaneously to update `bundles` and insert `sewing_logs` will cause DB deadlocks and timeouts.
-- **Solution:** 
-  - The `POST /api/v1/sewing/sync` endpoint MUST NOT write directly to the database.
-  - It must dispatch a Laravel Job (e.g., `ProcessSewingScansJob`) to a Redis Queue.
-  - Return `202 Accepted` immediately to the tablet so the operator can keep scanning.
-  - A background Queue Worker (`php artisan queue:work`) will process the jobs sequentially, updating the database safely.
+## 1. Bundle State Machine
+The `bundles` table has a strict `status` enum.
+- Rule: A bundle must flow sequentially: `Cut` -> `At Print` -> `Ready for Sewing`.
+- You MUST enforce this in the Service class.
+  ```php
+  if ($bundle->status !== 'Cut') {
+      throw new Exception("Bundle is in invalid state: " . $bundle->status);
+  }
+  ```
 
-## 2. Hourly Aggregation
-- Do not run `SUM()` queries on `sewing_logs` for the real-time TV dashboard; it will crash the server.
-- The Queue Worker that processes the scan must increment the `hourly_productions` table using `upsert()` or `increment()`.
+## 2. Reject Quantity Deduction (Transaction)
+When receiving bundles back:
+- If `reject_qty > 0`, you must UPDATE the `bundles` table to decrement `qty` (e.g., `qty = qty - reject_qty`).
+- You must INSERT a row into `bundle_transactions` tracking the exact reject amount.
+- This MUST be wrapped in a `DB::transaction()` to prevent phantom deductions.

@@ -19,29 +19,36 @@
 
 ## 3. Core Business Modules & Workflows (কোর মডিউল ও কাজের ফ্লো)
 
-### Module 1: Master Data (গ্লোবাল লাইব্রেরি) `[Running]`
+### Module 1: System Admin & User Management (অ্যাডমিন ও সিকিউরিটি) `[Running]`
+- **Features:**
+  - রোল-বেজড পারমিশন (RBAC: Admin, Manager, Line Supervisor, Operator)।
+  - ফ্লোরের ট্যাবলেট ডিভাইস রেজিস্ট্রেশন এবং লাইনভিত্তিক অ্যাক্সেস কন্ট্রোল।
+  - সিস্টেম অডিট লগ (কে কখন কোন ডাটা তৈরি বা এডিট করেছে)।
+- **Business Rule:** এটি পুরো সিস্টেমের গেটকিপার এবং সিকিউরিটি ফাউন্ডেশন।
+
+### Module 2: Master Data (গ্লোবাল লাইব্রেরি) `[Running]`
 - **Features:** 
   - Buyer, Style, Item Type (Woven Shirt/Pant), Color, Size, এবং Line সেটআপ।
   - **Business Rule:** এটি একটি গ্লোবাল লাইব্রেরি হিসেবে কাজ করবে। পুরো সিস্টেমের অন্যান্য সব মডিউলে এখানকার ডাটা রিইউজ (Reuse) হবে।
 
-### Module 2: Order Management (মার্চেন্ডাইজিং) `[Running]`
+### Module 3: Order Management (মার্চেন্ডাইজিং) `[Running]`
 - **Features:**
   - Buyer-এর কাছ থেকে আসা Purchase Order (PO) এন্ট্রি করা।
   - মাস্টার ডাটা থেকে স্টাইল, কালার এবং সাইজ ব্যবহার করে সাইজ ব্রেকডাউন (Size Breakdown) অনুযায়ী প্রোডাকশন টার্গেট সেট করা।
 - **Business Rule:** কোনো PO-এর টার্গেটের চেয়ে বেশি মাল কাটিং বা প্যাকিং করা যাবে না।
 
-### Module 3: IE & Production Planning (প্ল্যানিং মডিউল) `[Running]`
+### Module 4: IE & Production Planning (প্ল্যানিং মডিউল) `[Running]`
 - **Features:**
   - **Line Allocation (Loading):** কোন স্টাইলটি আগামী সপ্তাহে কোন লাইনে (Line 1, Line 2) চলবে তার প্ল্যান করা।
   - **Daily Target & SMV:** একটি স্টাইলের SMV (Standard Minute Value) অনুযায়ী প্রতিদিনের প্রোডাকশন টার্গেট দেওয়া।
   - **T&A (Time & Action) Calendar:** কাটিং, সুইং এবং ফিনিশিংয়ের টাইমলাইন ট্র্যাকিং।
   - **Material Readiness Follow-up:** ফেব্রিক, ট্রিমস, অ্যাক্সেসরিজ (Accessories) এবং অন্যান্য আইটেম ইনহাউস (Inhouse) হয়েছে কি না, তা চেক করার অপশন থাকবে।
-- **Business Rule:** অর্ডার ম্যানেজমেন্ট মডিউলে (Module 2) কোনো নতুন অর্ডার (PO) কনফার্ম হওয়ার পরই কেবল প্ল্যানিং টিমের কাজ শুরু হবে।
+- **Business Rule:** অর্ডার ম্যানেজমেন্ট মডিউলে (Module 3) কোনো নতুন অর্ডার (PO) কনফার্ম হওয়ার পরই কেবল প্ল্যানিং টিমের কাজ শুরু হবে।
 - **Integration Rule:** 
-  - স্টোর মডিউল (Module 10) এর সাথে ইন্টিগ্রেটেড থাকবে। প্রোডাকশনের কোনো আইটেমের স্টকে ব্যালেন্স না থাকলে (অর্থাৎ মালামাল ইনহাউস না হলে) প্ল্যানিং টিম প্ল্যান করতে গেলে সিস্টেম ওয়ার্নিং (Warning) দেবে।
+  - স্টোর মডিউল (Module 11) এর সাথে ইন্টিগ্রেটেড থাকবে। প্রোডাকশনের কোনো আইটেমের স্টকে ব্যালেন্স না থাকলে (অর্থাৎ মালামাল ইনহাউস না হলে) প্ল্যানিং টিম প্ল্যান করতে গেলে সিস্টেম ওয়ার্নিং (Warning) দেবে।
   - এই মডিউলের টার্গেট অনুযায়ী সুইং লাইনের রিয়েল-টাইম এফিশিয়েন্সি (Efficiency) কাউন্ট হবে।
 
-### Module 4: Cutting & Bundle Ticket Generation (কাটিং সেকশন) `[Running]`
+### Module 5: Cutting & Bundle Ticket Generation (কাটিং সেকশন) `[Running]`
 - **Features:**
   - কাটিং লে (Lay/Spreading) এন্ট্রি করা।
   - সাইজ এবং রেশিও অনুযায়ী স্বয়ংক্রিয়ভাবে বান্ডেল (Bundle) তৈরি করা।
@@ -50,29 +57,29 @@
   - **Excess Cutting Allocation:** সিস্টেম থেকে অতিরিক্ত কাটিংয়ের (Excess Cutting) পার্সেন্টেজ (%) ডিফাইন করার অপশন থাকবে। শুধুমাত্র Authorized Person (যেমন: Cutting Manager বা Admin) এই পার্সেন্টেজ সেট বা এপ্রুভ করতে পারবেন।
 - **Traceability Rule:** এই QR কোডটিই পুরো ফ্যাক্টরিতে ওই বান্ডেলের ডিজিটাল আইডেন্টিটি হিসেবে কাজ করবে। সুইং সেকশনে একই শেডের (Shade) বান্ডেল ছাড়া অন্য শেডের বান্ডেল মিক্স করা হলে সিস্টেম ব্লক করে দেবে।
 
-### Module 5: Value Addition (প্রিন্ট এবং এমব্রয়ডারি) - *Optional* `[Running]`
+### Module 6: Value Addition (প্রিন্ট এবং এমব্রয়ডারি) - *Optional* `[Running]`
 - **Features:**
   - কাটিং থেকে বান্ডেলগুলো প্রিন্ট বা এমব্রয়ডারিতে পাঠানোর সময় স্ক্যান আউট (Scan-OUT) করা।
   - কাজ শেষে স্ক্যান ইন (Scan-IN) করে রিসিভ করা এবং রিজেক্ট পিসগুলো সিস্টেমে বাদ দেওয়া।
 
-### Module 6: Sewing & Line Tracking (সুইং সেকশন) `[Running]`
+### Module 7: Sewing & Line Tracking (সুইং সেকশন) `[Running]`
 - **Features:**
   - বান্ডেল সুইং লাইনে ঢোকার সময় 'Line IN' স্ক্যান করা।
   - প্রতি ঘণ্টায় প্রোডাকশন আউটপুট ট্র্যাকিং করা।
   - এক লাইন থেকে অন্য লাইনে বান্ডেল ট্রান্সফার (Line Transfer) করা।
 
-### Module 7: Quality Control (কিউসি) `[Running]`
+### Module 8: Quality Control (কিউসি) `[Running]`
 - **Features:**
   - বান্ডেল স্ক্যান করে Pass, Reject বা Rework স্ট্যাটাস দেওয়া।
   - রিজেক্ট হলে নির্দিষ্ট কারণ (Defect Code - e.g., Open Seam, Spot) সিলেক্ট করা।
 - **Business Rule:** রিজেক্ট হওয়া বান্ডেল কোনোভাবেই প্যাকিং বা পরবর্তী ধাপে স্ক্যান হবে না (সিস্টেম ব্লক করে দেবে)।
 
-### Module 8: Washing & Finishing (ওয়াশিং ও ফিনিশিং) `[Running]`
+### Module 9: Washing & Finishing (ওয়াশিং ও ফিনিশিং) `[Running]`
 - **Features:**
   - সুইং থেকে মাল ওয়াশিং-এ পাঠানো এবং রিসিভ করা।
   - আয়রনিং (Pressing) এবং ফাইনাল ফোল্ডিংয়ের (Folding) ট্র্যাকিং।
 
-### Module 9: Packing & Shipment (প্যাকিং ও শিপমেন্ট) `[Running]`
+### Module 10: Packing & Shipment (প্যাকিং ও শিপমেন্ট) `[Running]`
 - **Features:**
   - প্যাকিং কার্টন (Carton) তৈরি করে তার গায়ে কার্টন বারকোড (Carton Barcode) লাগানো।
   - কার্টনের ভেতরে ঢোকানোর সময় প্রতিটি বান্ডেল স্ক্যান করা (Assortment Check)।
@@ -83,16 +90,10 @@
 
 ## 4. Supporting Modules (সাপোর্টিং মডিউলসমূহ)
 
-### Module 10: Fabric & Accessories Store (স্টোর মডিউল) `[Future]`
+### Module 11: Fabric & Accessories Store (স্টোর মডিউল) `[Future]`
 - **Features:**
   - ফেব্রিক রোল এবং ট্রিমস (Trim) রিসিভ করা।
   - কাটিং সেকশনে স্পেসিফিক ফেব্রিক রোল (Shade/Pattern সহ) ইস্যু করা।
-
-### Module 11: System Admin & User Management (অ্যাডমিন মডিউল) `[Running]`
-- **Features:**
-  - রোল-বেজড পারমিশন (যেমন: Admin, Manager, Line Supervisor)।
-  - ফ্লোরের ট্যাবলেট ডিভাইস রেজিস্ট্রেশন এবং অ্যাক্সেস কন্ট্রোল।
-  - সিস্টেম অডিট লগ (কে কখন কোন ডাটা এডিট করেছে)।
 
 ### Module 12: BI & Analytics Dashboard (রিপোর্টিং মডিউল) `[Future]`
 - **Features:**

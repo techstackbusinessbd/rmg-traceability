@@ -10,17 +10,17 @@ An Enterprise-grade Factory Floor Traceability and ERP System designed for Woven
 
 This software is composed of 12 primary modules, built using **Domain-Driven Design (DDD)**:
 
-1. Master Data Management
-2. Order Management
-3. Production Planning
-4. Cutting & Bundle Ticketing
-5. Value Addition (Printing/Embroidery)
-6. Sewing Line Tracking
-7. Quality Control (QC)
-8. Washing & Finishing
-9. Packing & Shipment
-10. Fabric & Accessories Store
-11. System Admin & Auth
+1. System Admin & Auth (RBAC)
+2. Master Data Management
+3. Order Management
+4. Production Planning & IE
+5. Cutting & Bundle Ticketing
+6. Value Addition (Printing/Embroidery)
+7. Sewing Line Tracking
+8. Quality Control (QC)
+9. Washing & Finishing
+10. Packing & Shipment
+11. Fabric & Accessories Store
 12. BI Analytics Dashboard
 
 ## 🏗️ Architecture & Tech Stack

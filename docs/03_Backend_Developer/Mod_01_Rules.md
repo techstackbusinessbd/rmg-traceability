@@ -1,19 +1,22 @@
-# Module 01: Backend Rules (Master Data)
+# Module 01: Backend Rules (Auth & Admin)
 **Role:** Backend Developer
 **Status:** Approved
 
-## 1. Repository Pattern Implementation
-- Do NOT inject Eloquent Models directly into the Controller.
-- Create `BuyerRepositoryInterface` and `BuyerRepository`.
-- **Reason:** If we switch from PostgreSQL to MongoDB for any reason, controllers remain untouched.
+## 1. Middleware Architecture
+- **Global Auth:** All routes EXCEPT `/api/v1/auth/login` must be wrapped in `Route::middleware('auth:sanctum')`.
+- **Role Permissions:** Use Laravel Gates for checking JSON permissions.
+  - Example in `AuthServiceProvider.php`:
+    ```php
+    Gate::define('create-po', function ($user) {
+        if ($user->role->name === 'Super Admin') return true;
+        return in_array('create-po', $user->role->permissions);
+    });
+    ```
+- **Controller Enforcement:** Controllers must call `$this->authorize('create-po');` on specific actions. Throws `403 Forbidden` automatically if unauthorized.
 
-## 2. API Caching Strategy (Redis)
-- Endpoint: `GET /api/v1/master-data/buyers/active`
-- Cache Key: `master_data:buyers:active`
-- Cache Duration: `3600 seconds` (1 hour).
-- **Invalidation:** Listen to `BuyerCreated`, `BuyerUpdated`, `BuyerDeleted` events. Inside the listener, call `Cache::forget('master_data:buyers:active')`.
+## 2. Password Security
+- Do not log passwords in `Log::error`. Ensure `password` is added to `$dontFlash` in `Exceptions/Handler.php`.
+- Strictly enforce `Hash::make()` before saving to the database.
 
-## 3. Database Transactions
-- When creating a Buyer, wrap the query in `DB::transaction(function() { ... })`.
-- If an exception occurs, Laravel automatically rolls back.
-- Log error: `Log::error('Failed to create buyer', ['data' => $request->all(), 'error' => $e->getMessage()]);`
+## 3. Token Revocation
+- When a user's role is updated or they are marked `is_active = false` by an admin, the system MUST revoke all their existing Sanctum tokens using `$user->tokens()->delete();`.

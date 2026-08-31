@@ -10,18 +10,44 @@ To maintain a 100% consistent User Experience (UX) across all 12 modules, all fr
 
 ---
 
-## 2. Data Tables (`@tanstack/react-table`)
-We will use TanStack Table (React Table v8) because it is "headless" (giving us full control over Tailwind styling) and highly performant for large datasets.
+## 2. Standard Enterprise DataTable (`src/components/common/DataTable.jsx`)
 
-### 2.1. Server-Side Processing
-- Do NOT load 10,000 Purchase Orders into the browser at once.
-- Configure TanStack Table to use **Server-Side Pagination, Sorting, and Global Search**.
-- Pass the state (page number, search query) to the backend API via `TanStack Query` (React Query).
+To ensure 100% uniformity across all 12 modules, all tabular data (Buyers, Styles, Orders, Bundles, Sewing Telemetry, QC Logs, Users, etc.) **MUST** use the unified `<DataTable />` component. Hardcoding raw `<table>` tags is strictly prohibited.
 
-### 2.2. Standardized Table UI
-- Background: White (`bg-white`).
-- Headers: Light Gray (`bg-gray-100 text-gray-700 font-semibold`).
-- Actions: Always use a three-dot dropdown (`⋮`) on the far-right column for Edit/Delete to save horizontal space.
+### 2.1. Core Features of `<DataTable />`
+1. **Interactive Column Sorting:** Clicking on sortable column headers toggles `Ascending (▲)` -> `Descending (▼)` -> `Default` with visible icon indicators.
+2. **Dynamic Pagination:** Supports configurable page sizes (`5`, `10`, `25`, `50`, `100` rows per page), page number indicators, and `Prev`/`Next` controls.
+3. **Instant Search & Custom Filters:** Real-time multi-field search input with support for custom dropdown filter slots (e.g. Buyer filter, Role filter, Date range).
+4. **1-Click CSV Export:** Built-in spreadsheet export generating timestamped `.csv` files matching filtered data.
+5. **Loading & Empty State:** Unified spinner loader and customizable empty state messages.
+6. **Strict Micro Corner Radius:** Strictly uses `rounded-md` (6px) and `border-slate-200/90` to maintain a sharp enterprise industrial look.
+
+### 2.2. Component Props Interface & Example Usage
+
+```jsx
+import { DataTable } from '../../components/common/DataTable';
+
+const columns = [
+  { key: 'style_no', label: 'Style No', sortable: true, className: 'font-bold text-slate-900' },
+  { key: 'buyer_name', label: 'Buyer', sortable: true, render: (row) => row.buyer?.name || '—' },
+  { key: 'category', label: 'Category', sortable: true, render: (row) => <Badge variant="primary">{row.category}</Badge> },
+  { key: 'base_smv', label: 'Base SMV', sortable: true, align: 'right', render: (row) => `${row.base_smv} min` },
+  { key: 'actions', label: 'Actions', sortable: false, align: 'right', render: (row) => (
+      <button onClick={() => handleEdit(row)}>Edit</button>
+    ) 
+  },
+];
+
+<DataTable
+  columns={columns}
+  data={stylesList}
+  loading={isLoading}
+  searchPlaceholder="Search style no, buyer, category..."
+  exportFileName="rmg-styles-catalog"
+  customFilters={<BuyerFilterDropdown />}
+  customActions={<AddNewButton />}
+/>
+```
 
 ---
 

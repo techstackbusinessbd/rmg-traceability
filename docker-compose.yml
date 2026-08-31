@@ -1,0 +1,103 @@
+name: rmg-traceability
+
+services:
+  backend:
+    build:
+      context: ./backend/vendor/laravel/sail/runtimes/8.5
+      dockerfile: Dockerfile
+      args:
+        WWWGROUP: '1000'
+    image: sail-8.5/app
+    container_name: rmg-backend
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '${APP_PORT:-8000}:80'
+    environment:
+      WWWUSER: '1000'
+      LARAVEL_SAIL: 1
+      XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+      XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+      IGNITION_LOCAL_SITES_PATH: '${PWD}/backend'
+    volumes:
+      - './backend:/var/www/html'
+    networks:
+      - rmg-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rmg-frontend
+    ports:
+      - '${FRONTEND_PORT:-5173}:5173'
+    volumes:
+      - './frontend:/app'
+      - '/app/node_modules'
+    environment:
+      - VITE_API_URL=http://localhost:8000/api/v1
+    networks:
+      - rmg-network
+    depends_on:
+      - backend
+
+  postgres:
+    image: 'postgres:18-alpine'
+    container_name: rmg-postgres
+    ports:
+      - '${FORWARD_DB_PORT:-5432}:5432'
+    environment:
+      PGPASSWORD: '${DB_PASSWORD:-password}'
+      POSTGRES_DB: '${DB_DATABASE:-rmg_traceability}'
+      POSTGRES_USER: '${DB_USERNAME:-sail}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-password}'
+    volumes:
+      - 'rmg-pgsql-data:/var/lib/postgresql'
+      - './backend/vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
+    networks:
+      - rmg-network
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - '-q'
+        - '-d'
+        - '${DB_DATABASE:-rmg_traceability}'
+        - '-U'
+        - '${DB_USERNAME:-sail}'
+      retries: 5
+      timeout: 5s
+      interval: 3s
+
+  redis:
+    image: 'redis:alpine'
+    container_name: rmg-redis
+    ports:
+      - '${FORWARD_REDIS_PORT:-6379}:6379'
+    volumes:
+      - 'rmg-redis-data:/data'
+    networks:
+      - rmg-network
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      retries: 5
+      timeout: 5s
+      interval: 3s
+
+networks:
+  rmg-network:
+    driver: bridge
+
+volumes:
+  rmg-pgsql-data:
+    driver: local
+  rmg-redis-data:
+    driver: local
