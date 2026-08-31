@@ -331,30 +331,45 @@ export default function AdminConsolePage() {
       label: 'Actions',
       sortable: false,
       align: 'right',
-      render: (row) => (
-        <div className="flex items-center justify-end space-x-1.5">
-          <button
-            type="button"
-            onClick={() => handleToggleUserStatus(row)}
-            title={row.is_active ? 'Suspend User' : 'Activate User'}
-            className={`p-1.5 rounded transition-colors cursor-pointer ${
-              row.is_active 
-                ? 'hover:bg-amber-500/10 text-slate-400 hover:text-amber-500' 
-                : 'hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-500'
-            }`}
-          >
-            {row.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDeleteUser(row)}
-            title="Delete User"
-            className="p-1.5 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
-      )
+      render: (row) => {
+        const isSuperAdmin = row.roles?.[0]?.name === 'Super Admin' || row.emp_id === 'EMP-SUPERADMIN' || row.email === 'admin@rmgtrace.com';
+
+        if (isSuperAdmin) {
+          return (
+            <div className="flex items-center justify-end">
+              <span className="inline-flex items-center space-x-1 text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20" title="Platform Root Administrator (Protected)">
+                <ShieldCheck className="h-3 w-3" />
+                <span>ROOT OWNER</span>
+              </span>
+            </div>
+          );
+        }
+
+        return (
+          <div className="flex items-center justify-end space-x-1.5">
+            <button
+              type="button"
+              onClick={() => handleToggleUserStatus(row)}
+              title={row.is_active ? 'Suspend User' : 'Activate User'}
+              className={`p-1.5 rounded transition-colors cursor-pointer ${
+                row.is_active 
+                  ? 'hover:bg-amber-500/10 text-slate-400 hover:text-amber-500' 
+                  : 'hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-500'
+              }`}
+            >
+              {row.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDeleteUser(row)}
+              title="Delete User"
+              className="p-1.5 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        );
+      }
     }
   ];
 

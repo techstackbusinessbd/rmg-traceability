@@ -73,11 +73,29 @@ class UserController extends Controller
             return response()->json(['status' => 'error', 'message' => 'User not found.'], 404);
         }
 
+        // Protected Super Admin rule: Super Admin cannot be deactivated or demoted
+        $isTargetSuperAdmin = $user->hasRole('Super Admin') || $user->emp_id === 'EMP-SUPERADMIN' || $user->email === 'admin@rmgtrace.com';
+
         $validated = $request->validate([
             'name' => 'sometimes|string|min:3|max:100',
             'is_active' => 'sometimes|boolean',
             'role' => 'sometimes|string|exists:roles,name',
         ]);
+
+        if ($isTargetSuperAdmin) {
+            if (isset($validated['is_active']) && ! $validated['is_active']) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Super Admin root account is protected and cannot be deactivated or suspended.',
+                ], 403);
+            }
+            if (isset($validated['role']) && $validated['role'] !== 'Super Admin') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Super Admin role cannot be demoted or changed.',
+                ], 403);
+            }
+        }
 
         if (isset($validated['name'])) {
             $user->name = $validated['name'];
@@ -121,6 +139,14 @@ class UserController extends Controller
 
         if (! $user) {
             return response()->json(['status' => 'error', 'message' => 'User not found.'], 404);
+        }
+
+        // Protected Super Admin rule: Super Admin cannot be deleted
+        if ($user->hasRole('Super Admin') || $user->emp_id === 'EMP-SUPERADMIN' || $user->email === 'admin@rmgtrace.com') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Super Admin root account is immutable and strictly protected from deletion.',
+            ], 403);
         }
 
         // Prevent self-deletion
