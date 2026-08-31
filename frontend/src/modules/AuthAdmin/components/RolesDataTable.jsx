@@ -285,41 +285,31 @@ export default function RolesDataTable({
 
             {/* Filter & Search Toolbar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 pb-3 border-b border-slate-700/20 shrink-0">
-              <div className="flex items-center space-x-1.5 overflow-x-auto scrollbar-thin">
-                <button
-                  type="button"
-                  onClick={() => setModuleFilter('ALL')}
-                  className={`px-3 py-1 rounded text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
-                    moduleFilter === 'ALL'
-                      ? 'bg-blue-600 text-white'
-                      : isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
+                <span className="text-xs font-semibold text-slate-400 shrink-0">Filter Domain:</span>
+                <select
+                  value={moduleFilter}
+                  onChange={(e) => setModuleFilter(e.target.value)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold border focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
-                  All Domains
-                </button>
-                {moduleKeys.map(k => (
-                  <button
-                    key={k}
-                    type="button"
-                    onClick={() => setModuleFilter(k)}
-                    className={`px-3 py-1 rounded text-xs font-bold uppercase whitespace-nowrap transition-colors cursor-pointer ${
-                      moduleFilter === k
-                        ? 'bg-blue-600 text-white'
-                        : isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    {k} ({groupedPermissions[k].length})
-                  </button>
-                ))}
+                  <option value="ALL">All Domains ({allPermissions.length} Scopes)</option>
+                  {moduleKeys.map(k => (
+                    <option key={k} value={k}>
+                      {getModuleLabel(k)} ({groupedPermissions[k].length})
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="relative w-full sm:w-60 shrink-0">
-                <Search className="h-3.5 w-3.5 absolute left-3 top-3 text-slate-400" />
+              <div className="relative w-full sm:w-72 shrink-0">
+                <Search className="h-3.5 w-3.5 absolute left-3 top-2.5 text-slate-400" />
                 <input
                   type="text"
                   value={modalSearch}
                   onChange={(e) => setModalSearch(e.target.value)}
-                  placeholder="Filter permissions..."
+                  placeholder="Search permission scopes..."
                   className={`w-full pl-8 pr-3 py-1.5 rounded-md text-xs border focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium ${
                     isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'
                   }`}
