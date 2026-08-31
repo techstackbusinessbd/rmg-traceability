@@ -34,26 +34,31 @@ export default function LoginPage() {
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
-      {/* Professional SaaS Geometric Micro-Grid Background with Radial Vignette */}
+      {/* Textile Weave / Architectural Matrix Pattern (Tailored for RMG ERP) */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.35] dark:opacity-[0.18]"
+        className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.22]"
         style={{
           backgroundImage: `
-            linear-gradient(to right, ${isDark ? '#334155' : '#cbd5e1'} 1px, transparent 1px),
-            linear-gradient(to bottom, ${isDark ? '#334155' : '#cbd5e1'} 1px, transparent 1px)
+            radial-gradient(circle at 1px 1px, ${isDark ? '#475569' : '#94a3b8'} 1.2px, transparent 0)
           `,
-          backgroundSize: '32px 32px',
-          maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)'
+          backgroundSize: '24px 24px',
+          maskImage: 'radial-gradient(ellipse 70% 60% at 50% 50%, #000 60%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 50%, #000 60%, transparent 100%)'
         }}
       />
 
-      {/* Subtle Premium Ambient Glows */}
-      <div className={`absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
-        isDark ? 'bg-blue-600/10' : 'bg-blue-500/10'
-      }`} />
-      <div className={`absolute -bottom-40 -right-40 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
-        isDark ? 'bg-indigo-600/10' : 'bg-indigo-500/10'
+      {/* Modern Diagonal Linear Sheen / Textile Texture Layer */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.06]"
+        style={{
+          backgroundImage: `repeating-linear-gradient(45deg, #3b82f6 0, #3b82f6 1px, transparent 0, transparent 50%)`,
+          backgroundSize: '16px 16px'
+        }}
+      />
+
+      {/* Subtle Ambient Radial Lighting */}
+      <div className={`absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[500px] rounded-full blur-[140px] pointer-events-none ${
+        isDark ? 'bg-blue-600/10' : 'bg-blue-400/10'
       }`} />
 
       {/* Content Container */}
