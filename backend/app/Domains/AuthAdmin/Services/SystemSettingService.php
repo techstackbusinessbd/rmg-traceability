@@ -12,25 +12,30 @@ use Illuminate\Support\Facades\DB;
 class SystemSettingService
 {
     const CACHE_KEY = 'global_system_settings';
+    const CACHE_PUBLIC_KEY = 'public_system_settings';
+
     /**
      * Get specific setting by key with Redis Cache and fallback default
      */
     public static function get(string $key, mixed $default = null): mixed
     {
         $all = Cache::rememberForever(self::CACHE_KEY, function () {
-            return SystemSetting::orderBy('group')->orderBy('created_at')->get();
+            return SystemSetting::orderBy('group')->orderBy('created_at')->get()->toArray();
         });
 
-        $setting = $all->firstWhere('key', $key);
+        $setting = collect($all)->firstWhere('key', $key);
         if (! $setting) {
             return $default;
         }
 
-        return match ($setting->type) {
-            'number' => is_numeric($setting->value) ? (float) $setting->value : $default,
-            'boolean' => filter_var($setting->value, FILTER_VALIDATE_BOOLEAN),
-            'json' => json_decode($setting->value, true) ?: $default,
-            default => $setting->value ?? $default,
+        $type = $setting['type'] ?? 'string';
+        $val = $setting['value'] ?? null;
+
+        return match ($type) {
+            'number' => is_numeric($val) ? (float) $val : $default,
+            'boolean' => filter_var($val, FILTER_VALIDATE_BOOLEAN),
+            'json' => json_decode($val, true) ?: $default,
+            default => $val ?? $default,
         };
     }
 
@@ -39,9 +44,11 @@ class SystemSettingService
      */
     public function getAllSettings(): Collection
     {
-        return Cache::rememberForever(self::CACHE_KEY, function () {
-            return SystemSetting::orderBy('group')->orderBy('created_at')->get();
+        $raw = Cache::rememberForever(self::CACHE_KEY, function () {
+            return SystemSetting::orderBy('group')->orderBy('created_at')->get()->toArray();
         });
+
+        return collect($raw);
     }
 
     /**
@@ -49,9 +56,11 @@ class SystemSettingService
      */
     public function getPublicSettings(): Collection
     {
-        return Cache::rememberForever(self::CACHE_PUBLIC_KEY, function () {
-            return SystemSetting::where('is_public', true)->get();
+        $raw = Cache::rememberForever(self::CACHE_PUBLIC_KEY, function () {
+            return SystemSetting::where('is_public', true)->get()->toArray();
         });
+
+        return collect($raw);
     }
 
     /**
