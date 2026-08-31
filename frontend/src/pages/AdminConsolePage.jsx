@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
+import RegisterUserModal from '../modules/AuthAdmin/components/RegisterUserModal';
+import RegisterDeviceModal from '../modules/AuthAdmin/components/RegisterDeviceModal';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
@@ -664,348 +666,46 @@ export default function AdminConsolePage() {
             Back to Users Management
           </button>
         </div>
-      )}
+      )}      {/* Modular Modal: Register New User */}
+      <RegisterUserModal
+        show={showNewUserModal}
+        onClose={() => setShowNewUserModal(false)}
+        onSubmit={handleCreateUser}
+        isDark={isDark}
+        rolesList={rolesList}
+        empId={newEmpId}
+        setEmpId={setNewEmpId}
+        userName={newUserName}
+        setUserName={setNewUserName}
+        userEmail={newUserEmail}
+        setUserEmail={setNewUserEmail}
+        userPassword={newUserPassword}
+        setUserPassword={setNewUserPassword}
+        userConfirmPassword={newUserConfirmPassword}
+        setUserConfirmPassword={setNewUserConfirmPassword}
+        userRole={newUserRole}
+        setUserRole={setNewUserRole}
+        userStatus={newUserStatus}
+        setUserStatus={setNewUserStatus}
+        errors={userFormErrors}
+      />
 
-      {/* Modal: Register New User */}
-      {showNewUserModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`max-w-md w-full rounded-lg p-6 sm:p-7 border shadow-xl relative ${
-            isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
-          }`}>
-            <h3 className="text-base font-bold tracking-tight mb-1">Register New User (Admin Only)</h3>
-            <p className="text-xs text-slate-400 mb-5">Create account and assign role with custom scopes</p>
-
-            <form onSubmit={handleCreateUser} noValidate className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                    Employee ID <span className="text-red-500 font-bold">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newEmpId}
-                    onChange={(e) => {
-                      setNewEmpId(e.target.value);
-                      if (userFormErrors.emp_id) setUserFormErrors(prev => ({ ...prev, emp_id: null }));
-                    }}
-                    placeholder="e.g. EMP-10492"
-                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-mono font-medium transition-colors ${
-                      userFormErrors.emp_id 
-                        ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
-                    }`}
-                  />
-                  {userFormErrors.emp_id && (
-                    <span className="text-[11px] text-red-500 mt-1 block font-medium">
-                      {userFormErrors.emp_id[0]}
-                    </span>
-                  )}
-                </div>
-
-                <div>
-                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                    Full Name <span className="text-red-500 font-bold">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newUserName}
-                    onChange={(e) => {
-                      setNewUserName(e.target.value);
-                      if (userFormErrors.name) setUserFormErrors(prev => ({ ...prev, name: null }));
-                    }}
-                    placeholder="e.g. John Doe"
-                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-medium transition-colors ${
-                      userFormErrors.name 
-                        ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
-                    }`}
-                  />
-                  {userFormErrors.name && (
-                    <span className="text-[11px] text-red-500 mt-1 block font-medium">
-                      {userFormErrors.name[0]}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                  Email Address <span className="text-slate-400 font-normal">(Optional)</span>
-                </label>
-                <input
-                  type="email"
-                  value={newUserEmail}
-                  onChange={(e) => {
-                    setNewUserEmail(e.target.value);
-                    if (userFormErrors.email) setUserFormErrors(prev => ({ ...prev, email: null }));
-                  }}
-                  placeholder="john@factory.com (optional)"
-                  className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-medium transition-colors ${
-                    userFormErrors.email 
-                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                      : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
-                  }`}
-                />
-                {userFormErrors.email && (
-                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
-                    {userFormErrors.email[0]}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                    Password <span className="text-red-500 font-bold">*</span>
-                  </label>
-                  <input
-                    type="password"
-                    value={newUserPassword}
-                    onChange={(e) => {
-                      setNewUserPassword(e.target.value);
-                      if (userFormErrors.password) setUserFormErrors(prev => ({ ...prev, password: null }));
-                    }}
-                    placeholder="Min 8 characters"
-                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-mono font-medium transition-colors ${
-                      userFormErrors.password 
-                        ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
-                    }`}
-                  />
-                  {userFormErrors.password && (
-                    <span className="text-[11px] text-red-500 mt-1 block font-medium">
-                      {userFormErrors.password[0]}
-                    </span>
-                  )}
-                </div>
-
-                <div>
-                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                    Confirm Password <span className="text-red-500 font-bold">*</span>
-                  </label>
-                  <input
-                    type="password"
-                    value={newUserConfirmPassword}
-                    onChange={(e) => {
-                      setNewUserConfirmPassword(e.target.value);
-                      if (userFormErrors.password_confirmation) setUserFormErrors(prev => ({ ...prev, password_confirmation: null }));
-                    }}
-                    placeholder="Repeat password"
-                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-mono font-medium transition-colors ${
-                      userFormErrors.password_confirmation 
-                        ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
-                    }`}
-                  />
-                  {userFormErrors.password_confirmation && (
-                    <span className="text-[11px] text-red-500 mt-1 block font-medium">
-                      {userFormErrors.password_confirmation[0]}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                    Assign Role
-                  </label>
-                  <select
-                    value={newUserRole}
-                    onChange={(e) => setNewUserRole(e.target.value)}
-                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium ${
-                      isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                    }`}
-                  >
-                    {rolesList.length > 0 ? (
-                      rolesList.map((r) => (
-                        <option key={r.id} value={r.name}>
-                          {r.name} {r.name === 'Super Admin' ? '(Platform Owner)' : r.name === 'Admin' ? '(Factory Admin)' : ''}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="Admin">Admin (Factory Admin)</option>
-                        <option value="Cutting Master">Cutting Master</option>
-                        <option value="Line Supervisor">Line Supervisor</option>
-                        <option value="QC Inspector">QC Inspector</option>
-                        <option value="Packing Operator">Packing Operator</option>
-                        <option value="Store Keeper">Store Keeper</option>
-                        <option value="Super Admin">Super Admin (Platform Owner)</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-
-                <div>
-                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                    Account Status
-                  </label>
-                  <select
-                    value={newUserStatus ? 'active' : 'suspended'}
-                    onChange={(e) => setNewUserStatus(e.target.value === 'active')}
-                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium ${
-                      isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                    }`}
-                  >
-                    <option value="active">ACTIVE (Operational)</option>
-                    <option value="suspended">SUSPENDED (Locked)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowNewUserModal(false)}
-                  className={`flex-1 py-2.5 rounded-md text-sm font-semibold border transition-colors cursor-pointer ${
-                    isDark ? 'border-slate-800 hover:bg-slate-800 text-slate-300' : 'border-slate-300 hover:bg-slate-100 text-slate-700'
-                  }`}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-bold shadow-xs cursor-pointer transition-colors"
-                >
-                  Create User
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Register New Tablet */}
-      {showNewDeviceModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`max-w-md w-full rounded p-6 border shadow-lg relative ${
-            isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
-          }`}>
-            <h3 className="text-sm font-bold mb-1">Register Floor Tablet</h3>
-            <p className="text-xs text-slate-400 mb-4">Lock device to a production line with 6-digit PIN</p>
-
-            <form onSubmit={handleCreateDevice} noValidate className="space-y-3">
-              <div>
-                <label className="text-xs font-semibold block mb-1">
-                  Device Name <span className="text-red-500 font-bold">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newDevName}
-                  onChange={(e) => {
-                    setNewDevName(e.target.value);
-                    if (deviceFormErrors.device_name) setDeviceFormErrors(prev => ({ ...prev, device_name: null }));
-                  }}
-                  placeholder="e.g. Sewing Line 02 Tablet"
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 ${
-                    deviceFormErrors.device_name 
-                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                      : isDark ? 'bg-slate-950 border-slate-800 text-white focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:ring-blue-500'
-                  }`}
-                />
-                {deviceFormErrors.device_name && (
-                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
-                    {deviceFormErrors.device_name[0]}
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold block mb-1">
-                  Device Code (Unique) <span className="text-red-500 font-bold">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newDevCode}
-                  onChange={(e) => {
-                    setNewDevCode(e.target.value);
-                    if (deviceFormErrors.device_code) setDeviceFormErrors(prev => ({ ...prev, device_code: null }));
-                  }}
-                  placeholder="TAB-SEW-L02"
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 ${
-                    deviceFormErrors.device_code 
-                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                      : isDark ? 'bg-slate-950 border-slate-800 text-white focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:ring-blue-500'
-                  }`}
-                />
-                {deviceFormErrors.device_code && (
-                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
-                    {deviceFormErrors.device_code[0]}
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold block mb-1">
-                  6-Digit Security PIN <span className="text-red-500 font-bold">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newDevPin}
-                  onChange={(e) => {
-                    setNewDevPin(e.target.value);
-                    if (deviceFormErrors.pin_code) setDeviceFormErrors(prev => ({ ...prev, pin_code: null }));
-                  }}
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 font-mono tracking-widest ${
-                    deviceFormErrors.pin_code 
-                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                      : isDark ? 'bg-slate-950 border-slate-800 text-white focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:ring-blue-500'
-                  }`}
-                />
-                {deviceFormErrors.pin_code && (
-                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
-                    {deviceFormErrors.pin_code[0]}
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold block mb-1">
-                  Lock to Production Line <span className="text-red-500 font-bold">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newDevLine}
-                  onChange={(e) => {
-                    setNewDevLine(e.target.value);
-                    if (deviceFormErrors.line_name) setDeviceFormErrors(prev => ({ ...prev, line_name: null }));
-                  }}
-                  placeholder="Sewing Line 02"
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 ${
-                    deviceFormErrors.line_name 
-                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                      : isDark ? 'bg-slate-950 border-slate-800 text-white focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:ring-blue-500'
-                  }`}
-                />
-                {deviceFormErrors.line_name && (
-                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
-                    {deviceFormErrors.line_name[0]}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center space-x-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowNewDeviceModal(false)}
-                  className={`flex-1 py-1.5 rounded text-xs font-semibold border ${
-                    isDark ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-300 hover:bg-slate-100'
-                  }`}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
-                >
-                  Register Device
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Modular Modal: Register New Tablet Device */}
+      <RegisterDeviceModal
+        show={showNewDeviceModal}
+        onClose={() => setShowNewDeviceModal(false)}
+        onSubmit={handleCreateDevice}
+        isDark={isDark}
+        devName={newDevName}
+        setDevName={setNewDevName}
+        devCode={newDevCode}
+        setDevCode={setNewDevCode}
+        devPin={newDevPin}
+        setDevPin={setNewDevPin}
+        devLine={newDevLine}
+        setDevLine={setNewDevLine}
+        errors={deviceFormErrors}
+      />
 
     </AdminLayout>
   );
