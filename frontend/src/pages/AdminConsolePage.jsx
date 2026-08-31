@@ -53,9 +53,11 @@ export default function AdminConsolePage() {
   const [fetchLoading, setFetchLoading] = useState(false);
 
   // Form states
+  const [newEmpId, setNewEmpId] = useState('');
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('Password123!');
+  const [newUserConfirmPassword, setNewUserConfirmPassword] = useState('Password123!');
   const [newUserRole, setNewUserRole] = useState('Line Supervisor');
 
   const [newDevName, setNewDevName] = useState('');
@@ -96,18 +98,28 @@ export default function AdminConsolePage() {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
+    if (newUserPassword !== newUserConfirmPassword) {
+      toast.error('Password and Confirm Password do not match!');
+      return;
+    }
+
     try {
       await axios.post(`${API_BASE}/admin/users`, {
+        emp_id: newEmpId || null,
         name: newUserName,
         email: newUserEmail,
         password: newUserPassword,
+        password_confirmation: newUserConfirmPassword,
         role: newUserRole,
         is_active: true
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       toast.success('User registered successfully by Admin!');
+      setNewEmpId('');
       setNewUserName('');
       setNewUserEmail('');
+      setNewUserPassword('Password123!');
+      setNewUserConfirmPassword('Password123!');
       setShowNewUserModal(false);
       fetchAdminData();
     } catch (err) {
@@ -138,6 +150,19 @@ export default function AdminConsolePage() {
 
   // Table Columns
   const userColumns = [
+    { 
+      key: 'emp_id', 
+      label: 'Emp ID', 
+      sortable: true, 
+      className: 'font-mono text-blue-500 font-bold',
+      render: (row) => row.emp_id ? (
+        <span className="px-2 py-0.5 rounded font-mono text-[11px] bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">
+          {row.emp_id}
+        </span>
+      ) : (
+        <span className="text-slate-500 text-xs">—</span>
+      )
+    },
     { 
       key: 'name', 
       label: 'Full Name', 
@@ -528,46 +553,80 @@ export default function AdminConsolePage() {
             <h3 className="text-sm font-bold mb-1">Register New User (Admin Only)</h3>
             <p className="text-xs text-slate-400 mb-4">Create account and assign role with custom scopes</p>
 
-            <form onSubmit={handleCreateUser} className="space-y-3">
-              <div>
-                <label className="text-xs font-semibold block mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={newUserName}
-                  onChange={(e) => setNewUserName(e.target.value)}
-                  placeholder="e.g. John Doe"
-                  required
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                  }`}
-                />
+            <form onSubmit={handleCreateUser} className="space-y-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold block mb-1">Employee ID (Optional)</label>
+                  <input
+                    type="text"
+                    value={newEmpId}
+                    onChange={(e) => setNewEmpId(e.target.value)}
+                    placeholder="e.g. EMP-10492"
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${
+                      isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold block mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    placeholder="e.g. John Doe"
+                    required
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                      isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                    }`}
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1">Email</label>
+                <label className="text-xs font-semibold block mb-1">Email Address</label>
                 <input
                   type="email"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
                   placeholder="john@factory.com"
                   required
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                  className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                   }`}
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold block mb-1">Password</label>
-                <input
-                  type="password"
-                  value={newUserPassword}
-                  onChange={(e) => setNewUserPassword(e.target.value)}
-                  required
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                  }`}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold block mb-1">Password</label>
+                  <input
+                    type="password"
+                    value={newUserPassword}
+                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    placeholder="Min 8 characters"
+                    required
+                    minLength={8}
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                      isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold block mb-1">Confirm Password</label>
+                  <input
+                    type="password"
+                    value={newUserConfirmPassword}
+                    onChange={(e) => setNewUserConfirmPassword(e.target.value)}
+                    placeholder="Repeat password"
+                    required
+                    minLength={8}
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                      isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                    }`}
+                  />
+                </div>
               </div>
 
               <div>
@@ -575,7 +634,7 @@ export default function AdminConsolePage() {
                 <select
                   value={newUserRole}
                   onChange={(e) => setNewUserRole(e.target.value)}
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                     isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 >

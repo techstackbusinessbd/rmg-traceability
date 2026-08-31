@@ -69,6 +69,7 @@ class AuthService
     {
         return DB::transaction(function () use ($data, $actor, $ip) {
             $user = $this->userRepository->create([
+                'emp_id' => $data['emp_id'] ?? null,
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
