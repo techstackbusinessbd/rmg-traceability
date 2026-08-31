@@ -11,11 +11,16 @@ import {
   UserCheck, 
   ArrowLeft, 
   Sun, 
-  Moon
+  Moon,
+  CheckCircle2,
+  XCircle,
+  Clock
 } from 'lucide-react';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
+import { DataTable } from '../components/common/DataTable';
 
 const API_BASE = 'http://localhost:8000/api/v1';
 
@@ -39,7 +44,6 @@ export default function AdminConsolePage() {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('Password123!');
   const [newUserRole, setNewUserRole] = useState('Line Supervisor');
-  const [createMsg, setCreateMsg] = useState('');
 
   const [newDevName, setNewDevName] = useState('');
   const [newDevCode, setNewDevCode] = useState('');
@@ -71,6 +75,7 @@ export default function AdminConsolePage() {
       setAuditList(aRes.data.data.data || []);
     } catch (e) {
       console.error('Error fetching admin data', e);
+      toast.error('Failed to fetch admin data');
     } finally {
       setFetchLoading(false);
     }
@@ -87,16 +92,13 @@ export default function AdminConsolePage() {
         is_active: true
       }, { headers: { Authorization: `Bearer ${token}` } });
 
-      setCreateMsg('User registered successfully by Admin!');
+      toast.success('User registered successfully by Admin!');
       setNewUserName('');
       setNewUserEmail('');
-      setTimeout(() => {
-        setCreateMsg('');
-        setShowNewUserModal(false);
-        fetchAdminData();
-      }, 1200);
+      setShowNewUserModal(false);
+      fetchAdminData();
     } catch (err) {
-      setCreateMsg(err.response?.data?.message || 'Error creating user');
+      toast.error(err.response?.data?.message || 'Error creating user');
     }
   };
 
@@ -111,16 +113,13 @@ export default function AdminConsolePage() {
         device_type: 'Tablet'
       }, { headers: { Authorization: `Bearer ${token}` } });
 
-      setCreateMsg('Floor Tablet registered & line-locked!');
+      toast.success('Floor Tablet registered & line-locked!');
       setNewDevName('');
       setNewDevCode('');
-      setTimeout(() => {
-        setCreateMsg('');
-        setShowNewDeviceModal(false);
-        fetchAdminData();
-      }, 1200);
+      setShowNewDeviceModal(false);
+      fetchAdminData();
     } catch (err) {
-      setCreateMsg(err.response?.data?.message || 'Error registering device');
+      toast.error(err.response?.data?.message || 'Error registering device');
     }
   };
 
@@ -129,21 +128,85 @@ export default function AdminConsolePage() {
     navigate('/login');
   };
 
+  // DataTable Column Definitions
+  const userColumns = [
+    { key: 'name', label: 'Full Name', sortable: true, className: 'font-bold' },
+    { key: 'email', label: 'Email', sortable: true, className: 'font-mono text-slate-400' },
+    { 
+      key: 'roles', 
+      label: 'Assigned Role', 
+      sortable: false,
+      render: (row) => (
+        <span className="px-2 py-0.5 rounded-full font-semibold text-[11px] bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          {row.roles?.[0]?.name || 'Standard User'}
+        </span>
+      )
+    },
+    { 
+      key: 'is_active', 
+      label: 'Status', 
+      sortable: true,
+      render: (row) => (
+        <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+          row.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+        }`}>
+          {row.is_active ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+          <span>{row.is_active ? 'ACTIVE' : 'DEACTIVATED'}</span>
+        </span>
+      )
+    },
+    { 
+      key: 'created_at', 
+      label: 'Created At', 
+      sortable: true, 
+      align: 'right',
+      render: (row) => new Date(row.created_at).toLocaleDateString() 
+    },
+  ];
+
+  const auditColumns = [
+    { 
+      key: 'action', 
+      label: 'Security Action', 
+      sortable: true,
+      render: (row) => (
+        <span className="font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-[11px]">
+          {row.action}
+        </span>
+      )
+    },
+    { key: 'user_name', label: 'Actor / User', sortable: true, render: (row) => row.user_name || 'System Auto' },
+    { key: 'module', label: 'Domain Module', sortable: true, className: 'text-slate-400 font-mono text-[11px]' },
+    { 
+      key: 'created_at', 
+      label: 'Timestamp', 
+      sortable: true, 
+      align: 'right',
+      render: (row) => (
+        <span className="font-mono text-slate-400 text-[11px]">
+          {new Date(row.created_at).toLocaleString()}
+        </span>
+      )
+    },
+  ];
+
   return (
-    <div className={`min-h-screen transition-colors duration-300 flex flex-col font-sans selection:bg-blue-600 selection:text-white ${
+    <div className={`min-h-screen transition-colors duration-200 flex flex-col font-sans selection:bg-blue-600 selection:text-white ${
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
+      <Toaster position="top-right" />
+
       {/* Header */}
-      <header className={`border-b backdrop-blur-md sticky top-0 z-40 transition-colors duration-300 ${
-        isDark ? 'border-slate-800/80 bg-slate-900/80' : 'border-slate-200 bg-white/80 shadow-sm'
+      <header className={`border-b backdrop-blur-md sticky top-0 z-40 transition-colors duration-200 ${
+        isDark ? 'border-slate-800/80 bg-slate-900/80' : 'border-slate-200 bg-white/80 shadow-2xs'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center space-x-2 text-xs font-semibold text-slate-400 hover:text-blue-400">
+            <Link to="/" className="flex items-center space-x-1.5 text-xs font-semibold text-slate-400 hover:text-blue-400">
               <ArrowLeft className="h-4 w-4" />
               <span>Overview</span>
             </Link>
-            <div className="h-4 w-px bg-slate-700"></div>
+            <div className="h-4 w-px bg-slate-700/50"></div>
             <div className="flex items-center space-x-2">
               <span className="font-bold text-sm">Module 01: System Admin & Auth</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-bold">
@@ -164,8 +227,9 @@ export default function AdminConsolePage() {
             </div>
 
             <button
+              type="button"
               onClick={handleLogout}
-              className="p-2 rounded-md border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all flex items-center space-x-1 text-xs font-semibold cursor-pointer"
+              className="p-2 rounded-md border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors flex items-center space-x-1 text-xs font-semibold cursor-pointer"
               title="Logout"
             >
               <LogOut className="h-4 w-4" />
@@ -177,7 +241,7 @@ export default function AdminConsolePage() {
               className={`p-2 rounded-md border transition-all flex items-center justify-center cursor-pointer ${
                 isDark
                   ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-yellow-400 shadow-sm'
-                  : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-sm'
+                  : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-2xs'
               }`}
               title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
@@ -188,32 +252,33 @@ export default function AdminConsolePage() {
       </header>
 
       {/* Main Console Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <section className={`p-6 sm:p-8 rounded-xl border transition-all ${
-          isDark ? 'bg-slate-900 border-slate-800 shadow-xl' : 'bg-white border-slate-200 shadow-sm'
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <section className={`p-6 sm:p-8 rounded-lg border transition-colors ${
+          isDark ? 'bg-slate-900 border-slate-800 shadow-md' : 'bg-white border-slate-200/90 shadow-2xs'
         }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-700/30">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-blue-600 rounded-lg text-white shadow-sm">
+              <div className="p-3 bg-blue-600 rounded-md text-white shadow-xs">
                 <ShieldCheck className="h-6 w-6" />
               </div>
               <div>
-                <h2 className={`text-xl font-black mt-0.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <h2 className={`text-xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   Security, RBAC & Floor Device Management
                 </h2>
-                <p className="text-xs text-slate-400">Manage factory user accounts, roles, tablet security PINs and audit logs</p>
+                <p className="text-xs text-slate-400 mt-0.5">Manage factory user accounts, roles, tablet security PINs and audit logs</p>
               </div>
             </div>
 
             {/* Navigation Tabs */}
-            <div className={`p-1 rounded-lg border flex items-center space-x-1 ${
+            <div className={`p-1 rounded-md border flex items-center space-x-1 ${
               isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
             }`}>
               <button
+                type="button"
                 onClick={() => setActiveAdminTab('users')}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${
+                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 ${
                   activeAdminTab === 'users' 
-                    ? 'bg-blue-600 text-white shadow-xs' 
+                    ? 'bg-blue-600 text-white shadow-2xs' 
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -221,10 +286,11 @@ export default function AdminConsolePage() {
                 <span>Users ({usersList.length})</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveAdminTab('devices')}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${
+                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 ${
                   activeAdminTab === 'devices' 
-                    ? 'bg-blue-600 text-white shadow-xs' 
+                    ? 'bg-blue-600 text-white shadow-2xs' 
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -232,10 +298,11 @@ export default function AdminConsolePage() {
                 <span>Tablets ({devicesList.length})</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveAdminTab('roles')}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${
+                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 ${
                   activeAdminTab === 'roles' 
-                    ? 'bg-blue-600 text-white shadow-xs' 
+                    ? 'bg-blue-600 text-white shadow-2xs' 
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -243,10 +310,11 @@ export default function AdminConsolePage() {
                 <span>Roles ({rolesList.length})</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveAdminTab('audit')}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${
+                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 ${
                   activeAdminTab === 'audit' 
-                    ? 'bg-blue-600 text-white shadow-xs' 
+                    ? 'bg-blue-600 text-white shadow-2xs' 
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -256,62 +324,26 @@ export default function AdminConsolePage() {
             </div>
           </div>
 
-          {/* Tab 1: Users */}
+          {/* Tab 1: Users (Using Standard DataTable) */}
           {activeAdminTab === 'users' && (
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">
-                  <strong className="text-blue-400">Protected Rule:</strong> Only authorized Administrators can register new accounts.
-                </span>
-                <button
-                  onClick={() => setShowNewUserModal(true)}
-                  className="px-3.5 py-2 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer transition-all"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Register New User</span>
-                </button>
-              </div>
-
-              <div className={`overflow-hidden rounded-lg border ${
-                isDark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'
-              }`}>
-                <table className="w-full text-left text-xs">
-                  <thead className={`border-b font-bold uppercase tracking-wider ${
-                    isDark ? 'border-slate-800 text-slate-400 bg-slate-900/60' : 'border-slate-200 text-slate-600 bg-slate-100'
-                  }`}>
-                    <tr>
-                      <th className="p-3.5">Name</th>
-                      <th className="p-3.5">Email</th>
-                      <th className="p-3.5">Assigned Role</th>
-                      <th className="p-3.5">Status</th>
-                      <th className="p-3.5">Created At</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/40 font-medium">
-                    {usersList.map((u) => (
-                      <tr key={u.id} className="hover:bg-blue-500/5 transition-colors">
-                        <td className="p-3.5 font-bold">{u.name}</td>
-                        <td className="p-3.5 font-mono text-slate-400">{u.email}</td>
-                        <td className="p-3.5">
-                          <span className="px-2 py-0.5 rounded-full font-semibold text-[11px] bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                            {u.roles?.[0]?.name || 'Standard User'}
-                          </span>
-                        </td>
-                        <td className="p-3.5">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            u.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
-                          }`}>
-                            {u.is_active ? 'ACTIVE' : 'DEACTIVATED'}
-                          </span>
-                        </td>
-                        <td className="p-3.5 text-slate-400 text-[11px] font-mono">
-                          {new Date(u.created_at).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div className="mt-6">
+              <DataTable
+                columns={userColumns}
+                data={usersList}
+                loading={fetchLoading}
+                searchPlaceholder="Search users by name or email..."
+                exportFileName="rmg-factory-users"
+                customActions={
+                  <button
+                    type="button"
+                    onClick={() => setShowNewUserModal(true)}
+                    className="px-3.5 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Register New User</span>
+                  </button>
+                }
+              />
             </div>
           )}
 
@@ -323,8 +355,9 @@ export default function AdminConsolePage() {
                   <strong className="text-blue-400">Line-Locking Rule:</strong> Each tablet is locked to a specific line via 6-digit PIN code.
                 </span>
                 <button
+                  type="button"
                   onClick={() => setShowNewDeviceModal(true)}
-                  className="px-3.5 py-2 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer transition-all"
+                  className="px-3.5 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors"
                 >
                   <Plus className="h-4 w-4" />
                   <span>Register Floor Tablet</span>
@@ -333,8 +366,8 @@ export default function AdminConsolePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {devicesList.map((d) => (
-                  <div key={d.id} className={`p-4 rounded-lg border ${
-                    isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-50 border-slate-200'
+                  <div key={d.id} className={`p-4 rounded-md border ${
+                    isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
                   }`}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-mono font-bold text-blue-400">{d.device_code}</span>
@@ -343,7 +376,7 @@ export default function AdminConsolePage() {
                       </span>
                     </div>
                     <div className="font-bold text-sm">{d.device_name}</div>
-                    <div className="text-xs text-slate-400 mt-1">Locked Line: <strong className="text-slate-200">{d.line_name || 'Floor Line 01'}</strong></div>
+                    <div className="text-xs text-slate-400 mt-1">Locked Line: <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{d.line_name || 'Floor Line 01'}</strong></div>
                     <div className="mt-3 pt-2 border-t border-slate-800/60 text-[11px] text-slate-500 font-mono">
                       PIN: ****** (Encrypted) &bull; Type: {d.device_type}
                     </div>
@@ -357,8 +390,8 @@ export default function AdminConsolePage() {
           {activeAdminTab === 'roles' && (
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {rolesList.map((r) => (
-                <div key={r.id} className={`p-4 rounded-lg border ${
-                  isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-50 border-slate-200'
+                <div key={r.id} className={`p-4 rounded-md border ${
+                  isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-sm text-blue-400">{r.name}</span>
@@ -384,30 +417,16 @@ export default function AdminConsolePage() {
             </div>
           )}
 
-          {/* Tab 4: Audit Logs */}
+          {/* Tab 4: Audit Logs (Using Standard DataTable) */}
           {activeAdminTab === 'audit' && (
-            <div className="mt-6 space-y-3">
-              <div className="text-xs text-slate-400 font-medium">
-                Cryptographically tracked system security events and administrator modifications:
-              </div>
-              <div className={`divide-y rounded-lg border overflow-hidden ${
-                isDark ? 'divide-slate-800 border-slate-800 bg-slate-950/60' : 'divide-slate-200 border-slate-200 bg-slate-50'
-              }`}>
-                {auditList.map((a) => (
-                  <div key={a.id} className="p-3.5 flex items-center justify-between text-xs">
-                    <div className="flex items-center space-x-3">
-                      <span className="font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
-                        {a.action}
-                      </span>
-                      <span className="font-medium text-slate-300">{a.user_name || 'System'}</span>
-                      <span className="text-slate-500">&bull; {a.module}</span>
-                    </div>
-                    <div className="text-slate-500 font-mono text-[11px]">
-                      {new Date(a.created_at).toLocaleString()}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="mt-6">
+              <DataTable
+                columns={auditColumns}
+                data={auditList}
+                loading={fetchLoading}
+                searchPlaceholder="Search audit actions, users, or modules..."
+                exportFileName="rmg-audit-trail"
+              />
             </div>
           )}
         </section>
@@ -415,68 +434,62 @@ export default function AdminConsolePage() {
 
       {/* Modal: Register New User */}
       {showNewUserModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`max-w-md w-full rounded-xl p-6 sm:p-8 border shadow-xl relative ${
-            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className={`max-w-md w-full rounded-md p-6 border shadow-lg relative ${
+            isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
           }`}>
-            <h3 className="text-lg font-bold mb-1">Register New User (Admin Only)</h3>
+            <h3 className="text-base font-bold mb-1">Register New User (Admin Only)</h3>
             <p className="text-xs text-slate-400 mb-4">Create account and assign role with custom scopes</p>
-
-            {createMsg && (
-              <div className="mb-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs">
-                {createMsg}
-              </div>
-            )}
 
             <form onSubmit={handleCreateUser} className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-400 block mb-1">Full Name</label>
+                <label className="text-xs font-semibold block mb-1">Full Name</label>
                 <input
                   type="text"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
                   placeholder="e.g. John Doe"
                   required
-                  className={`w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 block mb-1">Email</label>
+                <label className="text-xs font-semibold block mb-1">Email</label>
                 <input
                   type="email"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
                   placeholder="john@factory.com"
                   required
-                  className={`w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 block mb-1">Password</label>
+                <label className="text-xs font-semibold block mb-1">Password</label>
                 <input
                   type="password"
                   value={newUserPassword}
                   onChange={(e) => setNewUserPassword(e.target.value)}
                   required
-                  className={`w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 block mb-1">Assign Role</label>
+                <label className="text-xs font-semibold block mb-1">Assign Role</label>
                 <select
                   value={newUserRole}
                   onChange={(e) => setNewUserRole(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 >
                   <option value="Cutting Master">Cutting Master</option>
@@ -488,19 +501,19 @@ export default function AdminConsolePage() {
                 </select>
               </div>
 
-              <div className="flex items-center space-x-3 pt-3">
+              <div className="flex items-center space-x-2 pt-3">
                 <button
                   type="button"
                   onClick={() => setShowNewUserModal(false)}
-                  className={`flex-1 py-2 rounded-lg text-xs font-semibold border ${
-                    isDark ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-200 hover:bg-slate-100'
+                  className={`flex-1 py-1.5 rounded text-xs font-semibold border ${
+                    isDark ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-300 hover:bg-slate-100'
                   }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold shadow-sm cursor-pointer"
+                  className="flex-1 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
                 >
                   Create User
                 </button>
@@ -512,89 +525,83 @@ export default function AdminConsolePage() {
 
       {/* Modal: Register New Tablet */}
       {showNewDeviceModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`max-w-md w-full rounded-xl p-6 sm:p-8 border shadow-xl relative ${
-            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className={`max-w-md w-full rounded-md p-6 border shadow-lg relative ${
+            isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
           }`}>
-            <h3 className="text-lg font-bold mb-1">Register Floor Tablet</h3>
+            <h3 className="text-base font-bold mb-1">Register Floor Tablet</h3>
             <p className="text-xs text-slate-400 mb-4">Lock device to a production line with 6-digit PIN</p>
-
-            {createMsg && (
-              <div className="mb-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs">
-                {createMsg}
-              </div>
-            )}
 
             <form onSubmit={handleCreateDevice} className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-400 block mb-1">Device Name</label>
+                <label className="text-xs font-semibold block mb-1">Device Name</label>
                 <input
                   type="text"
                   value={newDevName}
                   onChange={(e) => setNewDevName(e.target.value)}
                   placeholder="e.g. Sewing Line 02 Tablet"
                   required
-                  className={`w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 block mb-1">Device Code (Unique)</label>
+                <label className="text-xs font-semibold block mb-1">Device Code (Unique)</label>
                 <input
                   type="text"
                   value={newDevCode}
                   onChange={(e) => setNewDevCode(e.target.value)}
                   placeholder="TAB-SEW-L02"
                   required
-                  className={`w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 block mb-1">6-Digit Security PIN</label>
+                <label className="text-xs font-semibold block mb-1">6-Digit Security PIN</label>
                 <input
                   type="text"
                   maxLength={6}
                   value={newDevPin}
                   onChange={(e) => setNewDevPin(e.target.value)}
                   required
-                  className={`w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono tracking-widest ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono tracking-widest ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 block mb-1">Lock to Production Line</label>
+                <label className="text-xs font-semibold block mb-1">Lock to Production Line</label>
                 <input
                   type="text"
                   value={newDevLine}
                   onChange={(e) => setNewDevLine(e.target.value)}
                   placeholder="Sewing Line 02"
                   required
-                  className={`w-full px-3 py-2 rounded-lg text-xs border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-200'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
 
-              <div className="flex items-center space-x-3 pt-3">
+              <div className="flex items-center space-x-2 pt-3">
                 <button
                   type="button"
                   onClick={() => setShowNewDeviceModal(false)}
-                  className={`flex-1 py-2 rounded-lg text-xs font-semibold border ${
-                    isDark ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-200 hover:bg-slate-100'
+                  className={`flex-1 py-1.5 rounded text-xs font-semibold border ${
+                    isDark ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-300 hover:bg-slate-100'
                   }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold shadow-sm cursor-pointer"
+                  className="flex-1 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
                 >
                   Register Device
                 </button>
