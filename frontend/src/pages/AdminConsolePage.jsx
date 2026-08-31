@@ -845,17 +845,6 @@ export default function AdminConsolePage() {
         errors={editFormErrors}
       />
 
-      {/* Modular Modal: Role Permission Matrix */}
-      <RolePermissionModal
-        show={Boolean(editingRolePermissions)}
-        onClose={() => setEditingRolePermissions(null)}
-        onSubmit={handleSaveRolePermissions}
-        role={editingRolePermissions}
-        allPermissions={allPermissionsList}
-        isDark={isDark}
-        loading={savingRoleMatrix}
-      />
-
     </AdminLayout>
   );
 }

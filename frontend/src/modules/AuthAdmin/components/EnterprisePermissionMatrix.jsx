@@ -22,31 +22,38 @@ export default function EnterprisePermissionMatrix({
   onSaveRolePermissions,
   saving = false
 }) {
-  const [activeRole, setActiveRole] = useState(roles[0]?.id || null);
+  const [activeRole, setActiveRole] = useState(null);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeModuleFilter, setActiveModuleFilter] = useState('ALL');
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Sync selected permissions when activeRole changes
+  // Sync activeRole and selected permissions when roles load
   React.useEffect(() => {
-    if (roles.length > 0) {
+    if (roles && roles.length > 0) {
       const currentRole = roles.find(r => r.id === activeRole) || roles[0];
       if (currentRole) {
-        if (!activeRole) setActiveRole(currentRole.id);
+        if (activeRole !== currentRole.id) {
+          setActiveRole(currentRole.id);
+        }
         const perms = (currentRole.permissions || []).map(p => p.name);
         setSelectedPermissions(perms);
         setHasChanges(false);
       }
     }
-  }, [activeRole, roles]);
+  }, [roles, activeRole]);
 
-  const currentRoleObj = roles.find(r => r.id === activeRole) || roles[0];
+  const currentRoleObj = (roles && roles.length > 0) 
+    ? (roles.find(r => r.id === activeRole) || roles[0]) 
+    : null;
+
   const isSuperAdmin = currentRoleObj?.name === 'Super Admin';
 
   // Group permissions by Module prefix
   const groupedPermissions = useMemo(() => {
+    if (!allPermissions || !Array.isArray(allPermissions)) return {};
     return allPermissions.reduce((acc, perm) => {
+      if (!perm?.name) return acc;
       const parts = perm.name.split('.');
       const moduleKey = parts[0] || 'general';
       const actionKey = parts.slice(1).join(' ') || perm.name;
