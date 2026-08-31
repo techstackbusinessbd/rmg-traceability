@@ -34,27 +34,27 @@ export default function LoginPage() {
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
-      {/* Authentic RMG Woven Fabric / Textile Twill Weft Pattern */}
+      {/* Authentic RMG Woven Fabric / Textile Twill Weft Pattern - Ultra Soft & Light */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.28] dark:opacity-[0.14]"
+        className="absolute inset-0 pointer-events-none opacity-[0.07] dark:opacity-[0.05]"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236366f1' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3Cpath d='M0 0l40 40h-20L0 20M40 0v20L20 0' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2394a3b8' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3Cpath d='M0 0l40 40h-20L0 20M40 0v20L20 0' opacity='0.6'/%3E%3C/g%3E%3C/svg%3E")`,
           backgroundSize: '20px 20px',
-          maskImage: 'radial-gradient(ellipse 65% 60% at 50% 50%, #000 65%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 65% 60% at 50% 50%, #000 65%, transparent 100%)'
+          maskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, #000 50%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 55% at 50% 50%, #000 50%, transparent 100%)'
         }}
       />
 
-      {/* Clean Premium Enterprise Subtle Glow & Vignette */}
+      {/* Clean Premium Enterprise Ultra-Subtle Glow */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Top Centered Soft Illumination */}
-        <div className={`absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] rounded-full blur-[120px] ${
-          isDark ? 'bg-blue-600/15' : 'bg-blue-400/20'
+        <div className={`absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[140px] ${
+          isDark ? 'bg-blue-600/8' : 'bg-blue-300/12'
         }`} />
         
         {/* Bottom Ambient Tint */}
-        <div className={`absolute -bottom-32 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[140px] ${
-          isDark ? 'bg-indigo-900/10' : 'bg-indigo-200/30'
+        <div className={`absolute -bottom-40 left-1/2 -translate-x-1/2 w-[500px] h-[250px] rounded-full blur-[150px] ${
+          isDark ? 'bg-slate-800/10' : 'bg-slate-200/20'
         }`} />
       </div>
 
