@@ -34,13 +34,27 @@ export default function LoginPage() {
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
-      {/* Ultra Subtle Clean Ambient Lighting */}
-      <div className={`absolute top-1/4 -left-32 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
-        isDark ? 'bg-blue-600/5' : 'bg-blue-400/5'
-      }`}></div>
-      <div className={`absolute bottom-1/4 -right-32 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
-        isDark ? 'bg-indigo-600/5' : 'bg-indigo-400/5'
-      }`}></div>
+      {/* Professional SaaS Geometric Micro-Grid Background with Radial Vignette */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.35] dark:opacity-[0.18]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, ${isDark ? '#334155' : '#cbd5e1'} 1px, transparent 1px),
+            linear-gradient(to bottom, ${isDark ? '#334155' : '#cbd5e1'} 1px, transparent 1px)
+          `,
+          backgroundSize: '32px 32px',
+          maskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, #000 70%, transparent 100%)'
+        }}
+      />
+
+      {/* Subtle Premium Ambient Glows */}
+      <div className={`absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
+        isDark ? 'bg-blue-600/10' : 'bg-blue-500/10'
+      }`} />
+      <div className={`absolute -bottom-40 -right-40 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
+        isDark ? 'bg-indigo-600/10' : 'bg-indigo-500/10'
+      }`} />
 
       {/* Content Container */}
       <div className="w-full max-w-sm relative z-10">
