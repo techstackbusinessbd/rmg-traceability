@@ -386,25 +386,29 @@ export default function AdminConsolePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {rolesList.map((r) => (
-                  <div key={r.id} className={`p-4 rounded border ${
-                    isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
+                  <div key={r.id} className={`p-4 rounded border transition-colors ${
+                    isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50/70 border-slate-200/90'
                   }`}>
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-blue-400">{r.name}</span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                      <span className={`font-bold text-sm ${isDark ? 'text-blue-400' : 'text-slate-900'}`}>{r.name}</span>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 border border-blue-500/20">
                         {r.permissions?.length || 0} Scopes
                       </span>
                     </div>
-                    <div className="mt-3 space-y-1">
-                      <div className="text-[11px] text-slate-400">Authorized Actions:</div>
+                    <div className="mt-3 space-y-1.5">
+                      <div className="text-[11px] text-slate-500 font-medium">Authorized Actions:</div>
                       <div className="flex flex-wrap gap-1">
                         {r.permissions?.slice(0, 4).map((p) => (
-                          <span key={p.id} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
+                          <span key={p.id} className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${
+                            isDark 
+                              ? 'bg-slate-900 border-slate-800 text-slate-300' 
+                              : 'bg-white border-slate-200 text-slate-700 shadow-2xs'
+                          }`}>
                             {p.name}
                           </span>
                         ))}
                         {(r.permissions?.length || 0) > 4 && (
-                          <span className="text-[10px] text-blue-400 font-mono">+{r.permissions.length - 4} more</span>
+                          <span className="text-[10px] text-blue-600 font-mono font-semibold">+{r.permissions.length - 4} more</span>
                         )}
                       </div>
                     </div>
