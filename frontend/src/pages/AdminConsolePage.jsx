@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, 
   Users, 
@@ -7,32 +7,29 @@ import {
   KeyRound, 
   History, 
   Plus, 
-  LogOut, 
-  UserCheck, 
-  ArrowLeft, 
-  Sun, 
-  Moon,
   CheckCircle2,
   XCircle,
-  Clock
+  Database,
+  Lock
 } from 'lucide-react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
+import { AdminLayout } from '../components/layout/AdminLayout';
 import { DataTable } from '../components/common/DataTable';
 
 const API_BASE = 'http://localhost:8000/api/v1';
 
 export default function AdminConsolePage() {
   const navigate = useNavigate();
-  const { user, token, isAuthenticated, logout } = useAuthStore();
-  const { isDark, toggleTheme } = useThemeStore();
-  const [activeAdminTab, setActiveAdminTab] = useState('users');
+  const { token, isAuthenticated } = useAuthStore();
+  const { isDark } = useThemeStore();
+  const [activeTab, setActiveTab] = useState('users');
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [showNewDeviceModal, setShowNewDeviceModal] = useState(false);
 
-  // Admin management lists
+  // Admin lists
   const [usersList, setUsersList] = useState([]);
   const [devicesList, setDevicesList] = useState([]);
   const [rolesList, setRolesList] = useState([]);
@@ -75,7 +72,7 @@ export default function AdminConsolePage() {
       setAuditList(aRes.data.data.data || []);
     } catch (e) {
       console.error('Error fetching admin data', e);
-      toast.error('Failed to fetch admin data');
+      toast.error('Failed to load administrative records');
     } finally {
       setFetchLoading(false);
     }
@@ -123,15 +120,10 @@ export default function AdminConsolePage() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
-  // DataTable Column Definitions
+  // Table Columns
   const userColumns = [
     { key: 'name', label: 'Full Name', sortable: true, className: 'font-bold' },
-    { key: 'email', label: 'Email', sortable: true, className: 'font-mono text-slate-400' },
+    { key: 'email', label: 'Email Address', sortable: true, className: 'font-mono text-slate-400' },
     { 
       key: 'roles', 
       label: 'Assigned Role', 
@@ -167,7 +159,7 @@ export default function AdminConsolePage() {
   const auditColumns = [
     { 
       key: 'action', 
-      label: 'Security Action', 
+      label: 'Action Code', 
       sortable: true,
       render: (row) => (
         <span className="font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-[11px]">
@@ -175,7 +167,7 @@ export default function AdminConsolePage() {
         </span>
       )
     },
-    { key: 'user_name', label: 'Actor / User', sortable: true, render: (row) => row.user_name || 'System Auto' },
+    { key: 'user_name', label: 'Authorized User', sortable: true, render: (row) => row.user_name || 'System System' },
     { key: 'module', label: 'Domain Module', sortable: true, className: 'text-slate-400 font-mono text-[11px]' },
     { 
       key: 'created_at', 
@@ -190,178 +182,100 @@ export default function AdminConsolePage() {
     },
   ];
 
+  const getBreadcrumbs = () => {
+    switch (activeTab) {
+      case 'users': return ['Security & Access', 'Users'];
+      case 'devices': return ['Security & Access', 'Floor Tablets'];
+      case 'roles': return ['Security & Access', 'Roles & Scopes'];
+      case 'audit': return ['Security & Access', 'Audit Logs'];
+      default: return ['Master Data Setup', 'Overview'];
+    }
+  };
+
   return (
-    <div className={`min-h-screen transition-colors duration-200 flex flex-col font-sans selection:bg-blue-600 selection:text-white ${
-      isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
-    }`}>
+    <AdminLayout 
+      activeTab={activeTab} 
+      onTabChange={setActiveTab}
+      breadcrumbs={getBreadcrumbs()}
+    >
       <Toaster position="top-right" />
 
-      {/* Header */}
-      <header className={`border-b backdrop-blur-md sticky top-0 z-40 transition-colors duration-200 ${
-        isDark ? 'border-slate-800/80 bg-slate-900/80' : 'border-slate-200 bg-white/80 shadow-2xs'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center space-x-1.5 text-xs font-semibold text-slate-400 hover:text-blue-400">
-              <ArrowLeft className="h-4 w-4" />
-              <span>Overview</span>
-            </Link>
-            <div className="h-4 w-px bg-slate-700/50"></div>
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-sm">Module 01: System Admin & Auth</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-bold">
-                Protected Console
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            <div className={`flex items-center space-x-2 text-xs px-3 py-1.5 rounded-md border ${
-              isDark ? 'bg-slate-800/80 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'
-            }`}>
-              <UserCheck className="h-4 w-4 text-blue-400" />
-              <span className="font-semibold">{user?.name}</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold">
-                {user?.roles?.[0] || 'Super Admin'}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="p-2 rounded-md border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors flex items-center space-x-1 text-xs font-semibold cursor-pointer"
-              title="Logout"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className={`p-2 rounded-md border transition-all flex items-center justify-center cursor-pointer ${
-                isDark
-                  ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-yellow-400 shadow-sm'
-                  : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-2xs'
-              }`}
-              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Console Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <section className={`p-6 sm:p-8 rounded-lg border transition-colors ${
-          isDark ? 'bg-slate-900 border-slate-800 shadow-md' : 'bg-white border-slate-200/90 shadow-2xs'
-        }`}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-700/30">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-blue-600 rounded-md text-white shadow-xs">
-                <ShieldCheck className="h-6 w-6" />
+      {/* Module 01: Auth & Administration View */}
+      {['users', 'devices', 'roles', 'audit'].includes(activeTab) && (
+        <div className="space-y-6">
+          
+          {/* Header Card */}
+          <div className={`p-6 rounded-lg border transition-colors ${
+            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-blue-600 rounded-md text-white shadow-xs">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <div>
+                  <h1 className={`text-lg font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Module 01: System Administration & Access Control
+                  </h1>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Manage factory operators, tablet hardware PINs, RBAC roles, and immutable audit trails
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className={`text-xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Security, RBAC & Floor Device Management
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">Manage factory user accounts, roles, tablet security PINs and audit logs</p>
-              </div>
-            </div>
 
-            {/* Navigation Tabs */}
-            <div className={`p-1 rounded-md border flex items-center space-x-1 ${
-              isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'
-            }`}>
-              <button
-                type="button"
-                onClick={() => setActiveAdminTab('users')}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 ${
-                  activeAdminTab === 'users' 
-                    ? 'bg-blue-600 text-white shadow-2xs' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Users className="h-3.5 w-3.5" />
-                <span>Users ({usersList.length})</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveAdminTab('devices')}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 ${
-                  activeAdminTab === 'devices' 
-                    ? 'bg-blue-600 text-white shadow-2xs' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Smartphone className="h-3.5 w-3.5" />
-                <span>Tablets ({devicesList.length})</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveAdminTab('roles')}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 ${
-                  activeAdminTab === 'roles' 
-                    ? 'bg-blue-600 text-white shadow-2xs' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <KeyRound className="h-3.5 w-3.5" />
-                <span>Roles ({rolesList.length})</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveAdminTab('audit')}
-                className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 ${
-                  activeAdminTab === 'audit' 
-                    ? 'bg-blue-600 text-white shadow-2xs' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <History className="h-3.5 w-3.5" />
-                <span>Audit Logs ({auditList.length})</span>
-              </button>
+              {/* Action Buttons depending on tab */}
+              {activeTab === 'users' && (
+                <button
+                  type="button"
+                  onClick={() => setShowNewUserModal(true)}
+                  className="px-3.5 py-2 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Register New User</span>
+                </button>
+              )}
+
+              {activeTab === 'devices' && (
+                <button
+                  type="button"
+                  onClick={() => setShowNewDeviceModal(true)}
+                  className="px-3.5 py-2 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Register Floor Tablet</span>
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Tab 1: Users (Using Standard DataTable) */}
-          {activeAdminTab === 'users' && (
-            <div className="mt-6">
+          {/* Sub-Views based on activeTab */}
+          {activeTab === 'users' && (
+            <div className={`p-6 rounded-lg border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
+            }`}>
+              <div className="mb-4">
+                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Factory Operators & Staff Accounts</h3>
+                <p className="text-xs text-slate-400">Strictly protected user registry with Spatie RBAC integration</p>
+              </div>
               <DataTable
                 columns={userColumns}
                 data={usersList}
                 loading={fetchLoading}
                 searchPlaceholder="Search users by name or email..."
-                exportFileName="rmg-factory-users"
-                customActions={
-                  <button
-                    type="button"
-                    onClick={() => setShowNewUserModal(true)}
-                    className="px-3.5 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Register New User</span>
-                  </button>
-                }
+                exportFileName="rmg-users"
               />
             </div>
           )}
 
-          {/* Tab 2: Tablets */}
-          {activeAdminTab === 'devices' && (
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">
-                  <strong className="text-blue-400">Line-Locking Rule:</strong> Each tablet is locked to a specific line via 6-digit PIN code.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowNewDeviceModal(true)}
-                  className="px-3.5 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Register Floor Tablet</span>
-                </button>
+          {activeTab === 'devices' && (
+            <div className={`p-6 rounded-lg border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
+            }`}>
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Floor Tablets & Hardware Devices</h3>
+                  <p className="text-xs text-slate-400">Dedicated tablets locked to specific production lines with encrypted PIN</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -386,51 +300,88 @@ export default function AdminConsolePage() {
             </div>
           )}
 
-          {/* Tab 3: Roles */}
-          {activeAdminTab === 'roles' && (
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {rolesList.map((r) => (
-                <div key={r.id} className={`p-4 rounded-md border ${
-                  isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-blue-400">{r.name}</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">
-                      {r.permissions?.length || 0} Perms
-                    </span>
-                  </div>
-                  <div className="mt-3 space-y-1">
-                    <div className="text-[11px] text-slate-400">Granted Scopes:</div>
-                    <div className="flex flex-wrap gap-1">
-                      {r.permissions?.slice(0, 4).map((p) => (
-                        <span key={p.id} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
-                          {p.name}
-                        </span>
-                      ))}
-                      {(r.permissions?.length || 0) > 4 && (
-                        <span className="text-[10px] text-blue-400 font-mono">+{r.permissions.length - 4} more</span>
-                      )}
+          {activeTab === 'roles' && (
+            <div className={`p-6 rounded-lg border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
+            }`}>
+              <div className="mb-4">
+                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Roles & Permissions Matrix</h3>
+                <p className="text-xs text-slate-400">Fine-grained permission gates assigned to specific system roles</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {rolesList.map((r) => (
+                  <div key={r.id} className={`p-4 rounded-md border ${
+                    isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-blue-400">{r.name}</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                        {r.permissions?.length || 0} Perms
+                      </span>
+                    </div>
+                    <div className="mt-3 space-y-1">
+                      <div className="text-[11px] text-slate-400">Granted Scopes:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {r.permissions?.slice(0, 4).map((p) => (
+                          <span key={p.id} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
+                            {p.name}
+                          </span>
+                        ))}
+                        {(r.permissions?.length || 0) > 4 && (
+                          <span className="text-[10px] text-blue-400 font-mono">+{r.permissions.length - 4} more</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Tab 4: Audit Logs (Using Standard DataTable) */}
-          {activeAdminTab === 'audit' && (
-            <div className="mt-6">
+          {activeTab === 'audit' && (
+            <div className={`p-6 rounded-lg border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
+            }`}>
+              <div className="mb-4">
+                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Security Audit Trail</h3>
+                <p className="text-xs text-slate-400">Cryptographically logged system events and sensitive operations</p>
+              </div>
+
               <DataTable
                 columns={auditColumns}
                 data={auditList}
                 loading={fetchLoading}
-                searchPlaceholder="Search audit actions, users, or modules..."
+                searchPlaceholder="Search audit events by action or user..."
                 exportFileName="rmg-audit-trail"
               />
             </div>
           )}
-        </section>
-      </main>
+
+        </div>
+      )}
+
+      {/* Placeholder / Hub for other modules */}
+      {!['users', 'devices', 'roles', 'audit'].includes(activeTab) && (
+        <div className={`p-12 text-center rounded-lg border ${
+          isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
+        }`}>
+          <Database className="h-12 w-12 text-blue-500 mx-auto mb-3 opacity-80" />
+          <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            {activeTab.toUpperCase().replace('_', ' ')}
+          </h2>
+          <p className="text-xs text-slate-400 max-w-md mx-auto mt-1 mb-4">
+            This module is scheduled for implementation in Sprint 2. Ready to begin Master Data Management.
+          </p>
+          <button
+            type="button"
+            onClick={() => setActiveTab('users')}
+            className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer"
+          >
+            Back to Users Management
+          </button>
+        </div>
+      )}
 
       {/* Modal: Register New User */}
       {showNewUserModal && (
@@ -610,6 +561,7 @@ export default function AdminConsolePage() {
           </div>
         </div>
       )}
-    </div>
+
+    </AdminLayout>
   );
 }
