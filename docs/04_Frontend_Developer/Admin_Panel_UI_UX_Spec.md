@@ -16,11 +16,20 @@ Since we are building a 100% Custom React Admin Panel (avoiding third-party tool
 - **Background:** The main content area must have a soft off-white background (`bg-gray-50` or `bg-slate-50`) to reduce eye strain, with content cards being pure white (`bg-white`).
 - **Left Sidebar (Navigation):** 
   - Fixed on the left (`w-64`). 
-  - Contains grouped and collapsible menu items (e.g., Master Data, Users, Settings).
-  - Must highlight the active route using the Primary Brand Color (`bg-indigo-50 text-indigo-700`).
+  - Permanently styled with Enterprise Midnight Dark Theme (`bg-slate-950 text-slate-100`).
+  - Contains grouped and collapsible menu items.
+  - Must highlight the active route using the Primary Brand Color (`bg-blue-600 text-white font-bold`).
+
+### 2.1.1. Hierarchical 3-Level Sidebar Menu Architecture (Strict Requirement)
+To accommodate deep complex RMG operations (e.g. Master Data -> Garment Specs -> Size Grading), the Left Navigation Sidebar **MUST natively support 3-Level Hierarchical Menus**:
+1. **Level 1 (Module Group / Category Header):** e.g., `MASTER DATA ENGINE`, `IDENTITY & SECURITY`, `SHOP FLOOR EXECUTION`.
+2. **Level 2 (Parent Feature Node / Collapsible Section):** e.g., `Buyers & Brands`, `Styles & Construction`, `Production Routing`. Supports smooth expand/collapse chevron toggles.
+3. **Level 3 (Granular Child Sub-Route / Action View):** e.g., `Master Data` -> `Styles & Construction` -> `Size Range Matrix`, `BOM Specification`, `Operation Bulletin (SMV)`.
+- **Indentation & Styling:** Level 3 items must be clearly indented (`pl-9`), styled with connecting tree guides or subtle dot markers, and sync automatically with the top Navbar Breadcrumbs.
+
 - **Top Navbar:** 
-  - Contains Breadcrumbs on the left (e.g., `Admin / Master Data / Buyers`).
-  - Contains Global Search and User Profile Dropdown on the right.
+  - Contains Breadcrumbs on the left (e.g., `Admin / Master Data / Styles / Size Matrix`).
+  - Contains Global Status Indicators (Plant status, Real-time Redis Telemetry) and User Profile Dropdown on the right.
 
 ### 2.2. Responsiveness
 - Although primarily used on Desktops, the layout must be responsive.
