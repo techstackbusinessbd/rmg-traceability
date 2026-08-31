@@ -100,7 +100,7 @@ export default function LoginPage() {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div>
               <label className={`text-xs font-semibold block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                 Employee ID / Username / Email
@@ -110,7 +110,6 @@ export default function LoginPage() {
                 value={loginIdentifier}
                 onChange={(e) => setLoginIdentifier(e.target.value)}
                 placeholder="e.g. EMP-1001 or admin"
-                required
                 className={`w-full px-3 py-2 rounded text-xs border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   isDark 
                     ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' 
@@ -128,7 +127,6 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                   className={`w-full px-3 py-2 pr-9 rounded text-xs border font-mono transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                     isDark 
                       ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' 

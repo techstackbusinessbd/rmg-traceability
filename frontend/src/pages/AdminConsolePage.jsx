@@ -658,7 +658,7 @@ export default function AdminConsolePage() {
             <h3 className="text-sm font-bold mb-1">Register New User (Admin Only)</h3>
             <p className="text-xs text-slate-400 mb-4">Create account and assign role with custom scopes</p>
 
-            <form onSubmit={handleCreateUser} className="space-y-3.5">
+            <form onSubmit={handleCreateUser} noValidate className="space-y-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold block mb-1">
@@ -669,7 +669,6 @@ export default function AdminConsolePage() {
                     value={newEmpId}
                     onChange={(e) => setNewEmpId(e.target.value)}
                     placeholder="e.g. EMP-10492"
-                    required
                     className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${
                       isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                     }`}
@@ -685,7 +684,6 @@ export default function AdminConsolePage() {
                     value={newUserName}
                     onChange={(e) => setNewUserName(e.target.value)}
                     placeholder="e.g. John Doe"
-                    required
                     className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                       isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                     }`}
@@ -716,8 +714,6 @@ export default function AdminConsolePage() {
                     value={newUserPassword}
                     onChange={(e) => setNewUserPassword(e.target.value)}
                     placeholder="Min 8 characters"
-                    required
-                    minLength={8}
                     className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                       isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                     }`}
@@ -731,8 +727,6 @@ export default function AdminConsolePage() {
                     value={newUserConfirmPassword}
                     onChange={(e) => setNewUserConfirmPassword(e.target.value)}
                     placeholder="Repeat password"
-                    required
-                    minLength={8}
                     className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                       isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                     }`}
@@ -816,7 +810,7 @@ export default function AdminConsolePage() {
             <h3 className="text-sm font-bold mb-1">Register Floor Tablet</h3>
             <p className="text-xs text-slate-400 mb-4">Lock device to a production line with 6-digit PIN</p>
 
-            <form onSubmit={handleCreateDevice} className="space-y-3">
+            <form onSubmit={handleCreateDevice} noValidate className="space-y-3">
               <div>
                 <label className="text-xs font-semibold block mb-1">Device Name</label>
                 <input
@@ -824,7 +818,6 @@ export default function AdminConsolePage() {
                   value={newDevName}
                   onChange={(e) => setNewDevName(e.target.value)}
                   placeholder="e.g. Sewing Line 02 Tablet"
-                  required
                   className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                     isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
@@ -838,7 +831,6 @@ export default function AdminConsolePage() {
                   value={newDevCode}
                   onChange={(e) => setNewDevCode(e.target.value)}
                   placeholder="TAB-SEW-L02"
-                  required
                   className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                     isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
@@ -849,10 +841,8 @@ export default function AdminConsolePage() {
                 <label className="text-xs font-semibold block mb-1">6-Digit Security PIN</label>
                 <input
                   type="text"
-                  maxLength={6}
                   value={newDevPin}
                   onChange={(e) => setNewDevPin(e.target.value)}
-                  required
                   className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono tracking-widest ${
                     isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
@@ -866,7 +856,6 @@ export default function AdminConsolePage() {
                   value={newDevLine}
                   onChange={(e) => setNewDevLine(e.target.value)}
                   placeholder="Sewing Line 02"
-                  required
                   className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                     isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
