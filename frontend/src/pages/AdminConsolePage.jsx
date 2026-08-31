@@ -10,7 +10,17 @@ import {
   CheckCircle2,
   XCircle,
   Database,
-  Lock
+  Lock,
+  Cpu,
+  Layers,
+  Sparkles,
+  Server,
+  Activity,
+  ArrowUpRight,
+  TrendingUp,
+  AlertTriangle,
+  RefreshCw,
+  HardDrive
 } from 'lucide-react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -122,14 +132,27 @@ export default function AdminConsolePage() {
 
   // Table Columns
   const userColumns = [
-    { key: 'name', label: 'Full Name', sortable: true, className: 'font-bold' },
+    { 
+      key: 'name', 
+      label: 'Full Name', 
+      sortable: true, 
+      className: 'font-semibold',
+      render: (row) => (
+        <div className="flex items-center space-x-2">
+          <div className="h-6 w-6 rounded bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-[10px]">
+            {row.name?.charAt(0) || 'U'}
+          </div>
+          <span className="font-bold">{row.name}</span>
+        </div>
+      )
+    },
     { key: 'email', label: 'Email Address', sortable: true, className: 'font-mono text-slate-400' },
     { 
       key: 'roles', 
       label: 'Assigned Role', 
       sortable: false,
       render: (row) => (
-        <span className="px-2 py-0.5 rounded-full font-semibold text-[11px] bg-blue-500/10 text-blue-400 border border-blue-500/20">
+        <span className="px-2 py-0.5 rounded font-mono font-semibold text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20">
           {row.roles?.[0]?.name || 'Standard User'}
         </span>
       )
@@ -139,39 +162,43 @@ export default function AdminConsolePage() {
       label: 'Status', 
       sortable: true,
       render: (row) => (
-        <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-          row.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+        <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+          row.is_active ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'
         }`}>
           {row.is_active ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-          <span>{row.is_active ? 'ACTIVE' : 'DEACTIVATED'}</span>
+          <span>{row.is_active ? 'ACTIVE' : 'SUSPENDED'}</span>
         </span>
       )
     },
     { 
       key: 'created_at', 
-      label: 'Created At', 
+      label: 'Registered On', 
       sortable: true, 
       align: 'right',
-      render: (row) => new Date(row.created_at).toLocaleDateString() 
+      render: (row) => (
+        <span className="font-mono text-slate-400 text-[11px]">
+          {new Date(row.created_at).toLocaleDateString()}
+        </span>
+      )
     },
   ];
 
   const auditColumns = [
     { 
       key: 'action', 
-      label: 'Action Code', 
+      label: 'Event Code', 
       sortable: true,
       render: (row) => (
-        <span className="font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-[11px]">
+        <span className="font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-[10px]">
           {row.action}
         </span>
       )
     },
-    { key: 'user_name', label: 'Authorized User', sortable: true, render: (row) => row.user_name || 'System System' },
-    { key: 'module', label: 'Domain Module', sortable: true, className: 'text-slate-400 font-mono text-[11px]' },
+    { key: 'user_name', label: 'Operator / Principal', sortable: true, render: (row) => row.user_name || 'System Daemon' },
+    { key: 'module', label: 'Module Scope', sortable: true, className: 'text-slate-400 font-mono text-[11px]' },
     { 
       key: 'created_at', 
-      label: 'Timestamp', 
+      label: 'Timestamp (UTC)', 
       sortable: true, 
       align: 'right',
       render: (row) => (
@@ -184,11 +211,11 @@ export default function AdminConsolePage() {
 
   const getBreadcrumbs = () => {
     switch (activeTab) {
-      case 'users': return ['Security & Access', 'Users'];
-      case 'devices': return ['Security & Access', 'Floor Tablets'];
-      case 'roles': return ['Security & Access', 'Roles & Scopes'];
-      case 'audit': return ['Security & Access', 'Audit Logs'];
-      default: return ['Master Data Setup', 'Overview'];
+      case 'users': return ['Identity & Security', 'Users & Operators'];
+      case 'devices': return ['Identity & Security', 'Floor Tablets'];
+      case 'roles': return ['Identity & Security', 'Role Permissions & Gates'];
+      case 'audit': return ['Identity & Security', 'Audit Trail'];
+      default: return ['Master Data Setup', 'Catalog Overview'];
     }
   };
 
@@ -202,97 +229,141 @@ export default function AdminConsolePage() {
 
       {/* Module 01: Auth & Administration View */}
       {['users', 'devices', 'roles', 'audit'].includes(activeTab) && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           
-          {/* Header Card */}
-          <div className={`p-6 rounded-lg border transition-colors ${
-            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
-          }`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-blue-600 rounded-md text-white shadow-xs">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <div>
-                  <h1 className={`text-lg font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    Module 01: System Administration & Access Control
-                  </h1>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Manage factory operators, tablet hardware PINs, RBAC roles, and immutable audit trails
-                  </p>
-                </div>
+          {/* Top KPI Cards (Enterprise Stat Bar) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            <div className={`p-4 rounded border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
+            }`}>
+              <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                <span>Active Operators</span>
+                <Users className="h-4 w-4 text-blue-500" />
               </div>
+              <div className="text-2xl font-black">{usersList.length}</div>
+              <div className="text-[10px] text-emerald-500 font-medium flex items-center space-x-1 mt-1">
+                <CheckCircle2 className="h-3 w-3" />
+                <span>100% RBAC Secured</span>
+              </div>
+            </div>
 
-              {/* Action Buttons depending on tab */}
-              {activeTab === 'users' && (
-                <button
-                  type="button"
-                  onClick={() => setShowNewUserModal(true)}
-                  className="px-3.5 py-2 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Register New User</span>
-                </button>
-              )}
+            <div className={`p-4 rounded border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
+            }`}>
+              <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                <span>Floor Tablets</span>
+                <Smartphone className="h-4 w-4 text-blue-500" />
+              </div>
+              <div className="text-2xl font-black">{devicesList.length}</div>
+              <div className="text-[10px] text-blue-400 font-medium flex items-center space-x-1 mt-1">
+                <ShieldCheck className="h-3 w-3" />
+                <span>Line-Locked PIN Enabled</span>
+              </div>
+            </div>
 
-              {activeTab === 'devices' && (
-                <button
-                  type="button"
-                  onClick={() => setShowNewDeviceModal(true)}
-                  className="px-3.5 py-2 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Register Floor Tablet</span>
-                </button>
-              )}
+            <div className={`p-4 rounded border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
+            }`}>
+              <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                <span>Defined Roles</span>
+                <KeyRound className="h-4 w-4 text-blue-500" />
+              </div>
+              <div className="text-2xl font-black">{rolesList.length}</div>
+              <div className="text-[10px] text-slate-400 font-mono mt-1">
+                Spatie Role Gates
+              </div>
+            </div>
+
+            <div className={`p-4 rounded border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
+            }`}>
+              <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                <span>Audit Trail Events</span>
+                <History className="h-4 w-4 text-blue-500" />
+              </div>
+              <div className="text-2xl font-black">{auditList.length}</div>
+              <div className="text-[10px] text-emerald-500 font-medium flex items-center space-x-1 mt-1">
+                <Activity className="h-3 w-3" />
+                <span>Immutable Logs</span>
+              </div>
             </div>
           </div>
 
-          {/* Sub-Views based on activeTab */}
+          {/* Module 01 Sub-Views based on activeTab */}
           {activeTab === 'users' && (
-            <div className={`p-6 rounded-lg border transition-colors ${
-              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
+            <div className={`p-5 rounded border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
-              <div className="mb-4">
-                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Factory Operators & Staff Accounts</h3>
-                <p className="text-xs text-slate-400">Strictly protected user registry with Spatie RBAC integration</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-700/20">
+                <div>
+                  <h3 className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Factory Users & Operators Directory
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Authorized system users mapped to Spatie roles and permissions
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowNewUserModal(true)}
+                  className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors shrink-0"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Register New User</span>
+                </button>
               </div>
+
               <DataTable
                 columns={userColumns}
                 data={usersList}
                 loading={fetchLoading}
                 searchPlaceholder="Search users by name or email..."
-                exportFileName="rmg-users"
+                exportFileName="rmg-users-directory"
               />
             </div>
           )}
 
           {activeTab === 'devices' && (
-            <div className={`p-6 rounded-lg border transition-colors ${
-              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
+            <div className={`p-5 rounded border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
-              <div className="mb-4 flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-700/20">
                 <div>
-                  <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Floor Tablets & Hardware Devices</h3>
-                  <p className="text-xs text-slate-400">Dedicated tablets locked to specific production lines with encrypted PIN</p>
+                  <h3 className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Floor Tablets & Hardware Scanners
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Dedicated hardware terminals locked to factory sewing lines and inspection stations
+                  </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowNewDeviceModal(true)}
+                  className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors shrink-0"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Register Floor Tablet</span>
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {devicesList.map((d) => (
-                  <div key={d.id} className={`p-4 rounded-md border ${
+                  <div key={d.id} className={`p-4 rounded border ${
                     isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
                   }`}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-mono font-bold text-blue-400">{d.device_code}</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
-                        {d.is_active ? 'ONLINE/ACTIVE' : 'REVOKED'}
+                      <span className="text-xs font-mono font-bold text-blue-500">{d.device_code}</span>
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                        {d.is_active ? 'ONLINE' : 'OFFLINE'}
                       </span>
                     </div>
                     <div className="font-bold text-sm">{d.device_name}</div>
-                    <div className="text-xs text-slate-400 mt-1">Locked Line: <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{d.line_name || 'Floor Line 01'}</strong></div>
-                    <div className="mt-3 pt-2 border-t border-slate-800/60 text-[11px] text-slate-500 font-mono">
-                      PIN: ****** (Encrypted) &bull; Type: {d.device_type}
+                    <div className="text-xs text-slate-400 mt-1">
+                      Assigned Station: <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{d.line_name || 'Line 01'}</strong>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-slate-800/50 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                      <span>Auth: 6-Digit PIN</span>
+                      <span>Type: {d.device_type}</span>
                     </div>
                   </div>
                 ))}
@@ -301,27 +372,31 @@ export default function AdminConsolePage() {
           )}
 
           {activeTab === 'roles' && (
-            <div className={`p-6 rounded-lg border transition-colors ${
-              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
+            <div className={`p-5 rounded border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
-              <div className="mb-4">
-                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Roles & Permissions Matrix</h3>
-                <p className="text-xs text-slate-400">Fine-grained permission gates assigned to specific system roles</p>
+              <div className="mb-4 pb-3 border-b border-slate-700/20">
+                <h3 className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Role-Based Access Control (RBAC Matrix)
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Granular permission scopes assigned to user roles for API and Floor operations
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {rolesList.map((r) => (
-                  <div key={r.id} className={`p-4 rounded-md border ${
+                  <div key={r.id} className={`p-4 rounded border ${
                     isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
                   }`}>
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-sm text-blue-400">{r.name}</span>
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">
-                        {r.permissions?.length || 0} Perms
+                        {r.permissions?.length || 0} Scopes
                       </span>
                     </div>
                     <div className="mt-3 space-y-1">
-                      <div className="text-[11px] text-slate-400">Granted Scopes:</div>
+                      <div className="text-[11px] text-slate-400">Authorized Actions:</div>
                       <div className="flex flex-wrap gap-1">
                         {r.permissions?.slice(0, 4).map((p) => (
                           <span key={p.id} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
@@ -340,12 +415,16 @@ export default function AdminConsolePage() {
           )}
 
           {activeTab === 'audit' && (
-            <div className={`p-6 rounded-lg border transition-colors ${
-              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200/90 shadow-2xs'
+            <div className={`p-5 rounded border transition-colors ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
-              <div className="mb-4">
-                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Security Audit Trail</h3>
-                <p className="text-xs text-slate-400">Cryptographically logged system events and sensitive operations</p>
+              <div className="mb-4 pb-3 border-b border-slate-700/20">
+                <h3 className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Tamper-Proof Audit Trail
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Immutable log of all user logins, role changes, and administrative actions
+                </p>
               </div>
 
               <DataTable
@@ -363,7 +442,7 @@ export default function AdminConsolePage() {
 
       {/* Placeholder / Hub for other modules */}
       {!['users', 'devices', 'roles', 'audit'].includes(activeTab) && (
-        <div className={`p-12 text-center rounded-lg border ${
+        <div className={`p-12 text-center rounded border ${
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
         }`}>
           <Database className="h-12 w-12 text-blue-500 mx-auto mb-3 opacity-80" />
@@ -371,12 +450,12 @@ export default function AdminConsolePage() {
             {activeTab.toUpperCase().replace('_', ' ')}
           </h2>
           <p className="text-xs text-slate-400 max-w-md mx-auto mt-1 mb-4">
-            This module is scheduled for implementation in Sprint 2. Ready to begin Master Data Management.
+            This module is scheduled for implementation in Sprint 2. Ready to proceed with Master Data Management.
           </p>
           <button
             type="button"
             onClick={() => setActiveTab('users')}
-            className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer"
+            className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer transition-colors"
           >
             Back to Users Management
           </button>
@@ -386,10 +465,10 @@ export default function AdminConsolePage() {
       {/* Modal: Register New User */}
       {showNewUserModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`max-w-md w-full rounded-md p-6 border shadow-lg relative ${
+          <div className={`max-w-md w-full rounded p-6 border shadow-lg relative ${
             isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
           }`}>
-            <h3 className="text-base font-bold mb-1">Register New User (Admin Only)</h3>
+            <h3 className="text-sm font-bold mb-1">Register New User (Admin Only)</h3>
             <p className="text-xs text-slate-400 mb-4">Create account and assign role with custom scopes</p>
 
             <form onSubmit={handleCreateUser} className="space-y-3">
@@ -477,10 +556,10 @@ export default function AdminConsolePage() {
       {/* Modal: Register New Tablet */}
       {showNewDeviceModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`max-w-md w-full rounded-md p-6 border shadow-lg relative ${
+          <div className={`max-w-md w-full rounded p-6 border shadow-lg relative ${
             isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
           }`}>
-            <h3 className="text-base font-bold mb-1">Register Floor Tablet</h3>
+            <h3 className="text-sm font-bold mb-1">Register Floor Tablet</h3>
             <p className="text-xs text-slate-400 mb-4">Lock device to a production line with 6-digit PIN</p>
 
             <form onSubmit={handleCreateDevice} className="space-y-3">
