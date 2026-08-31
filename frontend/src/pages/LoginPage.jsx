@@ -34,25 +34,31 @@ export default function LoginPage() {
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
-      {/* Background Architectural Grid Pattern */}
+      {/* Crisp Industrial Grid Pattern */}
       <div 
-        className={`absolute inset-0 pointer-events-none ${
-          isDark 
-            ? 'opacity-[0.03]' 
-            : 'opacity-[0.05]'
-        }`}
+        className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: `radial-gradient(${isDark ? '#38bdf8' : '#0284c7'} 1px, transparent 1px)`,
-          backgroundSize: '24px 24px'
+          backgroundImage: isDark 
+            ? `linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+               linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)`
+            : `linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+               linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px)`,
+          backgroundSize: '32px 32px'
         }}
       ></div>
 
-      {/* Subtle Ambient Radial Glow */}
-      <div className={`absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
-        isDark ? 'bg-blue-600/10' : 'bg-blue-400/10'
-      }`}></div>
-      <div className={`absolute -bottom-40 -right-40 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
-        isDark ? 'bg-indigo-600/10' : 'bg-indigo-400/10'
+      {/* Decorative Blueprint Corner Crosshairs / Accents */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-40"
+        style={{
+          backgroundImage: `radial-gradient(${isDark ? '#60a5fa' : '#2563eb'} 1.5px, transparent 1.5px)`,
+          backgroundSize: '96px 96px'
+        }}
+      ></div>
+
+      {/* Soft Focused Spotlight under card */}
+      <div className={`absolute w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none opacity-50 ${
+        isDark ? 'bg-blue-600/15' : 'bg-blue-500/10'
       }`}></div>
 
       {/* Content Container */}
