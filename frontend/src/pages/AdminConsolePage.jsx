@@ -33,7 +33,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import RegisterUserModal from '../modules/AuthAdmin/components/RegisterUserModal';
 import RegisterDeviceModal from '../modules/AuthAdmin/components/RegisterDeviceModal';
 import EditUserModal from '../modules/AuthAdmin/components/EditUserModal';
-import EnterprisePermissionMatrix from '../modules/AuthAdmin/components/EnterprisePermissionMatrix';
+import RolesDataTable from '../modules/AuthAdmin/components/RolesDataTable';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
@@ -659,9 +659,10 @@ export default function AdminConsolePage() {
           )}
 
           {activeTab === 'roles' && (
-            <EnterprisePermissionMatrix
+            <RolesDataTable
               roles={rolesList}
               allPermissions={allPermissionsList}
+              usersList={usersList}
               isDark={isDark}
               onSaveRolePermissions={handleSaveRolePermissions}
               saving={savingRoleMatrix}
