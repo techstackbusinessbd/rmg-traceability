@@ -34,31 +34,12 @@ export default function LoginPage() {
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
-      {/* Crisp Industrial Grid Pattern */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: isDark 
-            ? `linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-               linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)`
-            : `linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
-               linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px)`,
-          backgroundSize: '32px 32px'
-        }}
-      ></div>
-
-      {/* Decorative Blueprint Corner Crosshairs / Accents */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-40"
-        style={{
-          backgroundImage: `radial-gradient(${isDark ? '#60a5fa' : '#2563eb'} 1.5px, transparent 1.5px)`,
-          backgroundSize: '96px 96px'
-        }}
-      ></div>
-
-      {/* Soft Focused Spotlight under card */}
-      <div className={`absolute w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none opacity-50 ${
-        isDark ? 'bg-blue-600/15' : 'bg-blue-500/10'
+      {/* Ultra Subtle Clean Ambient Lighting */}
+      <div className={`absolute top-1/4 -left-32 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
+        isDark ? 'bg-blue-600/5' : 'bg-blue-400/5'
+      }`}></div>
+      <div className={`absolute bottom-1/4 -right-32 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
+        isDark ? 'bg-indigo-600/5' : 'bg-indigo-400/5'
       }`}></div>
 
       {/* Content Container */}
