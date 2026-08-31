@@ -7,20 +7,25 @@ import {
   KeyRound, 
   History, 
   Plus, 
-  CheckCircle2,
-  XCircle,
-  Database,
-  Lock,
-  Cpu,
-  Layers,
-  Sparkles,
-  Server,
-  Activity,
-  ArrowUpRight,
-  TrendingUp,
-  AlertTriangle,
-  RefreshCw,
-  HardDrive
+  CheckCircle2, 
+  XCircle, 
+  Database, 
+  Lock, 
+  Cpu, 
+  Layers, 
+  Sparkles, 
+  Server, 
+  Activity, 
+  ArrowUpRight, 
+  TrendingUp, 
+  AlertTriangle, 
+  RefreshCw, 
+  HardDrive,
+  Edit2,
+  Trash2,
+  UserCheck,
+  UserX,
+  Power
 } from 'lucide-react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -196,6 +201,68 @@ export default function AdminConsolePage() {
     }
   };
 
+  const handleToggleUserStatus = async (user) => {
+    const newStatus = !user.is_active;
+    try {
+      await axios.put(`${API_BASE}/admin/users/${user.id}`, {
+        is_active: newStatus
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      toast.success(`User ${user.name} ${newStatus ? 'activated' : 'suspended'}!`);
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update user status');
+    }
+  };
+
+  const handleDeleteUser = async (user) => {
+    if (!window.confirm(`Are you sure you want to delete user ${user.name}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_BASE}/admin/users/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      toast.success(`User ${user.name} removed successfully!`);
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete user');
+    }
+  };
+
+  const handleToggleDeviceStatus = async (device) => {
+    const newStatus = !device.is_active;
+    try {
+      await axios.put(`${API_BASE}/admin/devices/${device.id}`, {
+        is_active: newStatus
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      toast.success(`Device ${device.device_name} is now ${newStatus ? 'ONLINE' : 'OFFLINE'}!`);
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update device');
+    }
+  };
+
+  const handleDeleteDevice = async (device) => {
+    if (!window.confirm(`Are you sure you want to delete floor device ${device.device_name}?`)) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_BASE}/admin/devices/${device.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      toast.success(`Device ${device.device_name} deleted!`);
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete device');
+    }
+  };
+
   // Table Columns
   const userColumns = [
     { 
@@ -253,13 +320,42 @@ export default function AdminConsolePage() {
       key: 'created_at', 
       label: 'Registered On', 
       sortable: true, 
-      align: 'right',
       render: (row) => (
         <span className="font-mono text-slate-400 text-[11px]">
           {new Date(row.created_at).toLocaleDateString()}
         </span>
       )
     },
+    {
+      key: 'actions',
+      label: 'Actions',
+      sortable: false,
+      align: 'right',
+      render: (row) => (
+        <div className="flex items-center justify-end space-x-1.5">
+          <button
+            type="button"
+            onClick={() => handleToggleUserStatus(row)}
+            title={row.is_active ? 'Suspend User' : 'Activate User'}
+            className={`p-1.5 rounded transition-colors cursor-pointer ${
+              row.is_active 
+                ? 'hover:bg-amber-500/10 text-slate-400 hover:text-amber-500' 
+                : 'hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-500'
+            }`}
+          >
+            {row.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleDeleteUser(row)}
+            title="Delete User"
+            className="p-1.5 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      )
+    }
   ];
 
   const auditColumns = [
@@ -440,9 +536,34 @@ export default function AdminConsolePage() {
                     <div className="text-xs text-slate-400 mt-1">
                       Assigned Station: <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{d.line_name || 'Line 01'}</strong>
                     </div>
-                    <div className="mt-3 pt-2 border-t border-slate-800/50 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                      <span>Auth: 6-Digit PIN</span>
-                      <span>Type: {d.device_type}</span>
+                    <div className="mt-3 pt-2.5 border-t border-slate-700/30 flex items-center justify-between">
+                      <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-mono">
+                        <span>Auth: PIN</span>
+                        <span>•</span>
+                        <span>{d.device_type}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleDeviceStatus(d)}
+                          title={d.is_active ? 'Set Tablet Offline' : 'Set Tablet Online'}
+                          className={`p-1 rounded transition-colors cursor-pointer ${
+                            d.is_active 
+                              ? 'hover:bg-amber-500/10 text-slate-400 hover:text-amber-500' 
+                              : 'hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-500'
+                          }`}
+                        >
+                          <Power className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDevice(d)}
+                          title="Delete Floor Tablet"
+                          className="p-1 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

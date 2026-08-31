@@ -113,6 +113,39 @@ class UserController extends Controller
     }
 
     /**
+     * Delete User (Admin Only)
+     */
+    public function destroy(Request $request, string $id): JsonResponse
+    {
+        $user = $this->userRepository->findById($id);
+
+        if (! $user) {
+            return response()->json(['status' => 'error', 'message' => 'User not found.'], 404);
+        }
+
+        // Prevent self-deletion
+        if ($user->id === $request->user()->id) {
+            return response()->json(['status' => 'error', 'message' => 'You cannot delete your own account.'], 400);
+        }
+
+        $user->tokens()->delete();
+        $user->delete();
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'user_name' => $request->user()->name,
+            'action' => 'DELETE_USER',
+            'module' => 'AuthAdmin',
+            'payload' => ['deleted_user_id' => $id, 'deleted_user_name' => $user->name],
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User deleted successfully.',
+        ]);
+    }
+
+    /**
      * List all Roles & Permissions (Admin Only)
      */
     public function roles(): JsonResponse
@@ -166,6 +199,78 @@ class UserController extends Controller
             'message' => 'Floor device registered successfully.',
             'data' => $device,
         ], 201);
+    }
+
+    /**
+     * Toggle Device Active Status (Admin Only)
+     */
+    public function updateDevice(Request $request, string $id): JsonResponse
+    {
+        $device = Device::find($id);
+
+        if (! $device) {
+            return response()->json(['status' => 'error', 'message' => 'Device not found.'], 404);
+        }
+
+        $validated = $request->validate([
+            'is_active' => 'sometimes|boolean',
+            'line_name' => 'sometimes|string',
+        ]);
+
+        if (isset($validated['is_active'])) {
+            $device->is_active = $validated['is_active'];
+            if (! $validated['is_active']) {
+                $device->tokens()->delete();
+            }
+        }
+
+        if (isset($validated['line_name'])) {
+            $device->line_name = $validated['line_name'];
+        }
+
+        $device->save();
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'user_name' => $request->user()->name,
+            'action' => 'UPDATE_DEVICE',
+            'module' => 'AuthAdmin',
+            'payload' => ['device_id' => $device->id, 'changes' => $validated],
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Device updated successfully.',
+            'data' => $device,
+        ]);
+    }
+
+    /**
+     * Delete Floor Device (Admin Only)
+     */
+    public function destroyDevice(Request $request, string $id): JsonResponse
+    {
+        $device = Device::find($id);
+
+        if (! $device) {
+            return response()->json(['status' => 'error', 'message' => 'Device not found.'], 404);
+        }
+
+        $device->tokens()->delete();
+        $device->delete();
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'user_name' => $request->user()->name,
+            'action' => 'DELETE_DEVICE',
+            'module' => 'AuthAdmin',
+            'payload' => ['device_id' => $id, 'device_code' => $device->device_code],
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Device removed successfully.',
+        ]);
     }
 
     /**

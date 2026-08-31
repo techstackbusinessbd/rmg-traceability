@@ -38,6 +38,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/users', [UserController::class, 'index']);
             Route::post('/users', [UserController::class, 'store']); // Only Admin can register users
             Route::put('/users/{id}', [UserController::class, 'update']);
+            Route::delete('/users/{id}', [UserController::class, 'destroy']);
             
             // Roles & Permissions List
             Route::get('/roles', [UserController::class, 'roles']);
@@ -45,6 +46,8 @@ Route::prefix('v1')->group(function () {
             // Floor Devices (Tablets)
             Route::get('/devices', [UserController::class, 'devices']);
             Route::post('/devices', [UserController::class, 'storeDevice']); // Only Admin can register floor tablets
+            Route::put('/devices/{id}', [UserController::class, 'updateDevice']);
+            Route::delete('/devices/{id}', [UserController::class, 'destroyDevice']);
             
             // Immutable Audit Trail
             Route::get('/audit-logs', [UserController::class, 'auditLogs']);
