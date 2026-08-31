@@ -647,13 +647,23 @@ export default function AdminConsolePage() {
                       isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                     }`}
                   >
-                    <option value="Admin">Admin (Factory Admin)</option>
-                    <option value="Cutting Master">Cutting Master</option>
-                    <option value="Line Supervisor">Line Supervisor</option>
-                    <option value="QC Inspector">QC Inspector</option>
-                    <option value="Packing Operator">Packing Operator</option>
-                    <option value="Store Keeper">Store Keeper</option>
-                    <option value="Super Admin">Super Admin (Platform Owner)</option>
+                    {rolesList.length > 0 ? (
+                      rolesList.map((r) => (
+                        <option key={r.id} value={r.name}>
+                          {r.name} {r.name === 'Super Admin' ? '(Platform Owner)' : r.name === 'Admin' ? '(Factory Admin)' : ''}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="Admin">Admin (Factory Admin)</option>
+                        <option value="Cutting Master">Cutting Master</option>
+                        <option value="Line Supervisor">Line Supervisor</option>
+                        <option value="QC Inspector">QC Inspector</option>
+                        <option value="Packing Operator">Packing Operator</option>
+                        <option value="Store Keeper">Store Keeper</option>
+                        <option value="Super Admin">Super Admin (Platform Owner)</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
