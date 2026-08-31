@@ -15,49 +15,15 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
+import { useThemeStore } from '../store/themeStore';
 
 const API_BASE = 'http://localhost:8000/api/v1';
 
 export default function AdminConsolePage() {
   const navigate = useNavigate();
   const { user, token, isAuthenticated, logout } = useAuthStore();
+  const { isDark, toggleTheme } = useThemeStore();
   const [activeAdminTab, setActiveAdminTab] = useState('users');
-  const [showNewUserModal, setShowNewUserModal] = useState(false);
-  const [showNewDeviceModal, setShowNewDeviceModal] = useState(false);
-
-  // Admin lists
-  const [usersList, setUsersList] = useState([]);
-  const [devicesList, setDevicesList] = useState([]);
-  const [rolesList, setRolesList] = useState([]);
-  const [auditList, setAuditList] = useState([]);
-  const [fetchLoading, setFetchLoading] = useState(false);
-
-  // Form states
-  const [newUserName, setNewUserName] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserPassword, setNewUserPassword] = useState('Password123!');
-  const [newUserRole, setNewUserRole] = useState('Line Supervisor');
-  const [createMsg, setCreateMsg] = useState('');
-
-  const [newDevName, setNewDevName] = useState('');
-  const [newDevCode, setNewDevCode] = useState('');
-  const [newDevPin, setNewDevPin] = useState('123456');
-  const [newDevLine, setNewDevLine] = useState('Line 01');
-
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved !== null) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDark]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -185,7 +151,8 @@ export default function AdminConsolePage() {
             </button>
 
             <button
-              onClick={() => setIsDark(!isDark)}
+              type="button"
+              onClick={toggleTheme}
               className={`p-2 rounded-md border transition-all flex items-center justify-center cursor-pointer ${
                 isDark
                   ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-yellow-400 shadow-sm'

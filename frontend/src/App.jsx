@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import AdminConsolePage from './pages/AdminConsolePage';
 import { useAuthStore } from './store/authStore';
+import { useThemeStore } from './store/themeStore';
 
 function ProtectedAdminRoute({ children }) {
   const { isAuthenticated } = useAuthStore();
@@ -14,6 +15,11 @@ function ProtectedAdminRoute({ children }) {
 }
 
 export default function App() {
+  const { initTheme } = useThemeStore();
+
+  React.useEffect(() => {
+    initTheme();
+  }, [initTheme]);
   return (
     <BrowserRouter>
       <Routes>

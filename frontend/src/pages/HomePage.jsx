@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { useThemeStore } from '../store/themeStore';
 
 const valueProps = [
   {
@@ -320,22 +321,8 @@ const modulesData = [
 
 export default function HomePage() {
   const { user, isAuthenticated, logout } = useAuthStore();
+  const { isDark, toggleTheme } = useThemeStore();
   const [selectedMod, setSelectedMod] = useState(modulesData[0]);
-
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved !== null) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDark]);
 
   return (
     <div className={`min-h-screen transition-colors duration-300 flex flex-col font-sans selection:bg-blue-600 selection:text-white ${
@@ -396,7 +383,8 @@ export default function HomePage() {
 
             {/* Dark/Light Mode Button */}
             <button
-              onClick={() => setIsDark(!isDark)}
+              type="button"
+              onClick={toggleTheme}
               className={`p-2 rounded-md border transition-all flex items-center justify-center cursor-pointer ${
                 isDark
                   ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-yellow-400 shadow-sm'
