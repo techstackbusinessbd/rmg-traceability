@@ -12,7 +12,27 @@ use Illuminate\Support\Facades\DB;
 class SystemSettingService
 {
     const CACHE_KEY = 'global_system_settings';
-    const CACHE_PUBLIC_KEY = 'public_system_settings';
+    /**
+     * Get specific setting by key with Redis Cache and fallback default
+     */
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        $all = Cache::rememberForever(self::CACHE_KEY, function () {
+            return SystemSetting::orderBy('group')->orderBy('created_at')->get();
+        });
+
+        $setting = $all->firstWhere('key', $key);
+        if (! $setting) {
+            return $default;
+        }
+
+        return match ($setting->type) {
+            'number' => is_numeric($setting->value) ? (float) $setting->value : $default,
+            'boolean' => filter_var($setting->value, FILTER_VALIDATE_BOOLEAN),
+            'json' => json_decode($setting->value, true) ?: $default,
+            default => $setting->value ?? $default,
+        };
+    }
 
     /**
      * Get all settings (Cached Forever via Redis)
