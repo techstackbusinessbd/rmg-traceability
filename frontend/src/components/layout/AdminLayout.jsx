@@ -21,50 +21,107 @@ import {
   X,
   ChevronRight,
   ChevronDown,
-  Search,
-  Bell,
   SlidersHorizontal,
-  Shield,
-  HelpCircle,
   Building2,
-  Cpu,
   Radio,
   FileSpreadsheet,
-  Settings
+  FolderTree,
+  CornerDownRight,
+  ShieldCheck,
+  Tag,
+  Boxes,
+  ScrollText,
+  FileCode2,
+  Network
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 
+// 3-Level Hierarchical Navigation Structure
 const navigationGroups = [
   {
     category: 'IDENTITY & SECURITY',
     items: [
-      { id: 'users', label: 'Users & Operators', icon: Users, badge: 'Protected', sub: 'Accounts & Access' },
-      { id: 'devices', label: 'Floor Tablets & Terminals', icon: Smartphone, badge: 'Line-Locked', sub: 'Hardware Binding' },
-      { id: 'roles', label: 'Role Permissions & Gates', icon: KeyRound, sub: 'Spatie RBAC' },
-      { id: 'audit', label: 'System Audit Logs', icon: History, sub: 'Tamper-Proof Trail' },
+      { 
+        id: 'access_control', 
+        label: 'Access & RBAC Core', 
+        icon: ShieldCheck, 
+        badge: 'Protected',
+        children: [
+          { id: 'users', label: 'Users & Operators', icon: Users, sub: 'Account registry' },
+          { id: 'devices', label: 'Floor Tablets', icon: Smartphone, badge: 'Line-Locked', sub: 'Tablet terminals' },
+          { id: 'roles', label: 'Roles & Permissions', icon: KeyRound, sub: 'Spatie gates' },
+          { id: 'audit', label: 'System Audit Logs', icon: History, sub: 'Immutable audit trail' },
+        ]
+      }
     ]
   },
   {
     category: 'MASTER DATA ENGINE',
     items: [
-      { id: 'master_buyers', label: 'Buyers & Brands', icon: Building2, sub: 'Customer Profiles' },
-      { id: 'master_styles', label: 'Styles & SMV Library', icon: Layers, sub: 'Garment Specs' },
-      { id: 'master_lines', label: 'Production Lines', icon: SlidersHorizontal, sub: 'Capacity & Routing' },
-      { id: 'master_attributes', label: 'Colors & Size Matrix', icon: Database, sub: 'Variant Matrix' },
+      {
+        id: 'buyers_brands',
+        label: 'Buyer & Brand Registry',
+        icon: Building2,
+        children: [
+          { id: 'master_buyers', label: 'Buyers Profile', icon: Building2, sub: 'Clients directory' },
+          { id: 'master_brands', label: 'Brands & Divisions', icon: Tag, sub: 'Buyer subsidiaries' },
+        ]
+      },
+      {
+        id: 'styles_specs',
+        label: 'Styles & Garment Specs',
+        icon: Layers,
+        children: [
+          { id: 'master_styles', label: 'Style Catalog & SMV', icon: Layers, sub: 'Base SMV & Bulletin' },
+          { id: 'master_attributes', label: 'Colors & Size Matrix', icon: Database, sub: 'Dimension grids' },
+          { id: 'master_bom', label: 'BOM Item Specs', icon: Boxes, sub: 'Fabric & Trims lookup' }
+        ]
+      },
+      {
+        id: 'factory_setup',
+        label: 'Plant Floor Architecture',
+        icon: SlidersHorizontal,
+        children: [
+          { id: 'master_lines', label: 'Production Lines', icon: SlidersHorizontal, sub: 'Line capacity' },
+          { id: 'master_stations', label: 'Floor Stations & Workplaces', icon: Network, sub: 'Station routing' },
+        ]
+      }
     ]
   },
   {
     category: 'SHOP FLOOR EXECUTION',
     items: [
-      { id: 'orders', label: 'Orders & PO Master', icon: FileSpreadsheet, sub: 'Breakdown & BOM' },
-      { id: 'cutting', label: 'Cutting & Bundle QRs', icon: Scissors, sub: 'Piece-Rate Generation' },
-      { id: 'sewing', label: 'Sewing Floor Telemetry', icon: Activity, badge: 'Live', sub: 'Line In/Out Tracking' },
-      { id: 'qc', label: 'Quality Control & DHU', icon: CheckCircle, sub: 'Defect Heatmaps' },
-      { id: 'finishing', label: 'Washing & Finishing', icon: Droplets, sub: 'Batch Processing' },
-      { id: 'packing', label: 'Packing & Carton QRs', icon: PackageCheck, sub: 'Final Packaging' },
-      { id: 'inventory', label: 'Fabric & Trims Warehouse', icon: Warehouse, sub: 'Ledger Balances' },
-      { id: 'analytics', label: 'Executive BI & Insights', icon: BarChart3, sub: 'Operational KPIs' },
+      {
+        id: 'planning_cutting',
+        label: 'Planning & Cutting',
+        icon: Scissors,
+        children: [
+          { id: 'orders', label: 'PO Master Orders', icon: FileSpreadsheet, sub: 'Order breakdown' },
+          { id: 'cutting', label: 'Cutting & Bundle QRs', icon: Scissors, sub: 'Piece QR generator' },
+        ]
+      },
+      {
+        id: 'sewing_qc',
+        label: 'Sewing & Quality Floor',
+        icon: Activity,
+        badge: 'Live',
+        children: [
+          { id: 'sewing', label: 'Sewing Telemetry', icon: Activity, badge: 'Live', sub: 'Line in / Line out' },
+          { id: 'qc', label: 'QC Inspection & DHU', icon: CheckCircle, sub: 'Defect Heatmaps' },
+        ]
+      },
+      {
+        id: 'finishing_shipping',
+        label: 'Finishing & Logistics',
+        icon: PackageCheck,
+        children: [
+          { id: 'finishing', label: 'Washing & Finishing', icon: Droplets, sub: 'Batch wash records' },
+          { id: 'packing', label: 'Packing & Carton QRs', icon: PackageCheck, sub: 'Carton mapping' },
+          { id: 'inventory', label: 'Warehouse & Ledger', icon: Warehouse, sub: 'Double-entry stock' },
+          { id: 'analytics', label: 'Executive BI Analytics', icon: BarChart3, sub: 'Management KPIs' },
+        ]
+      }
     ]
   }
 ];
@@ -73,13 +130,29 @@ export function AdminLayout({
   children, 
   activeTab, 
   onTabChange,
-  breadcrumbs = ['Administration', 'Users & Access']
+  breadcrumbs = ['System', 'Identity & Security', 'Users & Operators']
 }) {
   const { user, logout } = useAuthStore();
   const { isDark, toggleTheme } = useThemeStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+
+  // Keep track of which Level-2 items are expanded (Default expanded)
+  const [expandedSections, setExpandedSections] = useState({
+    'access_control': true,
+    'buyers_brands': true,
+    'styles_specs': true,
+    'factory_setup': false,
+    'planning_cutting': false,
+    'sewing_qc': false,
+    'finishing_shipping': false,
+  });
+
+  const toggleSection = (sectionId) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  };
 
   return (
     <div className={`min-h-screen flex font-sans transition-colors duration-150 antialiased ${
@@ -100,7 +173,7 @@ export function AdminLayout({
       }`}>
         
         {/* Enterprise Brand Header */}
-        <div className="h-14 px-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-950">
+        <div className="h-14 px-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-950 shrink-0">
           <div className="flex items-center space-x-2.5">
             <div className="h-7 w-7 bg-blue-600 rounded flex items-center justify-center font-black text-white text-xs shadow-xs tracking-wider">
               R
@@ -131,7 +204,7 @@ export function AdminLayout({
         </div>
 
         {/* Global Plant / Unit Indicator */}
-        <div className="px-4 py-2 border-b border-slate-800/60 bg-slate-900/60 text-slate-300 flex items-center justify-between text-[11px]">
+        <div className="px-4 py-2 border-b border-slate-800/60 bg-slate-900/60 text-slate-300 flex items-center justify-between text-[11px] shrink-0">
           <div className="flex items-center space-x-1.5 truncate">
             <Building2 className="h-3.5 w-3.5 text-blue-400 shrink-0" />
             <span className="font-semibold truncate">Standard Unit 01 (Factory)</span>
@@ -141,53 +214,101 @@ export function AdminLayout({
           </span>
         </div>
 
-        {/* Navigation Group Items */}
-        <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-5 custom-scrollbar">
+        {/* Navigation Group Items (3-Level Architecture) */}
+        <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4 custom-scrollbar">
           {navigationGroups.map((grp, idx) => (
-            <div key={idx} className="space-y-0.5">
-              <div className="px-2 text-[9px] font-bold tracking-wider text-slate-500 mb-1.5 uppercase font-mono">
+            <div key={idx} className="space-y-1">
+              
+              {/* Level 1: Category Header */}
+              <div className="px-2 text-[9px] font-bold tracking-wider text-slate-500 mb-1 uppercase font-mono">
                 {grp.category}
               </div>
-              {grp.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      onTabChange(item.id);
-                      setSidebarOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer text-left ${
-                      isActive
-                        ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2.5 min-w-0">
-                      <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                      <span className="truncate">{item.label}</span>
-                    </div>
 
-                    {item.badge && (
-                      <span className={`text-[8px] font-mono uppercase px-1 py-0.2 rounded font-bold ${
-                        isActive
-                          ? 'bg-white/20 text-white'
-                          : 'bg-slate-800 text-slate-400 border border-slate-700'
-                      }`}>
-                        {item.badge}
-                      </span>
+              {/* Level 2: Collapsible Feature Nodes */}
+              {grp.items.map((sec) => {
+                const SecIcon = sec.icon;
+                const isExpanded = expandedSections[sec.id] ?? false;
+                const hasActiveChild = sec.children?.some(c => c.id === activeTab);
+
+                return (
+                  <div key={sec.id} className="space-y-0.5">
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(sec.id)}
+                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer text-left ${
+                        hasActiveChild 
+                          ? 'text-white bg-slate-900/80 border border-slate-800' 
+                          : 'text-slate-400 hover:text-white hover:bg-slate-900/50'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <SecIcon className={`h-3.5 w-3.5 shrink-0 ${hasActiveChild ? 'text-blue-400' : 'text-slate-400'}`} />
+                        <span className="truncate">{sec.label}</span>
+                      </div>
+
+                      <div className="flex items-center space-x-1 shrink-0">
+                        {sec.badge && (
+                          <span className="text-[8px] font-mono uppercase px-1 py-0.2 rounded font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                            {sec.badge}
+                          </span>
+                        )}
+                        <ChevronDown className={`h-3 w-3 text-slate-500 transition-transform duration-150 ${
+                          isExpanded ? 'rotate-180 text-slate-300' : ''
+                        }`} />
+                      </div>
+                    </button>
+
+                    {/* Level 3: Granular Sub-Route Items with Tree Indentation */}
+                    {isExpanded && sec.children && (
+                      <div className="relative pl-3 ml-2 border-l border-slate-800/80 space-y-0.5 my-0.5">
+                        {sec.children.map((sub) => {
+                          const SubIcon = sub.icon;
+                          const isSubActive = activeTab === sub.id;
+
+                          return (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={() => {
+                                onTabChange(sub.id);
+                                setSidebarOpen(false);
+                              }}
+                              className={`w-full flex items-center justify-between px-2.5 py-1 rounded text-[11px] transition-colors cursor-pointer text-left ${
+                                isSubActive
+                                  ? 'bg-blue-600 text-white font-bold shadow-2xs'
+                                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2 min-w-0">
+                                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${isSubActive ? 'bg-white' : 'bg-slate-600'}`}></span>
+                                <span className="truncate">{sub.label}</span>
+                              </div>
+
+                              {sub.badge && (
+                                <span className={`text-[7px] font-mono uppercase px-1 py-0.2 rounded font-bold ${
+                                  isSubActive
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                                }`}>
+                                  {sub.badge}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
                     )}
-                  </button>
+
+                  </div>
                 );
               })}
+
             </div>
           ))}
         </div>
 
         {/* User Account Info & Footer */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950">
+        <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2.5 min-w-0">
               <div className="h-8 w-8 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
