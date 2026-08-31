@@ -14,17 +14,40 @@ function ProtectedAdminRoute({ children }) {
   return children;
 }
 
+function GuestOnlyRoute({ children }) {
+  const { isAuthenticated } = useAuthStore();
+  if (isAuthenticated) {
+    return <Navigate to="/admin" replace />;
+  }
+  return children;
+}
+
 export default function App() {
   const { initTheme } = useThemeStore();
 
   React.useEffect(() => {
     initTheme();
   }, [initTheme]);
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route 
+          path="/" 
+          element={
+            <GuestOnlyRoute>
+              <HomePage />
+            </GuestOnlyRoute>
+          } 
+        />
+        <Route 
+          path="/login" 
+          element={
+            <GuestOnlyRoute>
+              <LoginPage />
+            </GuestOnlyRoute>
+          } 
+        />
         <Route 
           path="/admin" 
           element={

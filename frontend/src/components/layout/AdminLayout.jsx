@@ -99,7 +99,7 @@ export function AdminLayout({
         <div className={`h-16 px-5 flex items-center justify-between border-b ${
           isDark ? 'border-slate-800' : 'border-slate-200'
         }`}>
-          <Link to="/" className="flex items-center space-x-2.5">
+          <div className="flex items-center space-x-2.5">
             <div className="h-8 w-8 bg-blue-600 rounded-md flex items-center justify-center font-black text-white text-sm shadow-xs">
               R
             </div>
@@ -111,7 +111,7 @@ export function AdminLayout({
                 ENTERPRISE ERP
               </div>
             </div>
-          </Link>
+          </div>
 
           <button 
             type="button"
@@ -223,10 +223,10 @@ export function AdminLayout({
 
             {/* Breadcrumb Navigation */}
             <div className="flex items-center space-x-1.5 text-xs text-slate-400">
-              <Link to="/" className="hover:text-blue-500 flex items-center space-x-1">
+              <span className="flex items-center space-x-1 font-semibold text-slate-400">
                 <Home className="h-3.5 w-3.5" />
-                <span>Home</span>
-              </Link>
+                <span>Admin</span>
+              </span>
               {breadcrumbs.map((crumb, i) => (
                 <React.Fragment key={i}>
                   <ChevronRight className="h-3 w-3 text-slate-500" />
