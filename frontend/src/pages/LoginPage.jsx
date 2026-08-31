@@ -34,6 +34,17 @@ export default function LoginPage() {
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
+      {/* Authentic RMG Woven Fabric / Textile Twill Weft Pattern */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.28] dark:opacity-[0.14]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236366f1' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3Cpath d='M0 0l40 40h-20L0 20M40 0v20L20 0' opacity='0.5'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: '20px 20px',
+          maskImage: 'radial-gradient(ellipse 65% 60% at 50% 50%, #000 65%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 65% 60% at 50% 50%, #000 65%, transparent 100%)'
+        }}
+      />
+
       {/* Clean Premium Enterprise Subtle Glow & Vignette */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Top Centered Soft Illumination */}
