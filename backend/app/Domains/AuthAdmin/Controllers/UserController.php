@@ -36,6 +36,23 @@ class UserController extends Controller
     }
 
     /**
+     * Get User Profile Details (Admin Only)
+     */
+    public function show(Request $request, string $id): JsonResponse
+    {
+        $user = $this->userRepository->findById($id);
+
+        if (! $user) {
+            return response()->json(['status' => 'error', 'message' => 'User not found.'], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $user->load('roles.permissions'),
+        ]);
+    }
+
+    /**
      * Protected Admin-Only User Registration
      */
     public function store(Request $request): JsonResponse

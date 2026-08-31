@@ -36,6 +36,7 @@ Route::prefix('v1')->group(function () {
         // Admin-Only Protected User & System Management
         Route::prefix('admin')->group(function () {
             Route::get('/users', [UserController::class, 'index']);
+            Route::get('/users/{id}', [UserController::class, 'show']);
             Route::post('/users', [UserController::class, 'store']); // Only Admin can register users
             Route::put('/users/{id}', [UserController::class, 'update']);
             Route::delete('/users/{id}', [UserController::class, 'destroy']);

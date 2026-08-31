@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import AdminConsolePage from './pages/AdminConsolePage';
+import UserDetailsPage from './pages/UserDetailsPage';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './store/themeStore';
 
@@ -53,6 +54,14 @@ export default function App() {
           element={
             <ProtectedAdminRoute>
               <AdminConsolePage />
+            </ProtectedAdminRoute>
+          } 
+        />
+        <Route 
+          path="/admin/users/:id" 
+          element={
+            <ProtectedAdminRoute>
+              <UserDetailsPage />
             </ProtectedAdminRoute>
           } 
         />

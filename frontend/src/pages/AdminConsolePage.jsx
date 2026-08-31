@@ -367,11 +367,11 @@ export default function AdminConsolePage() {
 
         return (
           <div className="flex items-center justify-end space-x-1">
-            {/* View User Button */}
+            {/* View User Page Link */}
             <button
               type="button"
-              onClick={() => setViewingUser(row)}
-              title="View User Details"
+              onClick={() => navigate(`/admin/users/${row.id}`)}
+              title="View User Details Page"
               className="p-1.5 rounded hover:bg-blue-500/10 text-slate-400 hover:text-blue-500 transition-colors cursor-pointer"
             >
               <Eye className="h-4 w-4" />
@@ -893,18 +893,6 @@ export default function AdminConsolePage() {
         devLine={newDevLine}
         setDevLine={setNewDevLine}
         errors={deviceFormErrors}
-      />
-
-      {/* Modular Modal: View User Details */}
-      <ViewUserModal
-        show={Boolean(viewingUser)}
-        onClose={() => setViewingUser(null)}
-        user={viewingUser}
-        isDark={isDark}
-        onEdit={(u) => {
-          setViewingUser(null);
-          setEditingUser(u);
-        }}
       />
 
       {/* Modular Modal: Edit User */}
