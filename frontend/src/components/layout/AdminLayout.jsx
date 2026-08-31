@@ -14,112 +14,161 @@ import {
   Warehouse,
   BarChart3,
   LogOut, 
-  UserCheck, 
   Sun, 
   Moon,
   Menu,
   X,
   ChevronRight,
   ChevronDown,
-  SlidersHorizontal,
   Building2,
-  Radio,
   FileSpreadsheet,
-  FolderTree,
-  CornerDownRight,
   ShieldCheck,
-  Tag,
-  Boxes,
-  ScrollText,
-  FileCode2,
-  Network
+  SlidersHorizontal,
+  FolderTree,
+  Radio
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 
-// 3-Level Hierarchical Navigation Structure
+// Official 12-Module ERP Structure
 const navigationGroups = [
   {
-    category: 'IDENTITY & SECURITY',
-    items: [
-      { 
-        id: 'access_control', 
-        label: 'Access & RBAC Core', 
-        icon: ShieldCheck, 
+    category: 'SYSTEM & MASTER DATA',
+    modules: [
+      {
+        id: 'mod_01',
+        code: 'MOD 01',
+        label: 'Auth & Administration',
+        icon: ShieldCheck,
         badge: 'Protected',
         children: [
-          { id: 'users', label: 'Users & Operators', icon: Users, sub: 'Account registry' },
-          { id: 'devices', label: 'Floor Tablets', icon: Smartphone, badge: 'Line-Locked', sub: 'Tablet terminals' },
-          { id: 'roles', label: 'Roles & Permissions', icon: KeyRound, sub: 'Spatie gates' },
-          { id: 'audit', label: 'System Audit Logs', icon: History, sub: 'Immutable audit trail' },
-        ]
-      }
-    ]
-  },
-  {
-    category: 'MASTER DATA ENGINE',
-    items: [
-      {
-        id: 'buyers_brands',
-        label: 'Buyer & Brand Registry',
-        icon: Building2,
-        children: [
-          { id: 'master_buyers', label: 'Buyers Profile', icon: Building2, sub: 'Clients directory' },
-          { id: 'master_brands', label: 'Brands & Divisions', icon: Tag, sub: 'Buyer subsidiaries' },
+          { id: 'users', label: 'Users & Operators', icon: Users },
+          { id: 'devices', label: 'Floor Tablets', icon: Smartphone, badge: 'PIN Locked' },
+          { id: 'roles', label: 'Roles & Scopes', icon: KeyRound },
+          { id: 'audit', label: 'Audit Logs', icon: History },
         ]
       },
       {
-        id: 'styles_specs',
-        label: 'Styles & Garment Specs',
-        icon: Layers,
+        id: 'mod_02',
+        code: 'MOD 02',
+        label: 'Master Data Setup',
+        icon: Database,
         children: [
-          { id: 'master_styles', label: 'Style Catalog & SMV', icon: Layers, sub: 'Base SMV & Bulletin' },
-          { id: 'master_attributes', label: 'Colors & Size Matrix', icon: Database, sub: 'Dimension grids' },
-          { id: 'master_bom', label: 'BOM Item Specs', icon: Boxes, sub: 'Fabric & Trims lookup' }
+          { id: 'master_buyers', label: 'Buyers & Brands', icon: Building2 },
+          { id: 'master_styles', label: 'Styles & SMV Library', icon: Layers },
+          { id: 'master_lines', label: 'Production Lines', icon: SlidersHorizontal },
+          { id: 'master_attributes', label: 'Colors & Size Matrix', icon: Database },
         ]
       },
       {
-        id: 'factory_setup',
-        label: 'Plant Floor Architecture',
+        id: 'mod_03',
+        code: 'MOD 03',
+        label: 'Order Management (PO)',
+        icon: FileSpreadsheet,
+        children: [
+          { id: 'orders_po', label: 'Purchase Orders (PO)', icon: FileSpreadsheet },
+          { id: 'orders_bom', label: 'BOM Costing', icon: Layers },
+        ]
+      },
+      {
+        id: 'mod_04',
+        code: 'MOD 04',
+        label: 'Production Planning',
         icon: SlidersHorizontal,
         children: [
-          { id: 'master_lines', label: 'Production Lines', icon: SlidersHorizontal, sub: 'Line capacity' },
-          { id: 'master_stations', label: 'Floor Stations & Workplaces', icon: Network, sub: 'Station routing' },
+          { id: 'planning_routing', label: 'Line Load & Routing', icon: SlidersHorizontal },
+          { id: 'planning_targets', label: 'Target Output Plans', icon: Activity },
         ]
       }
     ]
   },
   {
-    category: 'SHOP FLOOR EXECUTION',
-    items: [
+    category: 'FACTORY FLOOR TRACEABILITY',
+    modules: [
       {
-        id: 'planning_cutting',
-        label: 'Planning & Cutting',
+        id: 'mod_05',
+        code: 'MOD 05',
+        label: 'Cutting & Bundling',
         icon: Scissors,
         children: [
-          { id: 'orders', label: 'PO Master Orders', icon: FileSpreadsheet, sub: 'Order breakdown' },
-          { id: 'cutting', label: 'Cutting & Bundle QRs', icon: Scissors, sub: 'Piece QR generator' },
+          { id: 'cutting_lays', label: 'Fabric Lay Records', icon: Scissors },
+          { id: 'cutting_bundles', label: 'Master & Piece QRs', icon: FolderTree },
         ]
       },
       {
-        id: 'sewing_qc',
-        label: 'Sewing & Quality Floor',
+        id: 'mod_06',
+        code: 'MOD 06',
+        label: 'Value Addition',
+        icon: Layers,
+        children: [
+          { id: 'va_print_emb', label: 'Print / Embroidery Dispatch', icon: Layers },
+          { id: 'va_receive', label: 'Value Add Receipt & QC', icon: CheckCircle },
+        ]
+      },
+      {
+        id: 'mod_07',
+        code: 'MOD 07',
+        label: 'Sewing Floor Tracking',
         icon: Activity,
         badge: 'Live',
         children: [
-          { id: 'sewing', label: 'Sewing Telemetry', icon: Activity, badge: 'Live', sub: 'Line in / Line out' },
-          { id: 'qc', label: 'QC Inspection & DHU', icon: CheckCircle, sub: 'Defect Heatmaps' },
+          { id: 'sewing_telemetry', label: 'Live Line Tracking', icon: Activity, badge: 'Live' },
+          { id: 'sewing_wip', label: 'Real-time Line WIP', icon: SlidersHorizontal },
         ]
       },
       {
-        id: 'finishing_shipping',
-        label: 'Finishing & Logistics',
+        id: 'mod_08',
+        code: 'MOD 08',
+        label: 'Quality Control (QC)',
+        icon: CheckCircle,
+        children: [
+          { id: 'qc_inspection', label: 'Defect Log & Inspection', icon: CheckCircle },
+          { id: 'qc_dhu', label: 'DHU Live Analytics', icon: BarChart3 },
+        ]
+      },
+      {
+        id: 'mod_09',
+        code: 'MOD 09',
+        label: 'Washing & Finishing',
+        icon: Droplets,
+        children: [
+          { id: 'wash_batches', label: 'Wash Batch Records', icon: Droplets },
+          { id: 'finishing_iron', label: 'Ironing & Finishing QC', icon: CheckCircle },
+        ]
+      },
+      {
+        id: 'mod_10',
+        code: 'MOD 10',
+        label: 'Packing & Shipment',
         icon: PackageCheck,
         children: [
-          { id: 'finishing', label: 'Washing & Finishing', icon: Droplets, sub: 'Batch wash records' },
-          { id: 'packing', label: 'Packing & Carton QRs', icon: PackageCheck, sub: 'Carton mapping' },
-          { id: 'inventory', label: 'Warehouse & Ledger', icon: Warehouse, sub: 'Double-entry stock' },
-          { id: 'analytics', label: 'Executive BI Analytics', icon: BarChart3, sub: 'Management KPIs' },
+          { id: 'packing_cartons', label: 'Carton Packing & QRs', icon: PackageCheck },
+          { id: 'packing_dispatch', label: 'Container Dispatch', icon: Building2 },
+        ]
+      }
+    ]
+  },
+  {
+    category: 'INVENTORY & BUSINESS INTELLIGENCE',
+    modules: [
+      {
+        id: 'mod_11',
+        code: 'MOD 11',
+        label: 'Fabric & Trims Store',
+        icon: Warehouse,
+        children: [
+          { id: 'store_mrr', label: 'MRR Receive Ledger', icon: Warehouse },
+          { id: 'store_issue', label: 'Fabric & Trims Requisition', icon: FileSpreadsheet },
+        ]
+      },
+      {
+        id: 'mod_12',
+        code: 'MOD 12',
+        label: 'BI & Executive Analytics',
+        icon: BarChart3,
+        children: [
+          { id: 'analytics_kpi', label: 'Factory KPIs & Efficiency', icon: BarChart3 },
+          { id: 'analytics_reports', label: 'Traceability Audit Reports', icon: History },
         ]
       }
     ]
@@ -136,36 +185,35 @@ export function AdminLayout({
   const { isDark, toggleTheme } = useThemeStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Find which Level-2 section contains the current activeTab
-  const getActiveSectionId = (tab) => {
+  // Find which Module contains the current activeTab
+  const getActiveModuleId = (tab) => {
     for (const grp of navigationGroups) {
-      for (const item of grp.items) {
-        if (item.children?.some(c => c.id === tab)) {
-          return item.id;
+      for (const mod of grp.modules) {
+        if (mod.children?.some(c => c.id === tab)) {
+          return mod.id;
         }
       }
     }
-    return 'access_control';
+    return 'mod_01';
   };
 
-  // State: Only the currently active section is expanded
+  // State: Only the currently active module is expanded
   const [expandedSections, setExpandedSections] = useState(() => ({
-    [getActiveSectionId(activeTab)]: true
+    [getActiveModuleId(activeTab)]: true
   }));
 
-  // Auto expand ONLY the active section and collapse others when activeTab changes
+  // Auto expand ONLY the active module when activeTab changes
   React.useEffect(() => {
-    const currentSectionId = getActiveSectionId(activeTab);
+    const currentModuleId = getActiveModuleId(activeTab);
     setExpandedSections({
-      [currentSectionId]: true
+      [currentModuleId]: true
     });
   }, [activeTab]);
 
   // Accordion Toggle: Clicking an accordion opens it and closes all others
-  const toggleSection = (sectionId) => {
+  const toggleSection = (moduleId) => {
     setExpandedSections(prev => ({
-      // If it's already open, close it; otherwise open only this one
-      [sectionId]: !prev[sectionId]
+      [moduleId]: !prev[moduleId]
     }));
   };
 
@@ -229,27 +277,27 @@ export function AdminLayout({
           </span>
         </div>
 
-        {/* Navigation Group Items (3-Level Architecture) */}
+        {/* Navigation Modules (Strict 12 Official Modules) */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5 custom-scrollbar">
           {navigationGroups.map((grp, idx) => (
             <div key={idx} className="space-y-1.5">
               
-              {/* Level 1: Category Header */}
+              {/* Category Header */}
               <div className="px-2 text-[10px] font-bold tracking-wider text-slate-400 mb-1.5 uppercase font-mono">
                 {grp.category}
               </div>
 
-              {/* Level 2: Collapsible Feature Nodes */}
-              {grp.items.map((sec) => {
-                const SecIcon = sec.icon;
-                const isExpanded = expandedSections[sec.id] ?? false;
-                const hasActiveChild = sec.children?.some(c => c.id === activeTab);
+              {/* Module Items (Collapsible) */}
+              {grp.modules.map((mod) => {
+                const ModIcon = mod.icon;
+                const isExpanded = expandedSections[mod.id] ?? false;
+                const hasActiveChild = mod.children?.some(c => c.id === activeTab);
 
                 return (
-                  <div key={sec.id} className="space-y-1">
+                  <div key={mod.id} className="space-y-1">
                     <button
                       type="button"
-                      onClick={() => toggleSection(sec.id)}
+                      onClick={() => toggleSection(mod.id)}
                       className={`w-full flex items-center justify-between px-2.5 py-2 rounded text-xs font-semibold transition-colors cursor-pointer text-left ${
                         hasActiveChild 
                           ? 'text-white bg-slate-900 border border-slate-800' 
@@ -257,14 +305,14 @@ export function AdminLayout({
                       }`}
                     >
                       <div className="flex items-center space-x-2.5 min-w-0">
-                        <SecIcon className={`h-4 w-4 shrink-0 ${hasActiveChild ? 'text-blue-400' : 'text-slate-400'}`} />
-                        <span className="truncate">{sec.label}</span>
+                        <ModIcon className={`h-4 w-4 shrink-0 ${hasActiveChild ? 'text-blue-400' : 'text-slate-400'}`} />
+                        <span className="truncate">{mod.label}</span>
                       </div>
 
                       <div className="flex items-center space-x-1.5 shrink-0">
-                        {sec.badge && (
+                        {mod.badge && (
                           <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300 border border-slate-700">
-                            {sec.badge}
+                            {mod.badge}
                           </span>
                         )}
                         <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-150 ${
@@ -273,10 +321,10 @@ export function AdminLayout({
                       </div>
                     </button>
 
-                    {/* Level 3: Granular Sub-Route Items with Tree Indentation */}
-                    {isExpanded && sec.children && (
+                    {/* Sub-Menus under each Module */}
+                    {isExpanded && mod.children && (
                       <div className="relative pl-3.5 ml-2.5 border-l border-slate-800 space-y-1 my-1">
-                        {sec.children.map((sub) => {
+                        {mod.children.map((sub) => {
                           const SubIcon = sub.icon;
                           const isSubActive = activeTab === sub.id;
 
