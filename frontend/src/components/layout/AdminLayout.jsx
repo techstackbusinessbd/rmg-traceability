@@ -94,23 +94,19 @@ export function AdminLayout({
         ></div>
       )}
 
-      {/* Left Fixed Sidebar (w-64) */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col transition-transform duration-200 lg:translate-x-0 ${
+      {/* Left Fixed Sidebar (w-64) - Always Enterprise Dark Theme */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col transition-transform duration-200 lg:translate-x-0 bg-slate-950 border-slate-800 text-slate-100 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } ${
-        isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
       }`}>
         
         {/* Enterprise Brand Header */}
-        <div className={`h-14 px-4 flex items-center justify-between border-b ${
-          isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50/50'
-        }`}>
+        <div className="h-14 px-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-950">
           <div className="flex items-center space-x-2.5">
             <div className="h-7 w-7 bg-blue-600 rounded flex items-center justify-center font-black text-white text-xs shadow-xs tracking-wider">
               R
             </div>
             <div>
-              <div className={`font-black text-xs leading-none tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <div className="font-black text-xs leading-none tracking-tight text-white">
                 RMG TRACEABILITY
               </div>
               <div className="text-[9px] text-slate-400 font-mono tracking-widest mt-0.5 uppercase">
@@ -135,14 +131,12 @@ export function AdminLayout({
         </div>
 
         {/* Global Plant / Unit Indicator */}
-        <div className={`px-4 py-2 border-b flex items-center justify-between text-[11px] ${
-          isDark ? 'border-slate-800/80 bg-slate-900/60 text-slate-400' : 'border-slate-200/80 bg-white text-slate-600'
-        }`}>
+        <div className="px-4 py-2 border-b border-slate-800/60 bg-slate-900/60 text-slate-300 flex items-center justify-between text-[11px]">
           <div className="flex items-center space-x-1.5 truncate">
-            <Building2 className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+            <Building2 className="h-3.5 w-3.5 text-blue-400 shrink-0" />
             <span className="font-semibold truncate">Standard Unit 01 (Factory)</span>
           </div>
-          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 shrink-0">
+          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
             ONLINE
           </span>
         </div>
@@ -151,7 +145,7 @@ export function AdminLayout({
         <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-5 custom-scrollbar">
           {navigationGroups.map((grp, idx) => (
             <div key={idx} className="space-y-0.5">
-              <div className="px-2 text-[9px] font-bold tracking-wider text-slate-400 mb-1.5 uppercase font-mono">
+              <div className="px-2 text-[9px] font-bold tracking-wider text-slate-500 mb-1.5 uppercase font-mono">
                 {grp.category}
               </div>
               {grp.items.map((item) => {
@@ -165,18 +159,14 @@ export function AdminLayout({
                       onTabChange(item.id);
                       setSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer text-left ${
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer text-left ${
                       isActive
-                        ? isDark 
-                          ? 'bg-blue-600 text-white shadow-2xs font-bold'
-                          : 'bg-blue-50 text-blue-700 font-bold border border-blue-200/80 shadow-2xs'
-                        : isDark
-                          ? 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                          : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
+                        ? 'bg-blue-600 text-white font-bold shadow-2xs'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
                     }`}
                   >
                     <div className="flex items-center space-x-2.5 min-w-0">
-                      <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? (isDark ? 'text-white' : 'text-blue-600') : 'text-slate-400'}`} />
+                      <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                       <span className="truncate">{item.label}</span>
                     </div>
 
@@ -184,9 +174,7 @@ export function AdminLayout({
                       <span className={`text-[8px] font-mono uppercase px-1 py-0.2 rounded font-bold ${
                         isActive
                           ? 'bg-white/20 text-white'
-                          : isDark
-                            ? 'bg-slate-800 text-slate-400 border border-slate-700'
-                            : 'bg-slate-200 text-slate-700'
+                          : 'bg-slate-800 text-slate-400 border border-slate-700'
                       }`}>
                         {item.badge}
                       </span>
@@ -199,14 +187,14 @@ export function AdminLayout({
         </div>
 
         {/* User Account Info & Footer */}
-        <div className={`p-3 border-t ${isDark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+        <div className="p-3 border-t border-slate-800 bg-slate-950">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2.5 min-w-0">
               <div className="h-8 w-8 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                 {user?.name?.charAt(0) || 'A'}
               </div>
               <div className="min-w-0">
-                <div className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <div className="text-xs font-bold truncate text-white">
                   {user?.name || 'Administrator'}
                 </div>
                 <div className="text-[10px] text-blue-400 truncate font-mono">
