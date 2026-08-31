@@ -136,16 +136,31 @@ export function AdminLayout({
   const { isDark, toggleTheme } = useThemeStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Keep track of which Level-2 items are expanded (Default expanded)
-  const [expandedSections, setExpandedSections] = useState({
-    'access_control': true,
-    'buyers_brands': true,
-    'styles_specs': true,
-    'factory_setup': false,
-    'planning_cutting': false,
-    'sewing_qc': false,
-    'finishing_shipping': false,
-  });
+  // Find which Level-2 section contains the current activeTab
+  const getActiveSectionId = (tab) => {
+    for (const grp of navigationGroups) {
+      for (const item of grp.items) {
+        if (item.children?.some(c => c.id === tab)) {
+          return item.id;
+        }
+      }
+    }
+    return 'access_control';
+  };
+
+  // State: Only the currently active section is expanded by default
+  const [expandedSections, setExpandedSections] = useState(() => ({
+    [getActiveSectionId(activeTab)]: true
+  }));
+
+  // Auto expand when activeTab changes
+  React.useEffect(() => {
+    const currentSectionId = getActiveSectionId(activeTab);
+    setExpandedSections(prev => ({
+      ...prev,
+      [currentSectionId]: true
+    }));
+  }, [activeTab]);
 
   const toggleSection = (sectionId) => {
     setExpandedSections(prev => ({
