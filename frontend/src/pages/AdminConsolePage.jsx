@@ -385,35 +385,92 @@ export default function AdminConsolePage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                {rolesList.map((r) => (
-                  <div key={r.id} className={`p-4 rounded border transition-colors ${
-                    isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50/70 border-slate-200/90'
-                  }`}>
-                    <div className="flex items-center justify-between">
-                      <span className={`font-bold text-sm ${isDark ? 'text-blue-400' : 'text-slate-900'}`}>{r.name}</span>
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                        {r.permissions?.length || 0} Scopes
-                      </span>
-                    </div>
-                    <div className="mt-3 space-y-1.5">
-                      <div className="text-[11px] text-slate-500 font-medium">Authorized Actions:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {r.permissions?.slice(0, 4).map((p) => (
-                          <span key={p.id} className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${
-                            isDark 
-                              ? 'bg-slate-900 border-slate-800 text-slate-300' 
-                              : 'bg-white border-slate-200 text-slate-700 shadow-2xs'
-                          }`}>
-                            {p.name}
-                          </span>
-                        ))}
-                        {(r.permissions?.length || 0) > 4 && (
-                          <span className="text-[10px] text-blue-600 font-mono font-semibold">+{r.permissions.length - 4} more</span>
-                        )}
+                {rolesList.map((r) => {
+                  // Distinct enterprise role color tokens
+                  const getRoleStyle = (name) => {
+                    switch (name) {
+                      case 'Super Admin':
+                        return {
+                          title: isDark ? 'text-indigo-400' : 'text-indigo-950',
+                          badge: isDark ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                          tag: isDark ? 'bg-slate-900 border-slate-800 text-indigo-300' : 'bg-indigo-50/50 border-indigo-200/80 text-indigo-900',
+                          more: 'text-indigo-600'
+                        };
+                      case 'Cutting Master':
+                        return {
+                          title: isDark ? 'text-amber-400' : 'text-amber-950',
+                          badge: isDark ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-700 border-amber-200',
+                          tag: isDark ? 'bg-slate-900 border-slate-800 text-amber-300' : 'bg-amber-50/50 border-amber-200/80 text-amber-900',
+                          more: 'text-amber-600'
+                        };
+                      case 'Line Supervisor':
+                        return {
+                          title: isDark ? 'text-blue-400' : 'text-blue-950',
+                          badge: isDark ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-blue-50 text-blue-700 border-blue-200',
+                          tag: isDark ? 'bg-slate-900 border-slate-800 text-blue-300' : 'bg-blue-50/50 border-blue-200/80 text-blue-900',
+                          more: 'text-blue-600'
+                        };
+                      case 'QC Inspector':
+                        return {
+                          title: isDark ? 'text-emerald-400' : 'text-emerald-950',
+                          badge: isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                          tag: isDark ? 'bg-slate-900 border-slate-800 text-emerald-300' : 'bg-emerald-50/50 border-emerald-200/80 text-emerald-900',
+                          more: 'text-emerald-600'
+                        };
+                      case 'Packing Operator':
+                        return {
+                          title: isDark ? 'text-purple-400' : 'text-purple-950',
+                          badge: isDark ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-purple-50 text-purple-700 border-purple-200',
+                          tag: isDark ? 'bg-slate-900 border-slate-800 text-purple-300' : 'bg-purple-50/50 border-purple-200/80 text-purple-900',
+                          more: 'text-purple-600'
+                        };
+                      case 'Store Keeper':
+                        return {
+                          title: isDark ? 'text-teal-400' : 'text-teal-950',
+                          badge: isDark ? 'bg-teal-500/10 text-teal-400 border-teal-500/20' : 'bg-teal-50 text-teal-700 border-teal-200',
+                          tag: isDark ? 'bg-slate-900 border-slate-800 text-teal-300' : 'bg-teal-50/50 border-teal-200/80 text-teal-900',
+                          more: 'text-teal-600'
+                        };
+                      default:
+                        return {
+                          title: isDark ? 'text-slate-300' : 'text-slate-900',
+                          badge: isDark ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-700 border-slate-200',
+                          tag: isDark ? 'bg-slate-900 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-2xs',
+                          more: 'text-blue-600'
+                        };
+                    }
+                  };
+
+                  const style = getRoleStyle(r.name);
+
+                  return (
+                    <div key={r.id} className={`p-4 rounded border transition-colors ${
+                      isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50/70 border-slate-200/90'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className={`font-bold text-sm ${style.title}`}>{r.name}</span>
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${style.badge}`}>
+                          {r.permissions?.length || 0} Scopes
+                        </span>
+                      </div>
+                      <div className="mt-3 space-y-1.5">
+                        <div className="text-[11px] text-slate-500 font-medium">Authorized Actions:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {r.permissions?.slice(0, 4).map((p) => (
+                            <span key={p.id} className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${style.tag}`}>
+                              {p.name}
+                            </span>
+                          ))}
+                          {(r.permissions?.length || 0) > 4 && (
+                            <span className={`text-[10px] font-mono font-bold ${style.more}`}>
+                              +{r.permissions.length - 4} more
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
