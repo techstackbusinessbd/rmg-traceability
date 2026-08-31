@@ -33,7 +33,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import RegisterUserModal from '../modules/AuthAdmin/components/RegisterUserModal';
 import RegisterDeviceModal from '../modules/AuthAdmin/components/RegisterDeviceModal';
 import EditUserModal from '../modules/AuthAdmin/components/EditUserModal';
-import RolePermissionModal from '../modules/AuthAdmin/components/RolePermissionModal';
+import EnterprisePermissionMatrix from '../modules/AuthAdmin/components/EnterprisePermissionMatrix';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
@@ -659,89 +659,13 @@ export default function AdminConsolePage() {
           )}
 
           {activeTab === 'roles' && (
-            <div className={`p-5 rounded border transition-colors ${
-              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
-            }`}>
-              <div className="mb-4 pb-3 border-b border-slate-700/20">
-                <h3 className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Role-Based Access Control (RBAC Matrix)
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Granular permission scopes assigned to user roles for API and Floor operations
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                {rolesList.map((r) => {
-                  // Function to get distinct color for each individual permission tag based on its prefix
-                  const getPermissionTagStyle = (permName) => {
-                    const prefix = permName.split('.')[0] || '';
-                    switch (prefix) {
-                      case 'admin':
-                        return isDark
-                          ? 'bg-indigo-950/60 border-indigo-800/80 text-indigo-300'
-                          : 'bg-indigo-50 border-indigo-200 text-indigo-700';
-                      case 'master':
-                        return isDark
-                          ? 'bg-amber-950/60 border-amber-800/80 text-amber-300'
-                          : 'bg-amber-50 border-amber-200 text-amber-800';
-                      case 'orders':
-                        return isDark
-                          ? 'bg-blue-950/60 border-blue-800/80 text-blue-300'
-                          : 'bg-blue-50 border-blue-200 text-blue-700';
-                      case 'cutting':
-                        return isDark
-                          ? 'bg-orange-950/60 border-orange-800/80 text-orange-300'
-                          : 'bg-orange-50 border-orange-200 text-orange-800';
-                      case 'sewing':
-                        return isDark
-                          ? 'bg-sky-950/60 border-sky-800/80 text-sky-300'
-                          : 'bg-sky-50 border-sky-200 text-sky-800';
-                      case 'qc':
-                        return isDark
-                          ? 'bg-emerald-950/60 border-emerald-800/80 text-emerald-300'
-                          : 'bg-emerald-50 border-emerald-200 text-emerald-800';
-                      case 'packing':
-                      case 'shipment':
-                        return isDark
-                          ? 'bg-purple-950/60 border-purple-800/80 text-purple-300'
-                          : 'bg-purple-50 border-purple-200 text-purple-800';
-                      case 'store':
-                        return isDark
-                          ? 'bg-teal-950/60 border-teal-800/80 text-teal-300'
-                          : 'bg-teal-50 border-teal-200 text-teal-800';
-                      default:
-                        return isDark
-                          ? 'bg-slate-900 border-slate-800 text-slate-300'
-                          : 'bg-slate-100 border-slate-200 text-slate-700';
-                    }
-                  };
-
-                  return (
-                    <div key={r.id} className={`p-4 rounded border transition-colors ${
-                      isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
-                    }`}>
-                      <div className="flex items-center justify-between">
-                        <span className={`font-bold text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>{r.name}</span>
-                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                          {r.permissions?.length || 0} Scopes
-                        </span>
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-slate-700/20 flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={() => setEditingRolePermissions(r)}
-                          className="text-xs font-bold text-blue-500 hover:text-blue-400 cursor-pointer flex items-center space-x-1"
-                        >
-                          <ShieldCheck className="h-3.5 w-3.5" />
-                          <span>Configure Permissions Matrix</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <EnterprisePermissionMatrix
+              roles={rolesList}
+              allPermissions={allPermissionsList}
+              isDark={isDark}
+              onSaveRolePermissions={handleSaveRolePermissions}
+              saving={savingRoleMatrix}
+            />
           )}
 
           {activeTab === 'audit' && (
