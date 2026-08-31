@@ -232,58 +232,58 @@ export default function AdminConsolePage() {
         <div className="space-y-5">
           
           {/* Top KPI Cards (Enterprise Stat Bar) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            <div className={`p-4 rounded border transition-colors ${
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className={`p-4 sm:p-5 rounded border transition-colors ${
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
-              <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+              <div className="flex items-center justify-between text-slate-400 text-sm mb-1 font-medium">
                 <span>Active Operators</span>
-                <Users className="h-4 w-4 text-blue-500" />
+                <Users className="h-4.5 w-4.5 text-blue-500" />
               </div>
-              <div className="text-2xl font-black">{usersList.length}</div>
-              <div className="text-[10px] text-emerald-500 font-medium flex items-center space-x-1 mt-1">
-                <CheckCircle2 className="h-3 w-3" />
+              <div className="text-3xl font-black tracking-tight">{usersList.length}</div>
+              <div className="text-xs text-emerald-500 font-semibold flex items-center space-x-1 mt-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5" />
                 <span>100% RBAC Secured</span>
               </div>
             </div>
 
-            <div className={`p-4 rounded border transition-colors ${
+            <div className={`p-4 sm:p-5 rounded border transition-colors ${
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
-              <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+              <div className="flex items-center justify-between text-slate-400 text-sm mb-1 font-medium">
                 <span>Floor Tablets</span>
-                <Smartphone className="h-4 w-4 text-blue-500" />
+                <Smartphone className="h-4.5 w-4.5 text-blue-500" />
               </div>
-              <div className="text-2xl font-black">{devicesList.length}</div>
-              <div className="text-[10px] text-blue-400 font-medium flex items-center space-x-1 mt-1">
-                <ShieldCheck className="h-3 w-3" />
+              <div className="text-3xl font-black tracking-tight">{devicesList.length}</div>
+              <div className="text-xs text-blue-500 font-semibold flex items-center space-x-1 mt-1.5">
+                <ShieldCheck className="h-3.5 w-3.5" />
                 <span>Line-Locked PIN Enabled</span>
               </div>
             </div>
 
-            <div className={`p-4 rounded border transition-colors ${
+            <div className={`p-4 sm:p-5 rounded border transition-colors ${
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
-              <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+              <div className="flex items-center justify-between text-slate-400 text-sm mb-1 font-medium">
                 <span>Defined Roles</span>
-                <KeyRound className="h-4 w-4 text-blue-500" />
+                <KeyRound className="h-4.5 w-4.5 text-blue-500" />
               </div>
-              <div className="text-2xl font-black">{rolesList.length}</div>
-              <div className="text-[10px] text-slate-400 font-mono mt-1">
+              <div className="text-3xl font-black tracking-tight">{rolesList.length}</div>
+              <div className="text-xs text-slate-400 font-mono mt-1.5 font-medium">
                 Spatie Role Gates
               </div>
             </div>
 
-            <div className={`p-4 rounded border transition-colors ${
+            <div className={`p-4 sm:p-5 rounded border transition-colors ${
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
-              <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+              <div className="flex items-center justify-between text-slate-400 text-sm mb-1 font-medium">
                 <span>Audit Trail Events</span>
-                <History className="h-4 w-4 text-blue-500" />
+                <History className="h-4.5 w-4.5 text-blue-500" />
               </div>
-              <div className="text-2xl font-black">{auditList.length}</div>
-              <div className="text-[10px] text-emerald-500 font-medium flex items-center space-x-1 mt-1">
-                <Activity className="h-3 w-3" />
+              <div className="text-3xl font-black tracking-tight">{auditList.length}</div>
+              <div className="text-xs text-emerald-500 font-semibold flex items-center space-x-1 mt-1.5">
+                <Activity className="h-3.5 w-3.5" />
                 <span>Immutable Logs</span>
               </div>
             </div>
@@ -291,24 +291,24 @@ export default function AdminConsolePage() {
 
           {/* Module 01 Sub-Views based on activeTab */}
           {activeTab === 'users' && (
-            <div className={`p-5 rounded border transition-colors ${
+            <div className={`p-6 rounded border transition-colors ${
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-700/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-700/20">
                 <div>
-                  <h3 className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     Factory Users & Operators Directory
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
                     Authorized system users mapped to Spatie roles and permissions
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowNewUserModal(true)}
-                  className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors shrink-0"
+                  className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold flex items-center space-x-2 shadow-2xs cursor-pointer transition-colors shrink-0"
                 >
-                  <Plus className="h-3.5 w-3.5" />
+                  <Plus className="h-4 w-4" />
                   <span>Register New User</span>
                 </button>
               </div>

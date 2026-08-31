@@ -173,54 +173,54 @@ export function AdminLayout({
       }`}>
         
         {/* Enterprise Brand Header */}
-        <div className="h-14 px-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-950 shrink-0">
-          <div className="flex items-center space-x-2.5">
-            <div className="h-7 w-7 bg-blue-600 rounded flex items-center justify-center font-black text-white text-xs shadow-xs tracking-wider">
+        <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-950 shrink-0">
+          <div className="flex items-center space-x-3">
+            <div className="h-8 w-8 bg-blue-600 rounded flex items-center justify-center font-black text-white text-sm shadow-xs tracking-wider">
               R
             </div>
             <div>
-              <div className="font-black text-xs leading-none tracking-tight text-white">
+              <div className="font-black text-sm leading-none tracking-tight text-white">
                 RMG TRACEABILITY
               </div>
-              <div className="text-[9px] text-slate-400 font-mono tracking-widest mt-0.5 uppercase">
+              <div className="text-[10px] text-slate-400 font-mono tracking-widest mt-1 uppercase font-semibold">
                 Enterprise Core v1.0
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-1">
-            <span className="flex h-2 w-2 relative">
+          <div className="flex items-center space-x-1.5">
+            <span className="flex h-2.5 w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
             <button 
               type="button"
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-1 text-slate-400 hover:text-white"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </button>
           </div>
         </div>
 
         {/* Global Plant / Unit Indicator */}
-        <div className="px-4 py-2 border-b border-slate-800/60 bg-slate-900/60 text-slate-300 flex items-center justify-between text-[11px] shrink-0">
-          <div className="flex items-center space-x-1.5 truncate">
-            <Building2 className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+        <div className="px-4 py-2.5 border-b border-slate-800/60 bg-slate-900/60 text-slate-300 flex items-center justify-between text-xs shrink-0 font-medium">
+          <div className="flex items-center space-x-2 truncate">
+            <Building2 className="h-4 w-4 text-blue-400 shrink-0" />
             <span className="font-semibold truncate">Standard Unit 01 (Factory)</span>
           </div>
-          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
             ONLINE
           </span>
         </div>
 
         {/* Navigation Group Items (3-Level Architecture) */}
-        <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5 custom-scrollbar">
           {navigationGroups.map((grp, idx) => (
-            <div key={idx} className="space-y-1">
+            <div key={idx} className="space-y-1.5">
               
               {/* Level 1: Category Header */}
-              <div className="px-2 text-[9px] font-bold tracking-wider text-slate-500 mb-1 uppercase font-mono">
+              <div className="px-2 text-[10px] font-bold tracking-wider text-slate-400 mb-1.5 uppercase font-mono">
                 {grp.category}
               </div>
 
@@ -231,36 +231,36 @@ export function AdminLayout({
                 const hasActiveChild = sec.children?.some(c => c.id === activeTab);
 
                 return (
-                  <div key={sec.id} className="space-y-0.5">
+                  <div key={sec.id} className="space-y-1">
                     <button
                       type="button"
                       onClick={() => toggleSection(sec.id)}
-                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer text-left ${
+                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded text-xs font-semibold transition-colors cursor-pointer text-left ${
                         hasActiveChild 
-                          ? 'text-white bg-slate-900/80 border border-slate-800' 
-                          : 'text-slate-400 hover:text-white hover:bg-slate-900/50'
+                          ? 'text-white bg-slate-900 border border-slate-800' 
+                          : 'text-slate-300 hover:text-white hover:bg-slate-900/70'
                       }`}
                     >
-                      <div className="flex items-center space-x-2 min-w-0">
-                        <SecIcon className={`h-3.5 w-3.5 shrink-0 ${hasActiveChild ? 'text-blue-400' : 'text-slate-400'}`} />
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <SecIcon className={`h-4 w-4 shrink-0 ${hasActiveChild ? 'text-blue-400' : 'text-slate-400'}`} />
                         <span className="truncate">{sec.label}</span>
                       </div>
 
-                      <div className="flex items-center space-x-1 shrink-0">
+                      <div className="flex items-center space-x-1.5 shrink-0">
                         {sec.badge && (
-                          <span className="text-[8px] font-mono uppercase px-1 py-0.2 rounded font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300 border border-slate-700">
                             {sec.badge}
                           </span>
                         )}
-                        <ChevronDown className={`h-3 w-3 text-slate-500 transition-transform duration-150 ${
-                          isExpanded ? 'rotate-180 text-slate-300' : ''
+                        <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-150 ${
+                          isExpanded ? 'rotate-180 text-slate-200' : ''
                         }`} />
                       </div>
                     </button>
 
                     {/* Level 3: Granular Sub-Route Items with Tree Indentation */}
                     {isExpanded && sec.children && (
-                      <div className="relative pl-3 ml-2 border-l border-slate-800/80 space-y-0.5 my-0.5">
+                      <div className="relative pl-3.5 ml-2.5 border-l border-slate-800 space-y-1 my-1">
                         {sec.children.map((sub) => {
                           const SubIcon = sub.icon;
                           const isSubActive = activeTab === sub.id;
@@ -273,19 +273,19 @@ export function AdminLayout({
                                 onTabChange(sub.id);
                                 setSidebarOpen(false);
                               }}
-                              className={`w-full flex items-center justify-between px-2.5 py-1 rounded text-[11px] transition-colors cursor-pointer text-left ${
+                              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition-colors cursor-pointer text-left ${
                                 isSubActive
                                   ? 'bg-blue-600 text-white font-bold shadow-2xs'
                                   : 'text-slate-400 hover:text-white hover:bg-slate-900'
                               }`}
                             >
-                              <div className="flex items-center space-x-2 min-w-0">
-                                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${isSubActive ? 'bg-white' : 'bg-slate-600'}`}></span>
+                              <div className="flex items-center space-x-2.5 min-w-0">
+                                <span className={`h-2 w-2 rounded-full shrink-0 ${isSubActive ? 'bg-white' : 'bg-slate-600'}`}></span>
                                 <span className="truncate">{sub.label}</span>
                               </div>
 
                               {sub.badge && (
-                                <span className={`text-[7px] font-mono uppercase px-1 py-0.2 rounded font-bold ${
+                                <span className={`text-[8px] font-mono uppercase px-1.5 py-0.5 rounded font-bold ${
                                   isSubActive
                                     ? 'bg-white/20 text-white'
                                     : 'bg-slate-800 text-slate-400 border border-slate-700'
@@ -308,17 +308,17 @@ export function AdminLayout({
         </div>
 
         {/* User Account Info & Footer */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0">
+        <div className="p-3.5 border-t border-slate-800 bg-slate-950 shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2.5 min-w-0">
-              <div className="h-8 w-8 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="h-9 w-9 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
                 {user?.name?.charAt(0) || 'A'}
               </div>
               <div className="min-w-0">
                 <div className="text-xs font-bold truncate text-white">
                   {user?.name || 'Administrator'}
                 </div>
-                <div className="text-[10px] text-blue-400 truncate font-mono">
+                <div className="text-[11px] text-blue-400 truncate font-mono mt-0.5">
                   {user?.roles?.[0] || 'Super Admin'}
                 </div>
               </div>
@@ -327,10 +327,10 @@ export function AdminLayout({
             <button
               type="button"
               onClick={logout}
-              className="p-1.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 cursor-pointer transition-colors"
+              className="p-2 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 cursor-pointer transition-colors"
               title="Sign Out"
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -341,7 +341,7 @@ export function AdminLayout({
       <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
         
         {/* Top Navbar */}
-        <header className={`h-14 border-b sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 backdrop-blur-md transition-colors ${
+        <header className={`h-16 border-b sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 backdrop-blur-md transition-colors ${
           isDark ? 'border-slate-800/80 bg-slate-900/80' : 'border-slate-200 bg-white/90 shadow-2xs'
         }`}>
           
@@ -350,17 +350,17 @@ export function AdminLayout({
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-1.5 rounded border text-slate-400 hover:text-white"
+              className="lg:hidden p-2 rounded border text-slate-400 hover:text-white"
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-5 w-5" />
             </button>
 
             {/* Breadcrumb Navigation */}
-            <div className="flex items-center space-x-1.5 text-xs text-slate-400">
+            <div className="flex items-center space-x-2 text-xs sm:text-sm text-slate-400 font-medium">
               <span className="font-semibold text-slate-400">System</span>
               {breadcrumbs.map((crumb, i) => (
                 <React.Fragment key={i}>
-                  <ChevronRight className="h-3 w-3 text-slate-500" />
+                  <ChevronRight className="h-4 w-4 text-slate-500" />
                   <span className={`font-semibold ${i === breadcrumbs.length - 1 ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : ''}`}>
                     {crumb}
                   </span>
