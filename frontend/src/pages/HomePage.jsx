@@ -387,7 +387,7 @@ export default function HomePage() {
             ) : (
               <Link
                 to="/login"
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold shadow-md shadow-cyan-500/20 flex items-center space-x-1.5 transition-all"
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold shadow-sm flex items-center space-x-1.5 transition-all"
               >
                 <Lock className="h-3.5 w-3.5" />
                 <span>Admin Login</span>

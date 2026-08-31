@@ -27,11 +27,13 @@ Because the admin panel is data-dense, our base font size is slightly smaller th
 
 ## 3. Color Palette (Tailwind Tokens)
 
-### 3.1. Primary Brand (Indigo)
-Used for primary actions, active states, and focus rings.
-- **Primary Button:** `bg-indigo-600 hover:bg-indigo-700 text-white`
-- **Active Menu Item:** `bg-indigo-50 text-indigo-700`
-- **Focus Ring:** `focus:ring-2 focus:ring-indigo-500`
+### 3.1. Primary Brand & Action Buttons (Solid Colors Only)
+All buttons throughout the application MUST use flat, crisp, solid colors. **Gradients (e.g., `bg-gradient-to-r`) are strictly prohibited** for buttons across all pages and modules.
+- **Primary Button (Default):** `bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium`
+- **Secondary Button:** `bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700` (Dark) / `bg-white hover:bg-slate-100 text-slate-800 border border-slate-300` (Light)
+- **Active Menu Item:** `bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400`
+- **Focus Ring:** `focus:ring-2 focus:ring-blue-500 focus:outline-none`
+- **🚫 Button Rule:** No gradient fills (`bg-gradient-to-*`) on any interactive buttons. Keep styling clean, industrial, and enterprise-grade.
 
 ### 3.2. Surface & Backgrounds (Slate/White)
 - **App Background:** `bg-slate-50` (Off-white/light gray to reduce eye strain).

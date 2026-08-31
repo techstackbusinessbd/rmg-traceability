@@ -170,7 +170,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold shadow-lg shadow-cyan-500/25 flex items-center justify-center space-x-2 cursor-pointer transition-all disabled:opacity-50"
+              className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold shadow-md flex items-center justify-center space-x-2 cursor-pointer transition-all disabled:opacity-50"
             >
               <Lock className="h-4 w-4" />
               <span>{loading ? 'অথেন্টিকেশন যাচাই হচ্ছে...' : 'লগইন করুন (Sign In to Console)'}</span>
