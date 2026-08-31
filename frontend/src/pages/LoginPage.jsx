@@ -34,12 +34,13 @@ export default function LoginPage() {
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
-      {/* Textile Weave / Architectural Matrix Pattern (Tailored for RMG ERP) */}
+      {/* Dynamic Animated Textile Weave & Matrix Pattern */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.22]"
+        className="absolute inset-0 pointer-events-none opacity-[0.45] dark:opacity-[0.25] animate-pan-grid"
         style={{
           backgroundImage: `
-            radial-gradient(circle at 1px 1px, ${isDark ? '#475569' : '#94a3b8'} 1.2px, transparent 0)
+            radial-gradient(circle at 1px 1px, ${isDark ? '#60a5fa' : '#3b82f6'} 1.2px, transparent 0),
+            radial-gradient(circle at 13px 13px, ${isDark ? '#818cf8' : '#6366f1'} 1px, transparent 0)
           `,
           backgroundSize: '24px 24px',
           maskImage: 'radial-gradient(ellipse 70% 60% at 50% 50%, #000 60%, transparent 100%)',
@@ -47,18 +48,14 @@ export default function LoginPage() {
         }}
       />
 
-      {/* Modern Diagonal Linear Sheen / Textile Texture Layer */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.06]"
-        style={{
-          backgroundImage: `repeating-linear-gradient(45deg, #3b82f6 0, #3b82f6 1px, transparent 0, transparent 50%)`,
-          backgroundSize: '16px 16px'
-        }}
-      />
+      {/* Floating Animated Ambient Glow 1 */}
+      <div className={`absolute top-1/4 left-1/4 w-[450px] h-[450px] rounded-full blur-[120px] pointer-events-none animate-float-slow ${
+        isDark ? 'bg-blue-600/15' : 'bg-blue-400/20'
+      }`} />
 
-      {/* Subtle Ambient Radial Lighting */}
-      <div className={`absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[500px] rounded-full blur-[140px] pointer-events-none ${
-        isDark ? 'bg-blue-600/10' : 'bg-blue-400/10'
+      {/* Floating Animated Ambient Glow 2 */}
+      <div className={`absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[130px] pointer-events-none animate-float-reverse ${
+        isDark ? 'bg-indigo-600/15' : 'bg-indigo-400/20'
       }`} />
 
       {/* Content Container */}
