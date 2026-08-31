@@ -206,6 +206,119 @@ class UserController extends Controller
     }
 
     /**
+     * Create New Custom Security Role (Super Admin / Admin Only)
+     */
+    public function storeRole(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|min:2|max:50|unique:roles,name',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|exists:permissions,name',
+        ]);
+
+        $role = Role::create(['name' => $validated['name'], 'guard_name' => 'web']);
+
+        if (! empty($validated['permissions'])) {
+            $role->syncPermissions($validated['permissions']);
+        }
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'user_name' => $request->user()->name,
+            'action' => 'CREATE_ROLE',
+            'module' => 'AuthAdmin',
+            'payload' => ['role_id' => $role->id, 'role_name' => $role->name, 'permissions' => $validated['permissions'] ?? []],
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Role created successfully with permissions matrix.',
+            'data' => $role->load('permissions'),
+        ], 201);
+    }
+
+    /**
+     * Update Permissions Assigned to a Role (Super Admin / Admin Only)
+     */
+    public function updateRolePermissions(Request $request, string $id): JsonResponse
+    {
+        $role = Role::findById($id, 'web');
+
+        if (! $role) {
+            return response()->json(['status' => 'error', 'message' => 'Role not found.'], 404);
+        }
+
+        if ($role->name === 'Super Admin') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Super Admin permissions matrix is absolute and cannot be restricted.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'permissions' => 'required|array',
+            'permissions.*' => 'string|exists:permissions,name',
+        ]);
+
+        $role->syncPermissions($validated['permissions']);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'user_name' => $request->user()->name,
+            'action' => 'UPDATE_ROLE_PERMISSIONS',
+            'module' => 'AuthAdmin',
+            'payload' => ['role_id' => $role->id, 'role_name' => $role->name, 'permissions_count' => count($validated['permissions'])],
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Role permissions updated successfully.',
+            'data' => $role->fresh('permissions'),
+        ]);
+    }
+
+    /**
+     * Delete Role (Admin Only)
+     */
+    public function destroyRole(Request $request, string $id): JsonResponse
+    {
+        $role = Role::findById($id, 'web');
+
+        if (! $role) {
+            return response()->json(['status' => 'error', 'message' => 'Role not found.'], 404);
+        }
+
+        if (in_array($role->name, ['Super Admin', 'Admin', 'Line Supervisor', 'QC Inspector', 'Cutting Master', 'Packing Operator', 'Store Keeper'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Core system roles are protected and cannot be deleted.',
+            ], 403);
+        }
+
+        if ($role->users()->count() > 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Cannot delete role assigned to active users. Reassign users first.',
+            ], 400);
+        }
+
+        $role->delete();
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'user_name' => $request->user()->name,
+            'action' => 'DELETE_ROLE',
+            'module' => 'AuthAdmin',
+            'payload' => ['role_id' => $id, 'role_name' => $role->name],
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Role deleted successfully.',
+        ]);
+    }
+
+    /**
      * List registered Floor Devices (Admin Only)
      */
     public function devices(): JsonResponse

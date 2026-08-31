@@ -32,8 +32,8 @@ import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import RegisterUserModal from '../modules/AuthAdmin/components/RegisterUserModal';
 import RegisterDeviceModal from '../modules/AuthAdmin/components/RegisterDeviceModal';
-import ViewUserModal from '../modules/AuthAdmin/components/ViewUserModal';
 import EditUserModal from '../modules/AuthAdmin/components/EditUserModal';
+import RolePermissionModal from '../modules/AuthAdmin/components/RolePermissionModal';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
@@ -54,9 +54,11 @@ export default function AdminConsolePage() {
   };
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [showNewDeviceModal, setShowNewDeviceModal] = useState(false);
-  const [viewingUser, setViewingUser] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [editFormErrors, setEditFormErrors] = useState({});
+  const [editingRolePermissions, setEditingRolePermissions] = useState(null);
+  const [allPermissionsList, setAllPermissionsList] = useState([]);
+  const [savingRoleMatrix, setSavingRoleMatrix] = useState(false);
 
   // Admin lists
   const [usersList, setUsersList] = useState([]);
@@ -107,6 +109,7 @@ export default function AdminConsolePage() {
       setUsersList(uRes.data.data.data || []);
       setDevicesList(dRes.data.data || []);
       setRolesList(rRes.data.data.roles || []);
+      setAllPermissionsList(rRes.data.data.permissions || []);
       setAuditList(aRes.data.data.data || []);
       
       const sData = sRes.data.data || [];
@@ -119,6 +122,23 @@ export default function AdminConsolePage() {
       toast.error('Failed to load administrative records');
     } finally {
       setFetchLoading(false);
+    }
+  };
+
+  const handleSaveRolePermissions = async ({ roleId, permissions }) => {
+    setSavingRoleMatrix(true);
+    try {
+      await axios.put(`${API_BASE}/admin/roles/${roleId}/permissions`, {
+        permissions
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      toast.success('Role Permission Matrix updated successfully!');
+      setEditingRolePermissions(null);
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update role permissions');
+    } finally {
+      setSavingRoleMatrix(false);
     }
   };
 
@@ -707,23 +727,15 @@ export default function AdminConsolePage() {
                           {r.permissions?.length || 0} Scopes
                         </span>
                       </div>
-                      <div className="mt-3 space-y-1.5">
-                        <div className="text-[11px] text-slate-500 font-medium">Authorized Actions:</div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {r.permissions?.slice(0, 4).map((p) => (
-                            <span 
-                              key={p.id} 
-                              className={`text-[10px] px-2 py-0.5 rounded font-mono font-semibold border ${getPermissionTagStyle(p.name)}`}
-                            >
-                              {p.name}
-                            </span>
-                          ))}
-                          {(r.permissions?.length || 0) > 4 && (
-                            <span className="text-[10px] font-mono font-bold text-blue-600 self-center">
-                              +{r.permissions.length - 4} more
-                            </span>
-                          )}
-                        </div>
+                      <div className="mt-3 pt-3 border-t border-slate-700/20 flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => setEditingRolePermissions(r)}
+                          className="text-xs font-bold text-blue-500 hover:text-blue-400 cursor-pointer flex items-center space-x-1"
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          <span>Configure Permissions Matrix</span>
+                        </button>
                       </div>
                     </div>
                   );
@@ -907,6 +919,17 @@ export default function AdminConsolePage() {
         isDark={isDark}
         rolesList={rolesList}
         errors={editFormErrors}
+      />
+
+      {/* Modular Modal: Role Permission Matrix */}
+      <RolePermissionModal
+        show={Boolean(editingRolePermissions)}
+        onClose={() => setEditingRolePermissions(null)}
+        onSubmit={handleSaveRolePermissions}
+        role={editingRolePermissions}
+        allPermissions={allPermissionsList}
+        isDark={isDark}
+        loading={savingRoleMatrix}
       />
 
     </AdminLayout>

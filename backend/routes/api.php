@@ -41,8 +41,11 @@ Route::prefix('v1')->group(function () {
             Route::put('/users/{id}', [UserController::class, 'update']);
             Route::delete('/users/{id}', [UserController::class, 'destroy']);
             
-            // Roles & Permissions List
+            // Roles & Permissions Matrix
             Route::get('/roles', [UserController::class, 'roles']);
+            Route::post('/roles', [UserController::class, 'storeRole']);
+            Route::put('/roles/{id}/permissions', [UserController::class, 'updateRolePermissions']);
+            Route::delete('/roles/{id}', [UserController::class, 'destroyRole']);
             
             // Floor Devices (Tablets)
             Route::get('/devices', [UserController::class, 'devices']);
