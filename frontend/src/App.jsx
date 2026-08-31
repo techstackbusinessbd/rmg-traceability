@@ -56,6 +56,14 @@ export default function App() {
             </ProtectedAdminRoute>
           } 
         />
+        <Route 
+          path="/admin/:subRoute" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminConsolePage />
+            </ProtectedAdminRoute>
+          } 
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -148,23 +148,23 @@ export function AdminLayout({
     return 'access_control';
   };
 
-  // State: Only the currently active section is expanded by default
+  // State: Only the currently active section is expanded
   const [expandedSections, setExpandedSections] = useState(() => ({
     [getActiveSectionId(activeTab)]: true
   }));
 
-  // Auto expand when activeTab changes
+  // Auto expand ONLY the active section and collapse others when activeTab changes
   React.useEffect(() => {
     const currentSectionId = getActiveSectionId(activeTab);
-    setExpandedSections(prev => ({
-      ...prev,
+    setExpandedSections({
       [currentSectionId]: true
-    }));
+    });
   }, [activeTab]);
 
+  // Accordion Toggle: Clicking an accordion opens it and closes all others
   const toggleSection = (sectionId) => {
     setExpandedSections(prev => ({
-      ...prev,
+      // If it's already open, close it; otherwise open only this one
       [sectionId]: !prev[sectionId]
     }));
   };

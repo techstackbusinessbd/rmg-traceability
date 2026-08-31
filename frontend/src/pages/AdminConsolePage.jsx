@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ShieldCheck, 
   Users, 
@@ -33,9 +33,15 @@ const API_BASE = 'http://localhost:8000/api/v1';
 
 export default function AdminConsolePage() {
   const navigate = useNavigate();
+  const { subRoute } = useParams();
   const { token, isAuthenticated } = useAuthStore();
   const { isDark } = useThemeStore();
-  const [activeTab, setActiveTab] = useState('users');
+  
+  const activeTab = subRoute || 'users';
+
+  const handleTabChange = (tabId) => {
+    navigate(`/admin/${tabId}`);
+  };
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [showNewDeviceModal, setShowNewDeviceModal] = useState(false);
 
@@ -222,7 +228,7 @@ export default function AdminConsolePage() {
   return (
     <AdminLayout 
       activeTab={activeTab} 
-      onTabChange={setActiveTab}
+      onTabChange={handleTabChange}
       breadcrumbs={getBreadcrumbs()}
     >
       <Toaster position="top-right" />
