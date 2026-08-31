@@ -24,6 +24,27 @@ export default function AdminConsolePage() {
   const { user, token, isAuthenticated, logout } = useAuthStore();
   const { isDark, toggleTheme } = useThemeStore();
   const [activeAdminTab, setActiveAdminTab] = useState('users');
+  const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [showNewDeviceModal, setShowNewDeviceModal] = useState(false);
+
+  // Admin management lists
+  const [usersList, setUsersList] = useState([]);
+  const [devicesList, setDevicesList] = useState([]);
+  const [rolesList, setRolesList] = useState([]);
+  const [auditList, setAuditList] = useState([]);
+  const [fetchLoading, setFetchLoading] = useState(false);
+
+  // Form states
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('Password123!');
+  const [newUserRole, setNewUserRole] = useState('Line Supervisor');
+  const [createMsg, setCreateMsg] = useState('');
+
+  const [newDevName, setNewDevName] = useState('');
+  const [newDevCode, setNewDevCode] = useState('');
+  const [newDevPin, setNewDevPin] = useState('123456');
+  const [newDevLine, setNewDevLine] = useState('Line 01');
 
   useEffect(() => {
     if (!isAuthenticated) {
