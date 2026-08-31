@@ -95,9 +95,18 @@ class AuthAdminSeeder extends Seeder
         }
 
         // 3. Define Roles & Assign Permissions
+        // Super Admin (Platform Owner / Root Administrator): All permissions + platform management
         $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin', 'guard_name' => 'web']);
-        // Super Admin gets all permissions via Gate bypass or direct assignment
         $superAdminRole->givePermissionTo(Permission::all());
+
+        // Admin (Factory/Operations Admin): Full factory management power except system-destructive core settings
+        $adminRole = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
+        $adminPermissions = Permission::whereNotIn('name', [
+            'admin.roles.create',
+            'admin.roles.edit',
+            'admin.users.delete',
+        ])->get();
+        $adminRole->syncPermissions($adminPermissions);
 
         $cuttingMasterRole = Role::firstOrCreate(['name' => 'Cutting Master', 'guard_name' => 'web']);
         $cuttingMasterRole->givePermissionTo([
@@ -136,9 +145,10 @@ class AuthAdminSeeder extends Seeder
 
         // 4. Create Initial Default Super Admin User
         $superAdmin = User::firstOrCreate(
-            ['email' => 'admin@rmgtrace.com'],
+            ['emp_id' => 'EMP-SUPERADMIN'],
             [
                 'name' => 'System Super Admin',
+                'email' => 'admin@rmgtrace.com',
                 'password' => Hash::make('Admin@123456'),
                 'is_active' => true,
                 'email_verified_at' => now(),
