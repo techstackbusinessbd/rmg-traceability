@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
-  Lock, 
-  Mail, 
-  KeyRound, 
-  ArrowLeft, 
   AlertCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  ArrowLeft,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
@@ -18,6 +17,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState('Admin@123456');
   const [showPassword, setShowPassword] = useState(false);
 
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved !== null) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const res = await login(email, password);
@@ -27,29 +41,53 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4 font-sans text-slate-100 selection:bg-blue-600 selection:text-white">
+    <div className={`min-h-screen flex flex-col justify-center items-center p-4 font-sans transition-colors duration-300 ${
+      isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
+    }`}>
       
-      {/* Back to Home Link */}
-      <div className="w-full max-w-sm mb-4">
+      {/* Top Bar with Back Link and Theme Toggle */}
+      <div className="w-full max-w-sm mb-4 flex items-center justify-between">
         <Link 
           to="/" 
-          className="inline-flex items-center space-x-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+          className={`inline-flex items-center space-x-1.5 text-xs font-medium transition-colors ${
+            isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+          }`}
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to Overview</span>
         </Link>
+
+        <button
+          onClick={() => setIsDark(!isDark)}
+          className={`p-1.5 rounded-md border transition-all flex items-center justify-center cursor-pointer ${
+            isDark
+              ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-yellow-400 shadow-xs'
+              : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-xs'
+          }`}
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
       </div>
 
-      {/* Clean Single Box Container */}
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-lg p-6 sm:p-8 shadow-md">
+      {/* Clean Single Card Container */}
+      <div className={`w-full max-w-sm border rounded-lg p-6 sm:p-8 transition-colors duration-300 ${
+        isDark 
+          ? 'bg-slate-900 border-slate-800 shadow-md' 
+          : 'bg-white border-slate-200 shadow-sm'
+      }`}>
         
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex h-10 w-10 bg-blue-600 rounded-md items-center justify-center font-bold text-white text-lg mb-3">
+          <div className="inline-flex h-10 w-10 bg-blue-600 rounded-md items-center justify-center font-bold text-white text-lg mb-3 shadow-xs">
             R
           </div>
-          <h1 className="text-lg font-bold text-white tracking-tight">RMG Traceability ERP</h1>
-          <p className="text-xs text-slate-400 mt-0.5">Admin Authentication</p>
+          <h1 className={`text-lg font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            RMG Traceability ERP
+          </h1>
+          <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Admin Authentication
+          </p>
         </div>
 
         {/* Error Notification */}
@@ -60,10 +98,10 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Direct Clean Form */}
+        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1">
+            <label className={`text-xs font-medium block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
               Email Address
             </label>
             <input
@@ -72,28 +110,36 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@rmgtrace.com"
               required
-              className="w-full px-3 py-2 rounded text-xs bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className={`w-full px-3 py-2 rounded text-xs border transition-colors focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
+                isDark 
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' 
+                  : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'
+              }`}
             />
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-medium text-slate-300">
-                Password
-              </label>
-            </div>
+            <label className={`text-xs font-medium block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+              Password
+            </label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 pr-9 rounded text-xs bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all font-mono"
+                className={`w-full px-3 py-2 pr-9 rounded text-xs border font-mono transition-colors focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
+                  isDark 
+                    ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' 
+                    : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'
+                }`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-200 cursor-pointer"
+                className={`absolute right-2.5 top-2.5 cursor-pointer ${
+                  isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700'
+                }`}
               >
                 {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
               </button>
@@ -112,7 +158,7 @@ export default function LoginPage() {
       </div>
 
       {/* Footer */}
-      <div className="text-center mt-6 text-[11px] text-slate-500">
+      <div className={`text-center mt-6 text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
         &copy; 2026 RMG Traceability ERP. All Rights Reserved.
       </div>
 
