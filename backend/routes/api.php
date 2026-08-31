@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\AuthAdmin\Controllers\AuthController;
+use App\Domains\AuthAdmin\Controllers\SystemSettingController;
 use App\Domains\AuthAdmin\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,12 +14,15 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
 
     // -------------------------------------------------------------
-    // MODULE 01: PUBLIC AUTH ROUTES
+    // MODULE 01: PUBLIC AUTH & CONFIG ROUTES
     // -------------------------------------------------------------
     Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/device-login', [AuthController::class, 'deviceLogin']);
     });
+
+    // Public Settings for Floor Tablets
+    Route::get('/settings/public', [SystemSettingController::class, 'publicSettings']);
 
     // -------------------------------------------------------------
     // MODULE 01: PROTECTED ROUTES (SANCTUM BEARER TOKEN)
@@ -29,7 +33,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
 
-        // Admin-Only Protected User Management
+        // Admin-Only Protected User & System Management
         Route::prefix('admin')->group(function () {
             Route::get('/users', [UserController::class, 'index']);
             Route::post('/users', [UserController::class, 'store']); // Only Admin can register users
@@ -44,6 +48,10 @@ Route::prefix('v1')->group(function () {
             
             // Immutable Audit Trail
             Route::get('/audit-logs', [UserController::class, 'auditLogs']);
+
+            // Dynamic System Settings (Redis Cached)
+            Route::get('/settings', [SystemSettingController::class, 'index']);
+            Route::post('/settings', [SystemSettingController::class, 'update']);
         });
 
     });

@@ -168,5 +168,8 @@ class AuthAdminSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+
+        // 6. Seed Default Configurable System Settings (Redis Cached)
+        app(\App\Domains\AuthAdmin\Services\SystemSettingService::class)->seedDefaults();
     }
 }

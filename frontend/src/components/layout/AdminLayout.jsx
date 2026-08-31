@@ -46,6 +46,7 @@ const navigationGroups = [
           { id: 'devices', label: 'Floor Tablets', icon: Smartphone, badge: 'PIN Locked' },
           { id: 'roles', label: 'Roles & Scopes', icon: KeyRound },
           { id: 'audit', label: 'Audit Logs', icon: History },
+          { id: 'settings', label: 'System Configuration', icon: SlidersHorizontal },
         ]
       },
       {
