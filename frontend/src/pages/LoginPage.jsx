@@ -34,28 +34,16 @@ export default function LoginPage() {
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
-      {/* High-End Revolving Conic Aurora Beam & Radial Rings */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
+      {/* Clean Premium Enterprise Subtle Glow & Vignette */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Top Centered Soft Illumination */}
+        <div className={`absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] rounded-full blur-[120px] ${
+          isDark ? 'bg-blue-600/15' : 'bg-blue-400/20'
+        }`} />
         
-        {/* Rotating Conic Spotlight Ray */}
-        <div 
-          className={`w-[800px] h-[800px] rounded-full opacity-[0.25] dark:opacity-[0.18] animate-spin-super-slow blur-3xl ${
-            isDark 
-              ? 'bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0deg,#4f46e5_120deg,#06b6d4_240deg,#2563eb_360deg)]' 
-              : 'bg-[conic-gradient(from_0deg_at_50%_50%,#3b82f6_0deg,#6366f1_120deg,#0284c7_240deg,#3b82f6_360deg)]'
-          }`}
-        />
-
-        {/* Dynamic Concentric Orbit Rings (Radar / Traceability Scanner Motif) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.15] dark:opacity-[0.12]">
-          <div className="w-[350px] h-[350px] rounded-full border border-blue-500 animate-pulse-glow" />
-          <div className="absolute w-[550px] h-[550px] rounded-full border border-indigo-500/80" />
-          <div className="absolute w-[750px] h-[750px] rounded-full border border-dashed border-slate-400" />
-        </div>
-
-        {/* Ambient Pulsing Core Glow */}
-        <div className={`absolute w-[400px] h-[400px] rounded-full blur-[100px] animate-pulse-glow ${
-          isDark ? 'bg-blue-600/20' : 'bg-blue-400/25'
+        {/* Bottom Ambient Tint */}
+        <div className={`absolute -bottom-32 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[140px] ${
+          isDark ? 'bg-indigo-900/10' : 'bg-indigo-200/30'
         }`} />
       </div>
 
