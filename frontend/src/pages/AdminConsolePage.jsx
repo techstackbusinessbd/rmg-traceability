@@ -63,11 +63,13 @@ export default function AdminConsolePage() {
   const [newUserConfirmPassword, setNewUserConfirmPassword] = useState('Password123!');
   const [newUserRole, setNewUserRole] = useState('Line Supervisor');
   const [newUserStatus, setNewUserStatus] = useState(true);
+  const [userFormErrors, setUserFormErrors] = useState({});
 
   const [newDevName, setNewDevName] = useState('');
   const [newDevCode, setNewDevCode] = useState('');
   const [newDevPin, setNewDevPin] = useState('123456');
   const [newDevLine, setNewDevLine] = useState('Line 01');
+  const [deviceFormErrors, setDeviceFormErrors] = useState({});
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -126,10 +128,7 @@ export default function AdminConsolePage() {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    if (newUserPassword !== newUserConfirmPassword) {
-      toast.error('Password and Confirm Password do not match!');
-      return;
-    }
+    setUserFormErrors({});
 
     try {
       await axios.post(`${API_BASE}/admin/users`, {
@@ -149,15 +148,25 @@ export default function AdminConsolePage() {
       setNewUserPassword('Password123!');
       setNewUserConfirmPassword('Password123!');
       setNewUserStatus(true);
+      setUserFormErrors({});
       setShowNewUserModal(false);
       fetchAdminData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Error creating user');
+      const resp = err.response?.data;
+      if (resp?.errors) {
+        setUserFormErrors(resp.errors);
+        const firstErrorKey = Object.keys(resp.errors)[0];
+        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
+      } else {
+        toast.error(resp?.message || 'Error creating user');
+      }
     }
   };
 
   const handleCreateDevice = async (e) => {
     e.preventDefault();
+    setDeviceFormErrors({});
+
     try {
       await axios.post(`${API_BASE}/admin/devices`, {
         device_name: newDevName,
@@ -170,10 +179,18 @@ export default function AdminConsolePage() {
       toast.success('Floor Tablet registered & line-locked!');
       setNewDevName('');
       setNewDevCode('');
+      setDeviceFormErrors({});
       setShowNewDeviceModal(false);
       fetchAdminData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Error registering device');
+      const resp = err.response?.data;
+      if (resp?.errors) {
+        setDeviceFormErrors(resp.errors);
+        const firstErrorKey = Object.keys(resp.errors)[0];
+        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
+      } else {
+        toast.error(resp?.message || 'Error registering device');
+      }
     }
   };
 
@@ -662,32 +679,52 @@ export default function AdminConsolePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold block mb-1">
-                    Employee ID <span className="text-red-500">*</span>
+                    Employee ID <span className="text-red-500 font-bold">*</span>
                   </label>
                   <input
                     type="text"
                     value={newEmpId}
-                    onChange={(e) => setNewEmpId(e.target.value)}
+                    onChange={(e) => {
+                      setNewEmpId(e.target.value);
+                      if (userFormErrors.emp_id) setUserFormErrors(prev => ({ ...prev, emp_id: null }));
+                    }}
                     placeholder="e.g. EMP-10492"
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${
-                      isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 font-mono ${
+                      userFormErrors.emp_id 
+                        ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
+                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
                     }`}
                   />
+                  {userFormErrors.emp_id && (
+                    <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                      {userFormErrors.emp_id[0]}
+                    </span>
+                  )}
                 </div>
 
                 <div>
                   <label className="text-xs font-semibold block mb-1">
-                    Full Name <span className="text-red-500">*</span>
+                    Full Name <span className="text-red-500 font-bold">*</span>
                   </label>
                   <input
                     type="text"
                     value={newUserName}
-                    onChange={(e) => setNewUserName(e.target.value)}
+                    onChange={(e) => {
+                      setNewUserName(e.target.value);
+                      if (userFormErrors.name) setUserFormErrors(prev => ({ ...prev, name: null }));
+                    }}
                     placeholder="e.g. John Doe"
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                      isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 ${
+                      userFormErrors.name 
+                        ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
+                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
                     }`}
                   />
+                  {userFormErrors.name && (
+                    <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                      {userFormErrors.name[0]}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -698,39 +735,73 @@ export default function AdminConsolePage() {
                 <input
                   type="email"
                   value={newUserEmail}
-                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  onChange={(e) => {
+                    setNewUserEmail(e.target.value);
+                    if (userFormErrors.email) setUserFormErrors(prev => ({ ...prev, email: null }));
+                  }}
                   placeholder="john@factory.com (optional)"
-                  className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                  className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 ${
+                    userFormErrors.email 
+                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
+                      : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
                   }`}
                 />
+                {userFormErrors.email && (
+                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                    {userFormErrors.email[0]}
+                  </span>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold block mb-1">Password</label>
+                  <label className="text-xs font-semibold block mb-1">
+                    Password <span className="text-red-500 font-bold">*</span>
+                  </label>
                   <input
                     type="password"
                     value={newUserPassword}
-                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    onChange={(e) => {
+                      setNewUserPassword(e.target.value);
+                      if (userFormErrors.password) setUserFormErrors(prev => ({ ...prev, password: null }));
+                    }}
                     placeholder="Min 8 characters"
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                      isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 ${
+                      userFormErrors.password 
+                        ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
+                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
                     }`}
                   />
+                  {userFormErrors.password && (
+                    <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                      {userFormErrors.password[0]}
+                    </span>
+                  )}
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold block mb-1">Confirm Password</label>
+                  <label className="text-xs font-semibold block mb-1">
+                    Confirm Password <span className="text-red-500 font-bold">*</span>
+                  </label>
                   <input
                     type="password"
                     value={newUserConfirmPassword}
-                    onChange={(e) => setNewUserConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      setNewUserConfirmPassword(e.target.value);
+                      if (userFormErrors.password_confirmation) setUserFormErrors(prev => ({ ...prev, password_confirmation: null }));
+                    }}
                     placeholder="Repeat password"
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                      isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 ${
+                      userFormErrors.password_confirmation 
+                        ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
+                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
                     }`}
                   />
+                  {userFormErrors.password_confirmation && (
+                    <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                      {userFormErrors.password_confirmation[0]}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -812,54 +883,102 @@ export default function AdminConsolePage() {
 
             <form onSubmit={handleCreateDevice} noValidate className="space-y-3">
               <div>
-                <label className="text-xs font-semibold block mb-1">Device Name</label>
+                <label className="text-xs font-semibold block mb-1">
+                  Device Name <span className="text-red-500 font-bold">*</span>
+                </label>
                 <input
                   type="text"
                   value={newDevName}
-                  onChange={(e) => setNewDevName(e.target.value)}
+                  onChange={(e) => {
+                    setNewDevName(e.target.value);
+                    if (deviceFormErrors.device_name) setDeviceFormErrors(prev => ({ ...prev, device_name: null }));
+                  }}
                   placeholder="e.g. Sewing Line 02 Tablet"
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 ${
+                    deviceFormErrors.device_name 
+                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
+                      : isDark ? 'bg-slate-950 border-slate-800 text-white focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:ring-blue-500'
                   }`}
                 />
+                {deviceFormErrors.device_name && (
+                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                    {deviceFormErrors.device_name[0]}
+                  </span>
+                )}
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1">Device Code (Unique)</label>
+                <label className="text-xs font-semibold block mb-1">
+                  Device Code (Unique) <span className="text-red-500 font-bold">*</span>
+                </label>
                 <input
                   type="text"
                   value={newDevCode}
-                  onChange={(e) => setNewDevCode(e.target.value)}
+                  onChange={(e) => {
+                    setNewDevCode(e.target.value);
+                    if (deviceFormErrors.device_code) setDeviceFormErrors(prev => ({ ...prev, device_code: null }));
+                  }}
                   placeholder="TAB-SEW-L02"
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 ${
+                    deviceFormErrors.device_code 
+                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
+                      : isDark ? 'bg-slate-950 border-slate-800 text-white focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:ring-blue-500'
                   }`}
                 />
+                {deviceFormErrors.device_code && (
+                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                    {deviceFormErrors.device_code[0]}
+                  </span>
+                )}
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1">6-Digit Security PIN</label>
+                <label className="text-xs font-semibold block mb-1">
+                  6-Digit Security PIN <span className="text-red-500 font-bold">*</span>
+                </label>
                 <input
                   type="text"
                   value={newDevPin}
-                  onChange={(e) => setNewDevPin(e.target.value)}
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono tracking-widest ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                  onChange={(e) => {
+                    setNewDevPin(e.target.value);
+                    if (deviceFormErrors.pin_code) setDeviceFormErrors(prev => ({ ...prev, pin_code: null }));
+                  }}
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 font-mono tracking-widest ${
+                    deviceFormErrors.pin_code 
+                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
+                      : isDark ? 'bg-slate-950 border-slate-800 text-white focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:ring-blue-500'
                   }`}
                 />
+                {deviceFormErrors.pin_code && (
+                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                    {deviceFormErrors.pin_code[0]}
+                  </span>
+                )}
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1">Lock to Production Line</label>
+                <label className="text-xs font-semibold block mb-1">
+                  Lock to Production Line <span className="text-red-500 font-bold">*</span>
+                </label>
                 <input
                   type="text"
                   value={newDevLine}
-                  onChange={(e) => setNewDevLine(e.target.value)}
+                  onChange={(e) => {
+                    setNewDevLine(e.target.value);
+                    if (deviceFormErrors.line_name) setDeviceFormErrors(prev => ({ ...prev, line_name: null }));
+                  }}
                   placeholder="Sewing Line 02"
-                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                  className={`w-full px-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 ${
+                    deviceFormErrors.line_name 
+                      ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
+                      : isDark ? 'bg-slate-950 border-slate-800 text-white focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:ring-blue-500'
                   }`}
                 />
+                {deviceFormErrors.line_name && (
+                  <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                    {deviceFormErrors.line_name[0]}
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center space-x-2 pt-3">
