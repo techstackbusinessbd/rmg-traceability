@@ -47,10 +47,19 @@ Both Local and Production environments will spin up the following services via D
 
 ---
 
-## 4. CI/CD Pipeline (Continuous Integration / Deployment)
-Manual deployments (e.g., FTP upload or manual `git pull` on the server) are strictly prohibited.
+## 4. CI/CD & Git Branching Strategy (Strict Separation)
+Manual deployments are strictly prohibited. **Development and Production environments MUST remain completely isolated via Git branches.**
 
-### 4.1. The GitHub Actions Workflow
+### 4.1. Git Branching Hierarchy
+- **`develop` Branch (Active Development):**
+  - All ongoing sprint work, feature additions, bug fixes, and development pushes MUST be committed directly to `develop` or feature branches merged into `develop`.
+  - **🚫 Absolute Rule:** Never push untested or experimental development code directly to `main`.
+- **`main` Branch (Production / Final Release Only):**
+  - Represents stable, tested, release-ready software.
+  - Code is promoted to `main` ONLY via thoroughly reviewed Pull Requests (PRs) from `develop` after QA passes all automated test suites.
+  - Pushing to `main` automatically triggers the production CI/CD deployment pipeline.
+
+### 4.2. The GitHub Actions Workflow
 When a developer pushes code to the `main` branch, the pipeline triggers:
 
 1. **Test Phase:** 
