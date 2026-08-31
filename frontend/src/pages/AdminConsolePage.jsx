@@ -25,12 +25,15 @@ import {
   Trash2,
   UserCheck,
   UserX,
-  Power
+  Power,
+  Eye
 } from 'lucide-react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import RegisterUserModal from '../modules/AuthAdmin/components/RegisterUserModal';
 import RegisterDeviceModal from '../modules/AuthAdmin/components/RegisterDeviceModal';
+import ViewUserModal from '../modules/AuthAdmin/components/ViewUserModal';
+import EditUserModal from '../modules/AuthAdmin/components/EditUserModal';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
@@ -51,6 +54,9 @@ export default function AdminConsolePage() {
   };
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [showNewDeviceModal, setShowNewDeviceModal] = useState(false);
+  const [viewingUser, setViewingUser] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editFormErrors, setEditFormErrors] = useState({});
 
   // Admin lists
   const [usersList, setUsersList] = useState([]);
@@ -215,6 +221,31 @@ export default function AdminConsolePage() {
     }
   };
 
+  const handleUpdateUser = async (formData) => {
+    setEditFormErrors({});
+    try {
+      await axios.put(`${API_BASE}/admin/users/${formData.id}`, {
+        name: formData.name,
+        role: formData.role,
+        is_active: formData.is_active
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      toast.success('User updated successfully!');
+      setEditingUser(null);
+      setEditFormErrors({});
+      fetchAdminData();
+    } catch (err) {
+      const resp = err.response?.data;
+      if (resp?.errors) {
+        setEditFormErrors(resp.errors);
+        const firstErrorKey = Object.keys(resp.errors)[0];
+        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
+      } else {
+        toast.error(resp?.message || 'Failed to update user');
+      }
+    }
+  };
+
   const handleDeleteUser = async (user) => {
     if (!window.confirm(`Are you sure you want to delete user ${user.name}? This action cannot be undone.`)) {
       return;
@@ -334,39 +365,60 @@ export default function AdminConsolePage() {
       render: (row) => {
         const isSuperAdmin = row.roles?.[0]?.name === 'Super Admin' || row.emp_id === 'EMP-SUPERADMIN' || row.email === 'admin@rmgtrace.com';
 
-        if (isSuperAdmin) {
-          return (
-            <div className="flex items-center justify-end">
-              <span className="inline-flex items-center space-x-1 text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20" title="Platform Root Administrator (Protected)">
-                <ShieldCheck className="h-3 w-3" />
-                <span>ROOT OWNER</span>
-              </span>
-            </div>
-          );
-        }
-
         return (
-          <div className="flex items-center justify-end space-x-1.5">
+          <div className="flex items-center justify-end space-x-1">
+            {/* View User Button */}
             <button
               type="button"
-              onClick={() => handleToggleUserStatus(row)}
-              title={row.is_active ? 'Suspend User' : 'Activate User'}
-              className={`p-1.5 rounded transition-colors cursor-pointer ${
-                row.is_active 
-                  ? 'hover:bg-amber-500/10 text-slate-400 hover:text-amber-500' 
-                  : 'hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-500'
-              }`}
+              onClick={() => setViewingUser(row)}
+              title="View User Details"
+              className="p-1.5 rounded hover:bg-blue-500/10 text-slate-400 hover:text-blue-500 transition-colors cursor-pointer"
             >
-              {row.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+              <Eye className="h-4 w-4" />
             </button>
+
+            {/* Edit User Button */}
             <button
               type="button"
-              onClick={() => handleDeleteUser(row)}
-              title="Delete User"
-              className="p-1.5 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+              onClick={() => setEditingUser(row)}
+              title="Edit User"
+              className="p-1.5 rounded hover:bg-blue-500/10 text-slate-400 hover:text-blue-500 transition-colors cursor-pointer"
             >
-              <Trash2 className="h-4 w-4" />
+              <Edit2 className="h-4 w-4" />
             </button>
+
+            {isSuperAdmin ? (
+              <span className="inline-flex items-center space-x-1 text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 ml-1" title="Platform Root Administrator (Protected)">
+                <ShieldCheck className="h-3 w-3" />
+                <span>ROOT</span>
+              </span>
+            ) : (
+              <>
+                {/* Toggle Suspend / Activate */}
+                <button
+                  type="button"
+                  onClick={() => handleToggleUserStatus(row)}
+                  title={row.is_active ? 'Suspend User' : 'Activate User'}
+                  className={`p-1.5 rounded transition-colors cursor-pointer ${
+                    row.is_active 
+                      ? 'hover:bg-amber-500/10 text-slate-400 hover:text-amber-500' 
+                      : 'hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-500'
+                  }`}
+                >
+                  {row.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                </button>
+
+                {/* Delete User */}
+                <button
+                  type="button"
+                  onClick={() => handleDeleteUser(row)}
+                  title="Delete User"
+                  className="p-1.5 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </>
+            )}
           </div>
         );
       }
@@ -841,6 +893,32 @@ export default function AdminConsolePage() {
         devLine={newDevLine}
         setDevLine={setNewDevLine}
         errors={deviceFormErrors}
+      />
+
+      {/* Modular Modal: View User Details */}
+      <ViewUserModal
+        show={Boolean(viewingUser)}
+        onClose={() => setViewingUser(null)}
+        user={viewingUser}
+        isDark={isDark}
+        onEdit={(u) => {
+          setViewingUser(null);
+          setEditingUser(u);
+        }}
+      />
+
+      {/* Modular Modal: Edit User */}
+      <EditUserModal
+        show={Boolean(editingUser)}
+        onClose={() => {
+          setEditingUser(null);
+          setEditFormErrors({});
+        }}
+        onSubmit={handleUpdateUser}
+        user={editingUser}
+        isDark={isDark}
+        rolesList={rolesList}
+        errors={editFormErrors}
       />
 
     </AdminLayout>
