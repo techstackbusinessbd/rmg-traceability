@@ -16,17 +16,20 @@ class AuthController extends Controller
     ) {}
 
     /**
-     * Web Admin Login (Public)
+     * Web Admin Login (Public - accepts Emp ID, Username, or Email)
      */
     public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'email' => 'required|email',
+            'login' => 'required_without:email|string',
+            'email' => 'nullable|string',
             'password' => 'required|string',
         ]);
 
+        $identifier = $validated['login'] ?? $validated['email'];
+
         $result = $this->authService->login(
-            $validated['email'],
+            $identifier,
             $validated['password'],
             $request->ip(),
             $request->userAgent()

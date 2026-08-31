@@ -18,21 +18,21 @@ class AuthService
     ) {}
 
     /**
-     * User Login & Token Generation
+     * User Login & Token Generation (supports Employee ID, Username, or Email)
      */
-    public function login(string $email, string $password, ?string $ip = null, ?string $userAgent = null): array
+    public function login(string $identifier, string $password, ?string $ip = null, ?string $userAgent = null): array
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->userRepository->findByLoginIdentifier($identifier);
 
         if (! $user || ! Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Invalid email or password credentials provided.'],
+                'login' => ['Invalid Employee ID, username, or password credentials provided.'],
             ]);
         }
 
         if (! $user->is_active) {
             throw ValidationException::withMessages([
-                'email' => ['Your account has been deactivated. Please contact the administrator.'],
+                'login' => ['Your account has been deactivated. Please contact the administrator.'],
             ]);
         }
 
@@ -47,12 +47,13 @@ class AuthService
             'module' => 'AuthAdmin',
             'ip_address' => $ip,
             'user_agent' => $userAgent,
-            'payload' => ['email' => $email],
+            'payload' => ['identifier' => $identifier],
         ]);
 
         return [
             'user' => [
                 'id' => $user->id,
+                'emp_id' => $user->emp_id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'roles' => $user->getRoleNames(),

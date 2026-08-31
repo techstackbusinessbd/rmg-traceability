@@ -558,12 +558,15 @@ export default function AdminConsolePage() {
             <form onSubmit={handleCreateUser} className="space-y-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold block mb-1">Employee ID (Optional)</label>
+                  <label className="text-xs font-semibold block mb-1">
+                    Employee ID <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     value={newEmpId}
                     onChange={(e) => setNewEmpId(e.target.value)}
                     placeholder="e.g. EMP-10492"
+                    required
                     className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${
                       isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                     }`}
@@ -571,7 +574,9 @@ export default function AdminConsolePage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold block mb-1">Full Name</label>
+                  <label className="text-xs font-semibold block mb-1">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     value={newUserName}
@@ -586,13 +591,14 @@ export default function AdminConsolePage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1">Email Address</label>
+                <label className="text-xs font-semibold block mb-1">
+                  Email Address <span className="text-slate-500 font-normal">(Optional)</span>
+                </label>
                 <input
                   type="email"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
-                  placeholder="john@factory.com"
-                  required
+                  placeholder="john@factory.com (optional)"
                   className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                     isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                   }`}

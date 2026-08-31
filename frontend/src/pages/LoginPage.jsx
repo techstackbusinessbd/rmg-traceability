@@ -17,13 +17,13 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login, loading, error } = useAuthStore();
   const { isDark, toggleTheme } = useThemeStore();
-  const [email, setEmail] = useState('admin@rmgtrace.com');
+  const [loginIdentifier, setLoginIdentifier] = useState('EMP-SUPERADMIN');
   const [password, setPassword] = useState('Admin@123456');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await login(email, password);
+    const res = await login(loginIdentifier, password);
     if (res.success) {
       navigate('/admin');
     }
@@ -103,13 +103,13 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className={`text-xs font-semibold block mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                Email Address
+                Employee ID / Username / Email
               </label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@rmgtrace.com"
+                type="text"
+                value={loginIdentifier}
+                onChange={(e) => setLoginIdentifier(e.target.value)}
+                placeholder="e.g. EMP-1001 or admin"
                 required
                 className={`w-full px-3 py-2 rounded text-xs border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   isDark 

@@ -8,6 +8,14 @@ use Illuminate\Support\Collection;
 
 class UserRepository
 {
+    public function findByLoginIdentifier(string $identifier): ?User
+    {
+        return User::where('emp_id', $identifier)
+            ->orWhere('email', $identifier)
+            ->orWhere('name', $identifier)
+            ->first();
+    }
+
     public function findByEmail(string $email): ?User
     {
         return User::where('email', $email)->first();
@@ -26,8 +34,9 @@ class UserRepository
     public function create(array $data): User
     {
         return User::create([
+            'emp_id' => $data['emp_id'],
             'name' => $data['name'],
-            'email' => $data['email'],
+            'email' => $data['email'] ?? null,
             'password' => $data['password'],
             'is_active' => $data['is_active'] ?? true,
         ]);

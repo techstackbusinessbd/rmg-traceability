@@ -10,10 +10,10 @@ export const useAuthStore = create((set, get) => ({
   loading: false,
   error: null,
 
-  login: async (email, password) => {
+  login: async (loginIdentifier, password) => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.post(`${API_BASE}/auth/login`, { email, password });
+      const response = await axios.post(`${API_BASE}/auth/login`, { login: loginIdentifier, password });
       const { user, token } = response.data.data;
       
       localStorage.setItem('auth_token', token);
@@ -22,7 +22,7 @@ export const useAuthStore = create((set, get) => ({
       set({ user, token, isAuthenticated: true, loading: false });
       return { success: true };
     } catch (err) {
-      const msg = err.response?.data?.message || 'Login failed. Invalid credentials.';
+      const msg = err.response?.data?.message || err.response?.data?.errors?.login?.[0] || 'Login failed. Invalid credentials.';
       set({ error: msg, loading: false });
       return { success: false, error: msg };
     }
