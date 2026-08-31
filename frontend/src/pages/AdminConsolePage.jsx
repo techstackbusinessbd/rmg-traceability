@@ -669,16 +669,16 @@ export default function AdminConsolePage() {
       {/* Modal: Register New User */}
       {showNewUserModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`max-w-md w-full rounded p-6 border shadow-lg relative ${
+          <div className={`max-w-md w-full rounded-lg p-6 sm:p-7 border shadow-xl relative ${
             isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
           }`}>
-            <h3 className="text-sm font-bold mb-1">Register New User (Admin Only)</h3>
-            <p className="text-xs text-slate-400 mb-4">Create account and assign role with custom scopes</p>
+            <h3 className="text-base font-bold tracking-tight mb-1">Register New User (Admin Only)</h3>
+            <p className="text-xs text-slate-400 mb-5">Create account and assign role with custom scopes</p>
 
-            <form onSubmit={handleCreateUser} noValidate className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handleCreateUser} noValidate className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="text-xs font-semibold block mb-1">
+                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                     Employee ID <span className="text-red-500 font-bold">*</span>
                   </label>
                   <input
@@ -689,10 +689,10 @@ export default function AdminConsolePage() {
                       if (userFormErrors.emp_id) setUserFormErrors(prev => ({ ...prev, emp_id: null }));
                     }}
                     placeholder="e.g. EMP-10492"
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 font-mono ${
+                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-mono font-medium transition-colors ${
                       userFormErrors.emp_id 
                         ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
+                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
                     }`}
                   />
                   {userFormErrors.emp_id && (
@@ -703,7 +703,7 @@ export default function AdminConsolePage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold block mb-1">
+                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                     Full Name <span className="text-red-500 font-bold">*</span>
                   </label>
                   <input
@@ -714,10 +714,10 @@ export default function AdminConsolePage() {
                       if (userFormErrors.name) setUserFormErrors(prev => ({ ...prev, name: null }));
                     }}
                     placeholder="e.g. John Doe"
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 ${
+                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-medium transition-colors ${
                       userFormErrors.name 
                         ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
+                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
                     }`}
                   />
                   {userFormErrors.name && (
@@ -729,8 +729,8 @@ export default function AdminConsolePage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1">
-                  Email Address <span className="text-slate-500 font-normal">(Optional)</span>
+                <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                  Email Address <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="email"
@@ -740,10 +740,10 @@ export default function AdminConsolePage() {
                     if (userFormErrors.email) setUserFormErrors(prev => ({ ...prev, email: null }));
                   }}
                   placeholder="john@factory.com (optional)"
-                  className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 ${
+                  className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-medium transition-colors ${
                     userFormErrors.email 
                       ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                      : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
+                      : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
                   }`}
                 />
                 {userFormErrors.email && (
@@ -753,9 +753,9 @@ export default function AdminConsolePage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="text-xs font-semibold block mb-1">
+                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                     Password <span className="text-red-500 font-bold">*</span>
                   </label>
                   <input
@@ -766,10 +766,10 @@ export default function AdminConsolePage() {
                       if (userFormErrors.password) setUserFormErrors(prev => ({ ...prev, password: null }));
                     }}
                     placeholder="Min 8 characters"
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 ${
+                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-mono font-medium transition-colors ${
                       userFormErrors.password 
                         ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
+                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
                     }`}
                   />
                   {userFormErrors.password && (
@@ -780,7 +780,7 @@ export default function AdminConsolePage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold block mb-1">
+                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                     Confirm Password <span className="text-red-500 font-bold">*</span>
                   </label>
                   <input
@@ -791,10 +791,10 @@ export default function AdminConsolePage() {
                       if (userFormErrors.password_confirmation) setUserFormErrors(prev => ({ ...prev, password_confirmation: null }));
                     }}
                     placeholder="Repeat password"
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 ${
+                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 font-mono font-medium transition-colors ${
                       userFormErrors.password_confirmation 
                         ? 'border-red-500 focus:ring-red-500 bg-red-500/5 text-red-400' 
-                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-500'
+                        : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
                     }`}
                   />
                   {userFormErrors.password_confirmation && (
@@ -805,13 +805,15 @@ export default function AdminConsolePage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="text-xs font-semibold block mb-1">Assign Role</label>
+                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                    Assign Role
+                  </label>
                   <select
                     value={newUserRole}
                     onChange={(e) => setNewUserRole(e.target.value)}
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium ${
                       isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                     }`}
                   >
@@ -836,11 +838,13 @@ export default function AdminConsolePage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold block mb-1">Account Status</label>
+                  <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                    Account Status
+                  </label>
                   <select
                     value={newUserStatus ? 'active' : 'suspended'}
                     onChange={(e) => setNewUserStatus(e.target.value === 'active')}
-                    className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    className={`w-full px-3.5 py-2.5 rounded-md text-sm border focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium ${
                       isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                     }`}
                   >
@@ -850,19 +854,19 @@ export default function AdminConsolePage() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2 pt-3">
+              <div className="flex items-center space-x-3 pt-3">
                 <button
                   type="button"
                   onClick={() => setShowNewUserModal(false)}
-                  className={`flex-1 py-1.5 rounded text-xs font-semibold border ${
-                    isDark ? 'border-slate-800 hover:bg-slate-800' : 'border-slate-300 hover:bg-slate-100'
+                  className={`flex-1 py-2.5 rounded-md text-sm font-semibold border transition-colors cursor-pointer ${
+                    isDark ? 'border-slate-800 hover:bg-slate-800 text-slate-300' : 'border-slate-300 hover:bg-slate-100 text-slate-700'
                   }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
+                  className="flex-1 py-2.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-bold shadow-xs cursor-pointer transition-colors"
                 >
                   Create User
                 </button>
