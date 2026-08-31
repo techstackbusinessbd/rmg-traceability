@@ -23,6 +23,11 @@ Because the admin panel is data-dense, our base font size is slightly smaller th
 - **Card Titles:** `text-lg` (18px), `font-semibold`.
 - **Page Titles:** `text-2xl` (24px), `font-bold`.
 
+### 2.3. UI/UX Language Standard (Strict 100% English Rule)
+- **Mandatory UI Language:** All User Interfaces (UI/UX) across Web, Tablets, Mobile and PDA scanners MUST use **100% English** for:
+  - Button texts, Navigation menus, Table headers, Form labels, Validation errors, Placeholders, KPI widgets, Tooltips, and Toast notifications.
+- **Prohibition:** No Bengali/Bangla text should appear inside the user-facing application UI components, headers, or buttons. (Conversations with project stakeholders remain in Bengali, but all codebase UI copy is English-only).
+
 ---
 
 ## 3. Color Palette (Tailwind Tokens)
