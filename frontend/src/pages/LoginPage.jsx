@@ -34,29 +34,30 @@ export default function LoginPage() {
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
     }`}>
       
-      {/* Dynamic Animated Textile Weave & Matrix Pattern */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.45] dark:opacity-[0.25] animate-pan-grid"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 1px 1px, ${isDark ? '#60a5fa' : '#3b82f6'} 1.2px, transparent 0),
-            radial-gradient(circle at 13px 13px, ${isDark ? '#818cf8' : '#6366f1'} 1px, transparent 0)
-          `,
-          backgroundSize: '24px 24px',
-          maskImage: 'radial-gradient(ellipse 70% 60% at 50% 50%, #000 60%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 50%, #000 60%, transparent 100%)'
-        }}
-      />
+      {/* High-End Revolving Conic Aurora Beam & Radial Rings */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
+        
+        {/* Rotating Conic Spotlight Ray */}
+        <div 
+          className={`w-[800px] h-[800px] rounded-full opacity-[0.25] dark:opacity-[0.18] animate-spin-super-slow blur-3xl ${
+            isDark 
+              ? 'bg-[conic-gradient(from_0deg_at_50%_50%,#2563eb_0deg,#4f46e5_120deg,#06b6d4_240deg,#2563eb_360deg)]' 
+              : 'bg-[conic-gradient(from_0deg_at_50%_50%,#3b82f6_0deg,#6366f1_120deg,#0284c7_240deg,#3b82f6_360deg)]'
+          }`}
+        />
 
-      {/* Floating Animated Ambient Glow 1 */}
-      <div className={`absolute top-1/4 left-1/4 w-[450px] h-[450px] rounded-full blur-[120px] pointer-events-none animate-float-slow ${
-        isDark ? 'bg-blue-600/15' : 'bg-blue-400/20'
-      }`} />
+        {/* Dynamic Concentric Orbit Rings (Radar / Traceability Scanner Motif) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.15] dark:opacity-[0.12]">
+          <div className="w-[350px] h-[350px] rounded-full border border-blue-500 animate-pulse-glow" />
+          <div className="absolute w-[550px] h-[550px] rounded-full border border-indigo-500/80" />
+          <div className="absolute w-[750px] h-[750px] rounded-full border border-dashed border-slate-400" />
+        </div>
 
-      {/* Floating Animated Ambient Glow 2 */}
-      <div className={`absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[130px] pointer-events-none animate-float-reverse ${
-        isDark ? 'bg-indigo-600/15' : 'bg-indigo-400/20'
-      }`} />
+        {/* Ambient Pulsing Core Glow */}
+        <div className={`absolute w-[400px] h-[400px] rounded-full blur-[100px] animate-pulse-glow ${
+          isDark ? 'bg-blue-600/20' : 'bg-blue-400/25'
+        }`} />
+      </div>
 
       {/* Content Container */}
       <div className="w-full max-w-sm relative z-10">
