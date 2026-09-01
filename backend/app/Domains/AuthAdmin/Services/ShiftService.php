@@ -13,6 +13,10 @@ class ShiftService
 {
     const CACHE_KEY = 'global_factory_shifts';
 
+    public function __construct(
+        protected AuditLogService $auditLogService
+    ) {}
+
     /**
      * Get All Shifts with optional Unit, Floor & Shift Type filtering
      */
@@ -59,8 +63,8 @@ class ShiftService
                 'shift_name' => trim($data['shift_name']),
                 'shift_code' => $shiftCode,
                 'shift_type' => $shiftType,
-                'unit_name' => trim($data['unit_name'] ?? 'Unit 01'),
-                'floor_name' => trim($data['floor_name'] ?? '1st Floor'),
+                'unit_name' => trim($data['unit_name'] ?? 'Default Factory Unit'),
+                'floor_name' => trim($data['floor_name'] ?? 'All Floors (Entire Plant)'),
                 'start_time' => $data['start_time'],
                 'end_time' => $data['end_time'],
                 'grace_period_mins' => $data['grace_period_mins'] ?? 10,
@@ -77,21 +81,16 @@ class ShiftService
 
             Cache::forget(self::CACHE_KEY);
 
-            AuditLog::create([
-                'user_id' => $actor->id,
-                'user_name' => $actor->name,
-                'action' => 'CREATE_SHIFT',
-                'module' => 'AuthAdmin',
-                'ip_address' => $ip,
-                'payload' => [
-                    'shift_id' => $shift->id,
-                    'shift_code' => $shift->shift_code,
-                    'shift_type' => $shift->shift_type,
-                    'unit_name' => $shift->unit_name,
-                    'floor_name' => $shift->floor_name,
-                    'allows_overtime' => $shift->allows_overtime,
-                ],
-            ]);
+            $this->auditLogService->record(
+                event: 'CREATE',
+                module: 'AuthAdmin',
+                action: 'CREATE_SHIFT',
+                summary: "Created {$shift->shift_type} shift '{$shift->shift_name}' ({$shift->shift_code}) for {$shift->unit_name} - {$shift->floor_name}",
+                auditable: $shift,
+                oldValues: null,
+                newValues: $shift->toArray(),
+                actor: $actor
+            );
 
             return $shift;
         });
@@ -127,18 +126,16 @@ class ShiftService
 
             Cache::forget(self::CACHE_KEY);
 
-            AuditLog::create([
-                'user_id' => $actor->id,
-                'user_name' => $actor->name,
-                'action' => 'UPDATE_SHIFT',
-                'module' => 'AuthAdmin',
-                'ip_address' => $ip,
-                'payload' => [
-                    'shift_id' => $shift->id,
-                    'old' => $oldData,
-                    'new' => $shift->toArray(),
-                ],
-            ]);
+            $this->auditLogService->record(
+                event: 'UPDATE',
+                module: 'AuthAdmin',
+                action: 'UPDATE_SHIFT',
+                summary: "Updated shift schedule '{$shift->shift_name}' ({$shift->shift_code})",
+                auditable: $shift,
+                oldValues: $oldData,
+                newValues: $shift->toArray(),
+                actor: $actor
+            );
 
             return $shift;
         });
@@ -151,23 +148,23 @@ class ShiftService
     {
         return DB::transaction(function () use ($shift, $actor, $ip) {
             $shiftCode = $shift->shift_code;
-            $shiftId = $shift->id;
+            $shiftName = $shift->shift_name;
+            $oldData = $shift->toArray();
 
             $shift->delete();
 
             Cache::forget(self::CACHE_KEY);
 
-            AuditLog::create([
-                'user_id' => $actor->id,
-                'user_name' => $actor->name,
-                'action' => 'DELETE_SHIFT',
-                'module' => 'AuthAdmin',
-                'ip_address' => $ip,
-                'payload' => [
-                    'shift_id' => $shiftId,
-                    'shift_code' => $shiftCode,
-                ],
-            ]);
+            $this->auditLogService->record(
+                event: 'DELETE',
+                module: 'AuthAdmin',
+                action: 'DELETE_SHIFT',
+                summary: "Deleted shift schedule '{$shiftName}' ({$shiftCode})",
+                auditable: null,
+                oldValues: $oldData,
+                newValues: null,
+                actor: $actor
+            );
 
             return true;
         });

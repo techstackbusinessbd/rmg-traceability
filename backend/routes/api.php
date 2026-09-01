@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\AuthAdmin\Controllers\AuditLogController;
 use App\Domains\AuthAdmin\Controllers\AuthController;
 use App\Domains\AuthAdmin\Controllers\ShiftController;
 use App\Domains\AuthAdmin\Controllers\SystemSettingController;
@@ -69,8 +70,10 @@ Route::prefix('v1')->group(function () {
             Route::put('/shifts/{id}', [ShiftController::class, 'update']);
             Route::delete('/shifts/{id}', [ShiftController::class, 'destroy']);
 
-            // Immutable Audit Trail
-            Route::get('/audit-logs', [UserController::class, 'auditLogs']);
+            // Immutable Enterprise Audit Trail
+            Route::get('/audit-logs', [AuditLogController::class, 'index']);
+            Route::get('/audit-logs/export', [AuditLogController::class, 'export']);
+            Route::get('/audit-logs/{id}', [AuditLogController::class, 'show']);
 
             // Dynamic System Settings (Redis Cached)
             Route::get('/settings', [SystemSettingController::class, 'index']);

@@ -46,6 +46,7 @@ import SystemSettingsDashboard from '../modules/AuthAdmin/components/SystemSetti
 import ShiftManagementDashboard from '../modules/AuthAdmin/components/ShiftManagementDashboard';
 import CreateShiftModal from '../modules/AuthAdmin/components/CreateShiftModal';
 import EditShiftModal from '../modules/AuthAdmin/components/EditShiftModal';
+import EnterpriseAuditTrailDashboard from '../modules/AuthAdmin/components/EnterpriseAuditTrailDashboard';
 
 // Module 02 Components (Master Data Setup)
 import PlantStructureDashboard from '../modules/MasterData/components/PlantStructureDashboard';
@@ -892,6 +893,34 @@ export default function AdminConsolePage() {
     }
   ];
 
+  const handleExportAuditCsv = async (filters = {}) => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      if (filters.module && filters.module !== 'ALL') params.append('module', filters.module);
+      if (filters.event && filters.event !== 'ALL') params.append('event', filters.event);
+      if (filters.search) params.append('search', filters.search);
+      if (filters.from_date) params.append('from_date', filters.from_date);
+      if (filters.to_date) params.append('to_date', filters.to_date);
+
+      const res = await axios.get(`${API_BASE}/admin/audit-logs/export?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `rmg_audit_trail_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Audit trail exported successfully!');
+    } catch (e) {
+      toast.error('Failed to export audit trail.');
+    }
+  };
+
   const auditColumns = [
     { 
       key: 'action', 
@@ -1154,26 +1183,13 @@ export default function AdminConsolePage() {
           )}
 
           {activeTab === 'audit' && (
-            <div className={`p-5 rounded border transition-colors ${
-              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
-            }`}>
-              <div className="mb-4 pb-3 border-b border-slate-700/20">
-                <h3 className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Tamper-Proof Audit Trail
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Immutable log of all user logins, role changes, and administrative actions
-                </p>
-              </div>
-
-              <DataTable
-                columns={auditColumns}
-                data={auditList}
-                loading={fetchLoading}
-                searchPlaceholder="Search audit events by action or user..."
-                exportFileName="rmg-audit-trail"
-              />
-            </div>
+            <EnterpriseAuditTrailDashboard
+              auditLogs={auditList}
+              loading={fetchLoading}
+              onRefresh={fetchAllData}
+              onExportCsv={handleExportAuditCsv}
+              isDark={isDark}
+            />
           )}
 
           {activeTab === 'settings' && (
