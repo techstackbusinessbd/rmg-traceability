@@ -19,6 +19,7 @@ class SuperAdminUserSeeder extends Seeder
         $superAdmin = User::firstOrCreate(
             ['emp_id' => 'EMP-SUPERADMIN'],
             [
+                'username' => 'superadmin',
                 'name' => 'System Super Admin',
                 'designation' => 'Chief Technology Officer (Platform Owner)',
                 'email' => 'admin@rmgtrace.com',

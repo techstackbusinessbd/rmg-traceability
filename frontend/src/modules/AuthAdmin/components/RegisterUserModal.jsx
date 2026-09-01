@@ -14,6 +14,8 @@ export default function RegisterUserModal({
   setUnitId,
   empId,
   setEmpId,
+  username,
+  setUsername,
   userName,
   setUserName,
   designation,
@@ -42,7 +44,7 @@ export default function RegisterUserModal({
 
         <form onSubmit={onSubmit} noValidate className="space-y-4">
           
-          {/* Step 3 Scope: Group of Company & Assigned Factory Unit */}
+          {/* Scope: Group of Company & Assigned Factory Unit */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-3 rounded border border-blue-500/20 bg-blue-500/5">
             <div>
               <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
@@ -108,6 +110,30 @@ export default function RegisterUserModal({
 
             <div>
               <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                Username <span className="text-slate-400 font-normal">(Login Handle)</span>
+              </label>
+              <input
+                type="text"
+                value={username || ''}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ''))}
+                placeholder="e.g. khaled.admin or supervisor1"
+                className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 font-mono font-medium transition-colors ${
+                  errors.username 
+                    ? 'border-red-500 bg-red-500/5 text-red-400' 
+                    : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
+                }`}
+              />
+              {errors.username && (
+                <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                  {errors.username[0]}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 Full Name <span className="text-red-500 font-bold">*</span>
               </label>
               <input
@@ -127,9 +153,7 @@ export default function RegisterUserModal({
                 </span>
               )}
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 Designation / Job Title
@@ -144,23 +168,28 @@ export default function RegisterUserModal({
                 }`}
               />
             </div>
+          </div>
 
-            <div>
-              <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                Email Address <span className="text-slate-400 font-normal">(Optional)</span>
-              </label>
-              <input
-                type="email"
-                value={userEmail}
-                onChange={(e) => setUserEmail(e.target.value)}
-                placeholder="john@factory.com (optional)"
-                className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 font-medium transition-colors ${
-                  errors.email 
-                    ? 'border-red-500 bg-red-500/5 text-red-400' 
-                    : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
-                }`}
-              />
-            </div>
+          <div>
+            <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+              Email Address <span className="text-slate-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              type="email"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              placeholder="john@factory.com (optional)"
+              className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 font-medium transition-colors ${
+                errors.email 
+                  ? 'border-red-500 bg-red-500/5 text-red-400' 
+                  : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
+              }`}
+            />
+            {errors.email && (
+              <span className="text-[11px] text-red-500 mt-1 block font-medium">
+                {errors.email[0]}
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -241,7 +270,7 @@ export default function RegisterUserModal({
             </div>
           </div>
 
-          <div className="flex items-center space-x-3 pt-3">
+          <div className="flex items-center space-x-3 pt-3 border-t border-slate-700/20">
             <button
               type="button"
               onClick={onClose}

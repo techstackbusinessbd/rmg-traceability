@@ -154,6 +154,7 @@ export default function AdminConsolePage() {
   const [newCompanyId, setNewCompanyId] = useState('');
   const [newUnitId, setNewUnitId] = useState('');
   const [newEmpId, setNewEmpId] = useState('');
+  const [newUsername, setNewUsername] = useState('');
   const [newUserName, setNewUserName] = useState('');
   const [newDesignation, setNewDesignation] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
@@ -253,6 +254,7 @@ export default function AdminConsolePage() {
         company_id: newCompanyId || null,
         unit_id: newUnitId || null,
         emp_id: newEmpId,
+        username: newUsername ? newUsername.toLowerCase().trim() : null,
         name: newUserName,
         designation: newDesignation || null,
         email: newUserEmail || null,
@@ -265,6 +267,7 @@ export default function AdminConsolePage() {
       toast.success('New user account registered and scoped successfully.');
       setShowNewUserModal(false);
       setNewEmpId('');
+      setNewUsername('');
       setNewUserName('');
       setNewDesignation('');
       setNewUserEmail('');
@@ -778,7 +781,19 @@ export default function AdminConsolePage() {
 
   // User table columns
   const userColumns = [
-    { key: 'emp_id', label: 'Employee ID', sortable: true, className: 'font-mono font-bold text-blue-500' },
+    { 
+      key: 'emp_id', 
+      label: 'Employee ID & Username', 
+      sortable: true, 
+      render: (row) => (
+        <div>
+          <span className="font-mono font-bold text-blue-500">{row.emp_id}</span>
+          {row.username && (
+            <span className="text-[10px] text-slate-400 font-mono block">@{row.username}</span>
+          )}
+        </div>
+      )
+    },
     { 
       key: 'name', 
       label: 'Full Name & Designation', 
@@ -1322,6 +1337,8 @@ export default function AdminConsolePage() {
         setUnitId={setNewUnitId}
         empId={newEmpId}
         setEmpId={setNewEmpId}
+        username={newUsername}
+        setUsername={setNewUsername}
         userName={newUserName}
         setUserName={setNewUserName}
         designation={newDesignation}

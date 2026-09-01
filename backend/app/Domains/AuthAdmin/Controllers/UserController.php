@@ -61,6 +61,7 @@ class UserController extends Controller
             'company_id' => 'nullable|uuid|exists:companies,id',
             'unit_id' => 'nullable|uuid|exists:units,id',
             'emp_id' => 'required|string|max:50|unique:users,emp_id',
+            'username' => 'nullable|string|min:3|max:60|regex:/^[a-zA-Z0-9._-]+$/|unique:users,username',
             'name' => 'required|string|min:3|max:100',
             'designation' => 'nullable|string|max:100',
             'email' => 'nullable|email|unique:users,email',
@@ -99,6 +100,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'company_id' => 'nullable|uuid|exists:companies,id',
             'unit_id' => 'nullable|uuid|exists:units,id',
+            'username' => 'sometimes|nullable|string|min:3|max:60|regex:/^[a-zA-Z0-9._-]+$/|unique:users,username,' . $id,
             'name' => 'sometimes|string|min:3|max:100',
             'designation' => 'nullable|string|max:100',
             'is_active' => 'sometimes|boolean',

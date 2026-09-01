@@ -12,6 +12,7 @@ export default function EditUserModal({
   errors = {}
 }) {
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [designation, setDesignation] = useState('');
   const [companyId, setCompanyId] = useState('');
   const [unitId, setUnitId] = useState('');
@@ -22,6 +23,7 @@ export default function EditUserModal({
   useEffect(() => {
     if (user) {
       setName(user.name || '');
+      setUsername(user.username || '');
       setDesignation(user.designation || '');
       setCompanyId(user.company_id || '');
       setUnitId(user.unit_id || '');
@@ -42,6 +44,7 @@ export default function EditUserModal({
     onSubmit({
       id: user.id,
       name,
+      username: username ? username.toLowerCase().trim() : null,
       designation,
       company_id: companyId || null,
       unit_id: unitId || null,
@@ -58,7 +61,7 @@ export default function EditUserModal({
         isDark ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
       }`}>
         <h3 className="text-base font-bold tracking-tight mb-1">Edit User Profile & Scoped Access</h3>
-        <p className="text-xs text-slate-400 mb-5">Update account name, designation, group/factory unit access, and role privileges</p>
+        <p className="text-xs text-slate-400 mb-5">Update account name, username, designation, group/factory unit access, and role privileges</p>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div className="p-3 rounded bg-slate-500/5 border border-slate-700/15 text-xs flex items-center justify-between">
@@ -141,6 +144,25 @@ export default function EditUserModal({
 
             <div>
               <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                Username <span className="text-slate-400 font-normal">(Login Handle)</span>
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ''))}
+                placeholder="e.g. khaled.admin"
+                className={`w-full px-3.5 py-2.5 rounded-md text-xs border focus:outline-none focus:ring-1 font-mono font-medium transition-colors ${
+                  formErrors.username 
+                    ? 'border-red-500 bg-red-500/5 text-red-400' 
+                    : isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:ring-blue-600' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-blue-600'
+                }`}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 Designation / Job Title
               </label>
               <input
@@ -153,9 +175,7 @@ export default function EditUserModal({
                 }`}
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                 Designated Role
@@ -175,23 +195,23 @@ export default function EditUserModal({
                 ))}
               </select>
             </div>
+          </div>
 
-            <div>
-              <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                Account Status
-              </label>
-              <select
-                value={isActive ? 'active' : 'suspended'}
-                disabled={isSuperAdmin}
-                onChange={(e) => setIsActive(e.target.value === 'active')}
-                className={`w-full px-3.5 py-2.5 rounded-md text-xs border focus:outline-none focus:ring-1 focus:ring-blue-600 font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                }`}
-              >
-                <option value="active">ACTIVE (Operational)</option>
-                <option value="suspended">SUSPENDED (Locked)</option>
-              </select>
-            </div>
+          <div>
+            <label className={`text-xs font-bold block mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+              Account Status
+            </label>
+            <select
+              value={isActive ? 'active' : 'suspended'}
+              disabled={isSuperAdmin}
+              onChange={(e) => setIsActive(e.target.value === 'active')}
+              className={`w-full px-3.5 py-2.5 rounded-md text-xs border focus:outline-none focus:ring-1 focus:ring-blue-600 font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+              }`}
+            >
+              <option value="active">ACTIVE (Operational)</option>
+              <option value="suspended">SUSPENDED (Locked)</option>
+            </select>
           </div>
 
           <div className="flex items-center space-x-3 pt-3">

@@ -11,6 +11,7 @@ class UserRepository
     public function findByLoginIdentifier(string $identifier): ?User
     {
         return User::where('emp_id', $identifier)
+            ->orWhere('username', $identifier)
             ->orWhere('email', $identifier)
             ->orWhere('name', $identifier)
             ->first();
@@ -37,6 +38,7 @@ class UserRepository
             'company_id' => $data['company_id'] ?? null,
             'unit_id' => $data['unit_id'] ?? null,
             'emp_id' => $data['emp_id'],
+            'username' => !empty($data['username']) ? strtolower(trim($data['username'])) : null,
             'name' => $data['name'],
             'designation' => $data['designation'] ?? null,
             'email' => $data['email'] ?? null,
