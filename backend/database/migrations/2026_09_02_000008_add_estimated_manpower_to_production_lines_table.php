@@ -1,0 +1,29 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('production_lines', function (Blueprint $table) {
+            $table->unsignedSmallInteger('estimated_manpower')->default(40)->after('total_machines');
+            $table->unsignedSmallInteger('hourly_target')->nullable()->change();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('production_lines', function (Blueprint $table) {
+            $table->dropColumn('estimated_manpower');
+        });
+    }
+};

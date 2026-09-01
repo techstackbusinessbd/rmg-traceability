@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, SlidersHorizontal, Plus, Save } from 'lucide-react';
+import { X, SlidersHorizontal, Plus, Save, Users } from 'lucide-react';
 
 const SECTIONS = ['SEWING', 'CUTTING', 'FINISHING', 'PACKING'];
 
@@ -19,7 +19,7 @@ export default function CreateLineModal({
   const [code, setCode] = useState(line?.code || '');
   const [section, setSection] = useState(line?.section || 'SEWING');
   const [totalMachines, setTotalMachines] = useState(line?.total_machines || 36);
-  const [hourlyTarget, setHourlyTarget] = useState(line?.hourly_target || 120);
+  const [estimatedManpower, setEstimatedManpower] = useState(line?.estimated_manpower || 45);
   const [supervisorName, setSupervisorName] = useState(line?.supervisor_name || '');
   const [isActive, setIsActive] = useState(line ? Boolean(line.is_active) : true);
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +37,7 @@ export default function CreateLineModal({
       setCode(line.code || '');
       setSection(line.section || 'SEWING');
       setTotalMachines(line.total_machines || 36);
-      setHourlyTarget(line.hourly_target || 120);
+      setEstimatedManpower(line.estimated_manpower || 45);
       setSupervisorName(line.supervisor_name || '');
       setIsActive(Boolean(line.is_active));
     } else {
@@ -49,7 +49,7 @@ export default function CreateLineModal({
       setCode('');
       setSection('SEWING');
       setTotalMachines(36);
-      setHourlyTarget(120);
+      setEstimatedManpower(45);
       setSupervisorName('');
       setIsActive(true);
     }
@@ -69,7 +69,7 @@ export default function CreateLineModal({
         code: code ? code.toUpperCase().trim() : null,
         section,
         total_machines: parseInt(totalMachines, 10) || 30,
-        hourly_target: parseInt(hourlyTarget, 10) || 100,
+        estimated_manpower: parseInt(estimatedManpower, 10) || 40,
         supervisor_name: supervisorName,
         is_active: isActive
       });
@@ -97,7 +97,7 @@ export default function CreateLineModal({
                 {line ? 'Edit Production Line' : 'Register Production Line'}
               </h3>
               <p className="text-xs text-slate-400">
-                Setup work center capacity, machines, and target output
+                Setup work center capacity, machines, and estimated manpower
               </p>
             </div>
           </div>
@@ -217,6 +217,7 @@ export default function CreateLineModal({
                 max="200"
                 value={totalMachines}
                 onChange={(e) => setTotalMachines(e.target.value)}
+                placeholder="e.g. 36"
                 className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
@@ -225,15 +226,16 @@ export default function CreateLineModal({
 
             <div>
               <label className="block text-xs font-bold mb-1.5">
-                Hourly Target (Pcs)
+                Estimated Manpower (Qty)
               </label>
               <input
                 type="number"
                 min="1"
-                max="2000"
-                value={hourlyTarget}
-                onChange={(e) => setHourlyTarget(e.target.value)}
-                className={`w-full px-2.5 py-1.5 rounded text-xs font-mono font-bold text-emerald-500 border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                max="500"
+                value={estimatedManpower}
+                onChange={(e) => setEstimatedManpower(e.target.value)}
+                placeholder="e.g. 45"
+                className={`w-full px-2.5 py-1.5 rounded text-xs font-mono font-bold text-blue-500 border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-300'
                 }`}
               />

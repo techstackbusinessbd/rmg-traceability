@@ -53,7 +53,7 @@ export default function PlantStructureDashboard({
 
   // Total metrics
   const totalMachines = useMemo(() => lines.reduce((acc, l) => acc + (l.total_machines || 0), 0), [lines]);
-  const totalHourlyCapacity = useMemo(() => lines.reduce((acc, l) => acc + (l.hourly_target || 0), 0), [lines]);
+  const totalManpower = useMemo(() => lines.reduce((acc, l) => acc + (l.estimated_manpower || 0), 0), [lines]);
 
   // Filtered Units
   const filteredUnits = useMemo(() => {
@@ -211,14 +211,14 @@ export default function PlantStructureDashboard({
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
         }`}>
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase font-mono">
-            <span>Total Plant Output Capacity</span>
+            <span>Total Allocated Manpower</span>
             <Activity className="h-4 w-4 text-emerald-500" />
           </div>
           <div className="text-2xl font-black mt-1 font-mono text-emerald-500">
-            {totalHourlyCapacity} <span className="text-xs font-normal text-slate-400 font-sans">Pcs/Hr</span>
+            {totalManpower} <span className="text-xs font-normal text-slate-400 font-sans">Persons</span>
           </div>
           <div className="text-xs text-slate-400 mt-1">
-            Standard Hourly Run Rate
+            Planned Operators & Helpers
           </div>
         </div>
 
@@ -411,8 +411,8 @@ export default function PlantStructureDashboard({
                                 <div>
                                   <div className="flex items-center justify-between mb-1">
                                     <span className="font-mono font-bold text-blue-500">{line.code}</span>
-                                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                      {line.hourly_target} pcs/hr
+                                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                      {line.estimated_manpower || 40} Manpower
                                     </span>
                                   </div>
                                   <div className="font-bold text-xs">{line.name}</div>

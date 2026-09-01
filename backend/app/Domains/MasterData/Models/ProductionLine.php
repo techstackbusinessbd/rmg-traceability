@@ -20,6 +20,7 @@ class ProductionLine extends Model
         'code',
         'section',
         'total_machines',
+        'estimated_manpower',
         'hourly_target',
         'supervisor_name',
         'is_active',
@@ -28,6 +29,7 @@ class ProductionLine extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'total_machines' => 'integer',
+        'estimated_manpower' => 'integer',
         'hourly_target' => 'integer',
     ];
 
