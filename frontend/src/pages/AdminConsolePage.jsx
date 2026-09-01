@@ -47,6 +47,7 @@ import EditShiftModal from '../modules/AuthAdmin/components/EditShiftModal';
 
 // Module 02 Components (Master Data Setup)
 import PlantStructureDashboard from '../modules/MasterData/components/PlantStructureDashboard';
+import CreateCompanyModal from '../modules/MasterData/components/CreateCompanyModal';
 import CreateUnitModal from '../modules/MasterData/components/CreateUnitModal';
 import CreateFloorModal from '../modules/MasterData/components/CreateFloorModal';
 import CreateLineModal from '../modules/MasterData/components/CreateLineModal';
@@ -94,6 +95,7 @@ export default function AdminConsolePage() {
   const [savingRoleMatrix, setSavingRoleMatrix] = useState(false);
 
   // Module 02 Modals State
+  const [showCreateCompanyModal, setShowCreateCompanyModal] = useState(false);
   const [showCreateUnitModal, setShowCreateUnitModal] = useState(false);
   const [editingUnit, setEditingUnit] = useState(null);
   const [unitFormErrors, setUnitFormErrors] = useState({});
@@ -131,6 +133,7 @@ export default function AdminConsolePage() {
   const [settingsForm, setSettingsForm] = useState({});
 
   // Module 02 Lists
+  const [companiesList, setCompaniesList] = useState([]);
   const [unitsList, setUnitsList] = useState([]);
   const [floorsList, setFloorsList] = useState([]);
   const [linesList, setLinesList] = useState([]);
@@ -175,7 +178,7 @@ export default function AdminConsolePage() {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const [
         uRes, dRes, rRes, aRes, sRes, shRes,
-        unitsRes, floorsRes, linesRes,
+        companiesRes, unitsRes, floorsRes, linesRes,
         buyersRes, stylesRes,
         colorsRes, sizesRes, defectsRes
       ] = await Promise.allSettled([
@@ -187,6 +190,7 @@ export default function AdminConsolePage() {
         axios.get(`${API_BASE}/admin/settings`, config),
         axios.get(`${API_BASE}/admin/shifts`, config),
         // Module 02
+        axios.get(`${API_BASE}/master/companies`, config),
         axios.get(`${API_BASE}/master/units`, config),
         axios.get(`${API_BASE}/master/floors`, config),
         axios.get(`${API_BASE}/master/lines`, config),
@@ -215,6 +219,7 @@ export default function AdminConsolePage() {
       }
 
       // Set Module 02
+      if (companiesRes.status === 'fulfilled') setCompaniesList(companiesRes.value.data?.data || []);
       if (unitsRes.status === 'fulfilled') setUnitsList(unitsRes.value.data?.data || []);
       if (floorsRes.status === 'fulfilled') setFloorsList(floorsRes.value.data?.data || []);
       if (linesRes.status === 'fulfilled') setLinesList(linesRes.value.data?.data || []);
@@ -437,23 +442,35 @@ export default function AdminConsolePage() {
   };
 
   // Module 02 Action Handlers (Master Data Setup)
+  const handleSaveCompany = async (data) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/master/companies`, data, config);
+      toast.success('Group of Companies registered.');
+      setShowCreateCompanyModal(false);
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to create Company profile.');
+    }
+  };
+
   const handleSaveUnit = async (data) => {
     setUnitFormErrors({});
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       if (data.id) {
         await axios.put(`${API_BASE}/master/units/${data.id}`, data, config);
-        toast.success('Manufacturing unit updated.');
+        toast.success('Factory plant updated.');
       } else {
         await axios.post(`${API_BASE}/master/units`, data, config);
-        toast.success('Manufacturing unit registered.');
+        toast.success('Factory plant registered.');
       }
       setShowCreateUnitModal(false);
       setEditingUnit(null);
       fetchAdminData();
     } catch (err) {
       if (err.response?.status === 422) setUnitFormErrors(err.response.data.errors || {});
-      else toast.error('Failed to save unit.');
+      else toast.error('Failed to save factory.');
     }
   };
 
@@ -1075,10 +1092,12 @@ export default function AdminConsolePage() {
           
           {activeTab === 'master_plant' && (
             <PlantStructureDashboard
+              companies={companiesList}
               units={unitsList}
               floors={floorsList}
               lines={linesList}
               loading={fetchLoading}
+              onOpenCreateCompany={() => setShowCreateCompanyModal(true)}
               onOpenCreateUnit={() => {
                 setEditingUnit(null);
                 setUnitFormErrors({});
@@ -1275,6 +1294,13 @@ export default function AdminConsolePage() {
       />
 
       {/* Module 02 Modals */}
+      <CreateCompanyModal
+        show={showCreateCompanyModal}
+        onClose={() => setShowCreateCompanyModal(false)}
+        onSubmit={handleSaveCompany}
+        isDark={isDark}
+      />
+
       <CreateUnitModal
         show={showCreateUnitModal}
         onClose={() => {
@@ -1283,6 +1309,7 @@ export default function AdminConsolePage() {
           setUnitFormErrors({});
         }}
         onSubmit={handleSaveUnit}
+        companies={companiesList}
         unit={editingUnit}
         isDark={isDark}
         errors={unitFormErrors}

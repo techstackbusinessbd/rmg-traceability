@@ -80,7 +80,10 @@ Route::prefix('v1')->group(function () {
         // =========================================================
         Route::prefix('master')->group(function () {
             
-            // Factory Plant Structure (Units, Floors, Lines)
+            // Group of Companies & Plant Structure
+            Route::get('/companies', [PlantStructureController::class, 'indexCompanies']);
+            Route::post('/companies', [PlantStructureController::class, 'storeCompany']);
+
             Route::get('/plant/tree', [PlantStructureController::class, 'tree']);
             Route::get('/units', [PlantStructureController::class, 'indexUnits']);
             Route::post('/units', [PlantStructureController::class, 'storeUnit']);

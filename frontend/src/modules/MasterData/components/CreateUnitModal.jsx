@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
-import { X, Building2, Plus, Save, Sparkles } from 'lucide-react';
+import { X, Building2, Plus, Save, Sparkles, Shirt, Droplet, Printer, Scissors, Warehouse } from 'lucide-react';
+
+const FACTORY_TYPES = [
+  { value: 'SEWING_FACTORY', label: 'Sewing & Apparel Factory', prefix: 'FACT-SEW', icon: Shirt },
+  { value: 'WASHING_FACTORY', label: 'Washing & Laundry Plant', prefix: 'FACT-WASH', icon: Droplet },
+  { value: 'PRINTING_FACTORY', label: 'Screen & Rotary Printing Plant', prefix: 'FACT-PRN', icon: Printer },
+  { value: 'EMBROIDERY_FACTORY', label: 'Computerized Embroidery Plant', prefix: 'FACT-EMB', icon: Scissors },
+  { value: 'CENTRAL_WAREHOUSE', label: 'Central Finishing & Bonded Warehouse', prefix: 'FACT-WH', icon: Warehouse },
+  { value: 'KNITTING_WEAVING', label: 'Textile Knitting & Fabric Mill', prefix: 'FACT-TEX', icon: Building2 },
+];
 
 export default function CreateUnitModal({
   show,
   onClose,
   onSubmit,
+  companies = [],
   unit = null,
   isDark = true,
   errors = {}
 }) {
+  const [companyId, setCompanyId] = useState(unit?.company_id || companies[0]?.id || '');
   const [name, setName] = useState(unit?.name || '');
+  const [factoryType, setFactoryType] = useState(unit?.factory_type || 'SEWING_FACTORY');
   const [code, setCode] = useState(unit?.code || '');
   const [address, setAddress] = useState(unit?.address || '');
   const [contactPerson, setContactPerson] = useState(unit?.contact_person || '');
@@ -18,23 +30,22 @@ export default function CreateUnitModal({
   const [isManualCode, setIsManualCode] = useState(Boolean(unit));
   const [submitting, setSubmitting] = useState(false);
 
-  // Auto-generate code from name
-  const generateCodeFromName = (unitName) => {
-    if (!unitName) return '';
-    const clean = unitName.toUpperCase().trim();
+  // Auto-generate code from type and name
+  const generateCode = (type, unitName) => {
+    const typeObj = FACTORY_TYPES.find(t => t.value === type);
+    const prefix = typeObj ? typeObj.prefix : 'FACT-SEW';
     
-    // Check if contains number (e.g. Unit 04, Plant 3)
-    const numMatch = clean.match(/\d+/);
+    // Check if name has number (e.g. Unit 04, Plant 02)
+    const numMatch = (unitName || '').match(/\d+/);
     const numStr = numMatch ? String(numMatch[0]).padStart(2, '0') : '01';
+    return `${prefix}-${numStr}`;
+  };
 
-    if (clean.includes('WASH')) {
-      return `WASH-${numStr}`;
-    } else if (clean.includes('CUT')) {
-      return `CUT-${numStr}`;
-    } else if (clean.includes('FINISH')) {
-      return `FIN-${numStr}`;
-    } else {
-      return `UNIT-${numStr}`;
+  const handleTypeChange = (e) => {
+    const newType = e.target.value;
+    setFactoryType(newType);
+    if (!isManualCode && !unit) {
+      setCode(generateCode(newType, name));
     }
   };
 
@@ -42,19 +53,21 @@ export default function CreateUnitModal({
     const newName = e.target.value;
     setName(newName);
     if (!isManualCode && !unit) {
-      setCode(generateCodeFromName(newName));
+      setCode(generateCode(factoryType, newName));
     }
   };
 
   const handleAutoGenerateClick = () => {
-    const autoCode = generateCodeFromName(name) || 'UNIT-01';
+    const autoCode = generateCode(factoryType, name);
     setCode(autoCode);
     setIsManualCode(false);
   };
 
   React.useEffect(() => {
     if (unit) {
+      setCompanyId(unit.company_id || companies[0]?.id || '');
       setName(unit.name || '');
+      setFactoryType(unit.factory_type || 'SEWING_FACTORY');
       setCode(unit.code || '');
       setAddress(unit.address || '');
       setContactPerson(unit.contact_person || '');
@@ -62,7 +75,9 @@ export default function CreateUnitModal({
       setIsActive(Boolean(unit.is_active));
       setIsManualCode(true);
     } else {
+      setCompanyId(companies[0]?.id || '');
       setName('');
+      setFactoryType('SEWING_FACTORY');
       setCode('');
       setAddress('');
       setContactPerson('');
@@ -70,7 +85,7 @@ export default function CreateUnitModal({
       setIsActive(true);
       setIsManualCode(false);
     }
-  }, [unit, show]);
+  }, [unit, show, companies]);
 
   if (!show) return null;
 
@@ -80,8 +95,10 @@ export default function CreateUnitModal({
     try {
       await onSubmit({
         id: unit?.id,
+        company_id: companyId || null,
         name,
-        code: code || generateCodeFromName(name) || 'UNIT-01',
+        factory_type: factoryType,
+        code: code || generateCode(factoryType, name),
         address,
         contact_person: contactPerson,
         contact_phone: contactPhone,
@@ -108,10 +125,10 @@ export default function CreateUnitModal({
             </div>
             <div>
               <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {unit ? 'Edit Manufacturing Unit' : 'Register Manufacturing Unit'}
+                {unit ? 'Edit Factory Plant Profile' : 'Register Factory Plant / Unit'}
               </h3>
               <p className="text-xs text-slate-400">
-                Setup factory complex location with auto-generated Unit Code
+                Setup Sewing, Washing, Printing or Embroidery Factory under Group of Companies
               </p>
             </div>
           </div>
@@ -126,18 +143,56 @@ export default function CreateUnitModal({
         </div>
 
         {/* Modal Form */}
-        <form onSubmit={handleSubmit} noValidate className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           
+          {/* Company Selection */}
+          {companies.length > 0 && (
+            <div>
+              <label className="block text-xs font-bold mb-1.5">
+                Parent Group of Companies
+              </label>
+              <select
+                value={companyId}
+                onChange={(e) => setCompanyId(e.target.value)}
+                className={`w-full px-3 py-2 rounded text-xs border font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                }`}
+              >
+                {companies.map(c => (
+                  <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Factory Type / Nature */}
+          <div>
+            <label className="block text-xs font-bold mb-1.5">
+              Factory Nature / Specialty <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={factoryType}
+              onChange={handleTypeChange}
+              className={`w-full px-3 py-2 rounded text-xs font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                isDark ? 'bg-slate-950 border-slate-800 text-blue-400' : 'bg-white border-slate-300 text-blue-600'
+              }`}
+            >
+              {FACTORY_TYPES.map(f => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold mb-1.5">
-                Unit Name <span className="text-red-500">*</span>
+                Factory Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={handleNameChange}
-                placeholder="e.g. Standard Unit 03 (Factory)"
+                placeholder="e.g. Standard Sewing Complex Unit 01"
                 className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
@@ -148,7 +203,7 @@ export default function CreateUnitModal({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-bold">
-                  Unit Code <span className="text-xs text-emerald-500 font-normal">(Auto)</span>
+                  Factory Code <span className="text-xs text-emerald-500 font-normal">(Auto)</span>
                 </label>
                 <button
                   type="button"
@@ -166,7 +221,7 @@ export default function CreateUnitModal({
                   setCode(e.target.value);
                   setIsManualCode(true);
                 }}
-                placeholder="Auto e.g. UNIT-03"
+                placeholder="Auto e.g. FACT-SEW-01"
                 className={`w-full px-3 py-2 rounded text-xs font-mono font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-blue-400' : 'bg-white border-slate-300 text-blue-600'
                 }`}
@@ -177,7 +232,7 @@ export default function CreateUnitModal({
 
           <div>
             <label className="block text-xs font-bold mb-1.5">
-              Plant Location / Address
+              Plant Physical Location / Address
             </label>
             <input
               type="text"
@@ -193,13 +248,13 @@ export default function CreateUnitModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold mb-1.5">
-                Plant Head / Contact Person
+                Plant Head / General Manager
               </label>
               <input
                 type="text"
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
-                placeholder="e.g. Md. Rafiqul Islam"
+                placeholder="e.g. Md. Rafiqul Islam (GM)"
                 className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
@@ -250,7 +305,7 @@ export default function CreateUnitModal({
               className="px-5 py-2 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
             >
               {unit ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-              <span>{submitting ? 'Saving...' : unit ? 'Update Unit' : 'Save Unit'}</span>
+              <span>{submitting ? 'Saving...' : unit ? 'Update Factory' : 'Save Factory'}</span>
             </button>
           </div>
 

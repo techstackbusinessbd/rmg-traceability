@@ -14,8 +14,10 @@ class Unit extends Model
     protected $table = 'units';
 
     protected $fillable = [
+        'company_id',
         'name',
         'code',
+        'factory_type',
         'address',
         'contact_person',
         'contact_phone',
@@ -25,6 +27,11 @@ class Unit extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
 
     public function floors(): HasMany
     {

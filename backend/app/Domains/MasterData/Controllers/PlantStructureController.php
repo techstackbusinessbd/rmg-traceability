@@ -17,6 +17,36 @@ class PlantStructureController extends Controller
         protected PlantStructureService $plantService
     ) {}
 
+    public function indexCompanies(): JsonResponse
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => $this->plantService->getAllCompanies(),
+        ]);
+    }
+
+    public function storeCompany(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:150',
+            'code' => 'nullable|string|max:50|unique:companies,code',
+            'address' => 'nullable|string|max:255',
+            'contact_email' => 'nullable|email|max:100',
+            'contact_phone' => 'nullable|string|max:50',
+            'trade_license' => 'nullable|string|max:100',
+            'tin_bin' => 'nullable|string|max:100',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $company = $this->plantService->createCompany($validated, $request->user(), $request->ip());
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Group of Company profile created successfully.',
+            'data' => $company,
+        ], 201);
+    }
+
     public function tree(): JsonResponse
     {
         return response()->json([
@@ -25,7 +55,7 @@ class PlantStructureController extends Controller
         ]);
     }
 
-    // Units
+    // Units / Factories
     public function indexUnits(): JsonResponse
     {
         return response()->json([
@@ -37,8 +67,10 @@ class PlantStructureController extends Controller
     public function storeUnit(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'company_id' => 'nullable|uuid|exists:companies,id',
             'name' => 'required|string|max:100',
             'code' => 'nullable|string|max:50|unique:units,code',
+            'factory_type' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:255',
             'contact_person' => 'nullable|string|max:100',
             'contact_phone' => 'nullable|string|max:50',
@@ -49,7 +81,7 @@ class PlantStructureController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Manufacturing Unit registered successfully.',
+            'message' => 'Factory Plant registered successfully.',
             'data' => $unit,
         ], 201);
     }
@@ -59,8 +91,10 @@ class PlantStructureController extends Controller
         $unit = Unit::findOrFail($id);
 
         $validated = $request->validate([
+            'company_id' => 'nullable|uuid|exists:companies,id',
             'name' => 'sometimes|required|string|max:100',
             'code' => ['sometimes', 'required', 'string', 'max:50', Rule::unique('units', 'code')->ignore($unit->id)],
+            'factory_type' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:255',
             'contact_person' => 'nullable|string|max:100',
             'contact_phone' => 'nullable|string|max:50',
@@ -71,7 +105,7 @@ class PlantStructureController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Manufacturing Unit updated successfully.',
+            'message' => 'Factory Plant updated successfully.',
             'data' => $updated,
         ]);
     }

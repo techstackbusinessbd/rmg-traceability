@@ -4,6 +4,7 @@ namespace App\Domains\MasterData\Services;
 
 use App\Domains\AuthAdmin\Models\AuditLog;
 use App\Domains\AuthAdmin\Models\User;
+use App\Domains\MasterData\Models\Company;
 use App\Domains\MasterData\Models\Floor;
 use App\Domains\MasterData\Models\ProductionLine;
 use App\Domains\MasterData\Models\Unit;
@@ -15,34 +16,84 @@ class PlantStructureService
 {
     const CACHE_KEY = 'global_plant_structure';
 
+    public function getAllCompanies(): Collection
+    {
+        return Company::withCount('factories')->orderBy('name')->get();
+    }
+
+    public function createCompany(array $data, User $actor, ?string $ip = null): Company
+    {
+        return DB::transaction(function () use ($data, $actor, $ip) {
+            $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : null;
+            if (!$code) {
+                $count = Company::count() + 1;
+                $code = sprintf('GRP-%02d', $count);
+            }
+
+            $company = Company::create([
+                'name' => trim($data['name']),
+                'code' => $code,
+                'address' => $data['address'] ?? null,
+                'contact_email' => $data['contact_email'] ?? null,
+                'contact_phone' => $data['contact_phone'] ?? null,
+                'trade_license' => $data['trade_license'] ?? null,
+                'tin_bin' => $data['tin_bin'] ?? null,
+                'is_active' => $data['is_active'] ?? true,
+            ]);
+
+            AuditLog::create([
+                'user_id' => $actor->id,
+                'user_name' => $actor->name,
+                'action' => 'CREATE_COMPANY',
+                'module' => 'MasterData',
+                'ip_address' => $ip,
+                'payload' => ['company_id' => $company->id, 'name' => $company->name],
+            ]);
+
+            return $company;
+        });
+    }
+
     public function getTree(): array
     {
         return Cache::remember(self::CACHE_KEY, 3600, function () {
-            return Unit::with(['floors.productionLines'])->where('is_active', true)->get()->toArray();
+            return Unit::with(['company', 'floors.productionLines'])->where('is_active', true)->get()->toArray();
         });
     }
 
     public function getAllUnits(): Collection
     {
-        return Unit::withCount(['floors', 'productionLines'])->orderBy('code')->get();
+        return Unit::with(['company'])->withCount(['floors', 'productionLines'])->orderBy('code')->get();
     }
 
     public function createUnit(array $data, User $actor, ?string $ip = null): Unit
     {
         return DB::transaction(function () use ($data, $actor, $ip) {
+            $factoryType = $data['factory_type'] ?? 'SEWING_FACTORY';
+            $prefix = match ($factoryType) {
+                'WASHING_FACTORY' => 'FACT-WASH',
+                'PRINTING_FACTORY' => 'FACT-PRN',
+                'EMBROIDERY_FACTORY' => 'FACT-EMB',
+                'CENTRAL_WAREHOUSE' => 'FACT-WH',
+                'KNITTING_WEAVING' => 'FACT-TEX',
+                default => 'FACT-SEW',
+            };
+
             $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : null;
             if (!$code) {
-                $count = Unit::count() + 1;
-                $code = sprintf('UNIT-%02d', $count);
+                $count = Unit::where('factory_type', $factoryType)->count() + 1;
+                $code = sprintf('%s-%02d', $prefix, $count);
                 while (Unit::where('code', $code)->exists()) {
                     $count++;
-                    $code = sprintf('UNIT-%02d', $count);
+                    $code = sprintf('%s-%02d', $prefix, $count);
                 }
             }
 
             $unit = Unit::create([
+                'company_id' => $data['company_id'] ?? null,
                 'name' => trim($data['name']),
                 'code' => $code,
+                'factory_type' => $factoryType,
                 'address' => $data['address'] ?? null,
                 'contact_person' => $data['contact_person'] ?? null,
                 'contact_phone' => $data['contact_phone'] ?? null,
@@ -57,7 +108,7 @@ class PlantStructureService
                 'action' => 'CREATE_UNIT',
                 'module' => 'MasterData',
                 'ip_address' => $ip,
-                'payload' => ['unit_id' => $unit->id, 'unit_code' => $unit->code],
+                'payload' => ['unit_id' => $unit->id, 'unit_code' => $unit->code, 'factory_type' => $unit->factory_type],
             ]);
 
             return $unit;
@@ -68,12 +119,14 @@ class PlantStructureService
     {
         return DB::transaction(function () use ($unit, $data, $actor, $ip) {
             $unit->update([
-                'name' => trim($data['name'] ?? $unit->name),
-                'code' => isset($data['code']) ? strtoupper(trim($data['code'])) : $unit->code,
-                'address' => $data['address'] ?? $unit->address,
-                'contact_person' => $data['contact_person'] ?? $unit->contact_person,
-                'contact_phone' => $data['contact_phone'] ?? $unit->contact_phone,
-                'is_active' => $data['is_active'] ?? $unit->is_active,
+                'company_id' => array_key_exists('company_id', $data) ? $data['company_id'] : $unit->company_id,
+                'name' => array_key_exists('name', $data) ? trim($data['name']) : $unit->name,
+                'code' => array_key_exists('code', $data) ? strtoupper(trim($data['code'])) : $unit->code,
+                'factory_type' => $data['factory_type'] ?? $unit->factory_type,
+                'address' => array_key_exists('address', $data) ? $data['address'] : $unit->address,
+                'contact_person' => array_key_exists('contact_person', $data) ? $data['contact_person'] : $unit->contact_person,
+                'contact_phone' => array_key_exists('contact_phone', $data) ? $data['contact_phone'] : $unit->contact_phone,
+                'is_active' => array_key_exists('is_active', $data) ? $data['is_active'] : $unit->is_active,
             ]);
 
             Cache::forget(self::CACHE_KEY);
@@ -295,70 +348,131 @@ class PlantStructureService
      */
     public function seedDefaults(): void
     {
-        // 1. Units
-        $unit1 = Unit::firstOrCreate(['code' => 'UNIT-01'], [
-            'name' => 'Standard Unit 01 (Factory)',
+        // 0. Group of Company
+        $company = Company::firstOrCreate(['code' => 'GRP-STD'], [
+            'name' => 'Standard Group of Companies',
+            'address' => 'Standard Corporate Tower, Road 11, Banani C/A, Dhaka 1213',
+            'contact_email' => 'corporate@standard-group.com',
+            'contact_phone' => '+880 2 9820001',
+            'trade_license' => 'TRAD/DNCC/012948',
+            'tin_bin' => 'BIN-1294029482',
+            'is_active' => true,
+        ]);
+
+        // 1. Multiple Specialized Factories under the Group
+        $sewingUnit1 = Unit::firstOrCreate(['code' => 'FACT-SEW-01'], [
+            'company_id' => $company->id,
+            'name' => 'Standard Woven Apparel Factory (Unit 01)',
+            'factory_type' => 'SEWING_FACTORY',
             'address' => 'Plot 45-48, Sector 02, CEPZ, Chattogram',
             'contact_person' => 'Md. Rafiqul Islam (Plant Head)',
             'contact_phone' => '+880 1711-000101',
             'is_active' => true,
         ]);
 
-        $unit2 = Unit::firstOrCreate(['code' => 'UNIT-02'], [
-            'name' => 'Standard Unit 02 (Woven Complex)',
+        $sewingUnit2 = Unit::firstOrCreate(['code' => 'FACT-SEW-02'], [
+            'company_id' => $company->id,
+            'name' => 'Standard Outerwear & Jacket Plant (Unit 02)',
+            'factory_type' => 'SEWING_FACTORY',
             'address' => 'Plot 12-16, Sector 04, CEPZ, Chattogram',
             'contact_person' => 'Engr. Tanvir Ahmed (General Manager)',
             'contact_phone' => '+880 1711-000202',
             'is_active' => true,
         ]);
 
-        $washPlant = Unit::firstOrCreate(['code' => 'WASH-01'], [
-            'name' => 'Eco Washing & Laundry Plant',
+        $washPlant = Unit::firstOrCreate(['code' => 'FACT-WASH-01'], [
+            'company_id' => $company->id,
+            'name' => 'EcoWash Denim Laundry & Dry Processing',
+            'factory_type' => 'WASHING_FACTORY',
             'address' => 'Plot 88, Heavy Industrial Area, CEPZ',
-            'contact_person' => 'Kamrul Hasan (Washing Manager)',
+            'contact_person' => 'Kamrul Hasan (Washing GM)',
             'contact_phone' => '+880 1711-000303',
             'is_active' => true,
         ]);
 
-        // 2. Floors for Unit 01
-        $gf = Floor::firstOrCreate(['unit_id' => $unit1->id, 'code' => 'FL-GF'], [
+        $printPlant = Unit::firstOrCreate(['code' => 'FACT-PRN-01'], [
+            'company_id' => $company->id,
+            'name' => 'Standard High-Precision Screen & Rotary Printing',
+            'factory_type' => 'PRINTING_FACTORY',
+            'address' => 'Plot 102, Industrial Zone, CEPZ',
+            'contact_person' => 'Shakil Mahmud (Print Specialist)',
+            'contact_phone' => '+880 1711-000404',
+            'is_active' => true,
+        ]);
+
+        $embPlant = Unit::firstOrCreate(['code' => 'FACT-EMB-01'], [
+            'company_id' => $company->id,
+            'name' => 'Standard Multi-Head Tajima Embroidery Plant',
+            'factory_type' => 'EMBROIDERY_FACTORY',
+            'address' => 'Plot 104, Industrial Zone, CEPZ',
+            'contact_person' => 'Nasir Uddin (Embroidery Manager)',
+            'contact_phone' => '+880 1711-000505',
+            'is_active' => true,
+        ]);
+
+        // 2. Floors for Sewing Unit 01
+        $gf = Floor::firstOrCreate(['unit_id' => $sewingUnit1->id, 'code' => 'FL-GF'], [
             'name' => 'Ground Floor (Cutting & Fabric Store)',
             'process_type' => 'CUTTING',
             'sequence_order' => 1,
             'is_active' => true,
         ]);
 
-        $f1 = Floor::firstOrCreate(['unit_id' => $unit1->id, 'code' => 'FL-01'], [
+        $f1 = Floor::firstOrCreate(['unit_id' => $sewingUnit1->id, 'code' => 'FL-01'], [
             'name' => '1st Floor (Sewing Section A)',
             'process_type' => 'SEWING',
             'sequence_order' => 2,
             'is_active' => true,
         ]);
 
-        $f2 = Floor::firstOrCreate(['unit_id' => $unit1->id, 'code' => 'FL-02'], [
+        $f2 = Floor::firstOrCreate(['unit_id' => $sewingUnit1->id, 'code' => 'FL-02'], [
             'name' => '2nd Floor (Sewing Section B)',
             'process_type' => 'SEWING',
             'sequence_order' => 3,
             'is_active' => true,
         ]);
 
-        $f3 = Floor::firstOrCreate(['unit_id' => $unit1->id, 'code' => 'FL-03'], [
-            'name' => '3rd Floor (Sewing Section C)',
-            'process_type' => 'SEWING',
+        $f4 = Floor::firstOrCreate(['unit_id' => $sewingUnit1->id, 'code' => 'FL-04'], [
+            'name' => '4th Floor (Finishing & Packing)',
+            'process_type' => 'FINISHING',
             'sequence_order' => 4,
             'is_active' => true,
         ]);
 
-        $f4 = Floor::firstOrCreate(['unit_id' => $unit1->id, 'code' => 'FL-04'], [
-            'name' => '4th Floor (Finishing & Packing)',
-            'process_type' => 'FINISHING',
-            'sequence_order' => 5,
+        // 3. Washing Plant Floors / Work Centers
+        $wWet = Floor::firstOrCreate(['unit_id' => $washPlant->id, 'code' => 'FL-WET'], [
+            'name' => 'Heavy Wet Wash Floor (Belly & Dyeing Machines)',
+            'process_type' => 'WASHING',
+            'sequence_order' => 1,
+            'is_active' => true,
+        ]);
+
+        $wDry = Floor::firstOrCreate(['unit_id' => $washPlant->id, 'code' => 'FL-DRY'], [
+            'name' => 'Dry Processing Floor (Laser, Whiskering, Scraping)',
+            'process_type' => 'WASHING',
+            'sequence_order' => 2,
+            'is_active' => true,
+        ]);
+
+        // 4. Printing Plant Floors
+        $pPrint = Floor::firstOrCreate(['unit_id' => $printPlant->id, 'code' => 'FL-PRN'], [
+            'name' => 'Automatic Rotary & Screen Printing Floor',
+            'process_type' => 'PRINTING',
+            'sequence_order' => 1,
+            'is_active' => true,
+        ]);
+
+        // 5. Embroidery Plant Floors
+        $eEmb = Floor::firstOrCreate(['unit_id' => $embPlant->id, 'code' => 'FL-EMB'], [
+            'name' => '24-Head Computerized Tajima Embroidery Floor',
+            'process_type' => 'EMBROIDERY',
+            'sequence_order' => 1,
             'is_active' => true,
         ]);
 
         // 3. Lines for Unit 01 Floors
         ProductionLine::firstOrCreate(['floor_id' => $gf->id, 'code' => 'L-CUT-01'], [
-            'unit_id' => $unit1->id,
+            'unit_id' => $sewingUnit1->id,
             'name' => 'Auto Spreading & CAD Cutting Table 01',
             'section' => 'CUTTING',
             'total_machines' => 4,
@@ -368,7 +482,7 @@ class PlantStructureService
         ]);
 
         ProductionLine::firstOrCreate(['floor_id' => $gf->id, 'code' => 'L-CUT-02'], [
-            'unit_id' => $unit1->id,
+            'unit_id' => $sewingUnit1->id,
             'name' => 'Manual Spreading & Cutting Table 02',
             'section' => 'CUTTING',
             'total_machines' => 6,
@@ -381,7 +495,7 @@ class PlantStructureService
         for ($i = 1; $i <= 4; $i++) {
             $code = sprintf('L-%02d', $i);
             ProductionLine::firstOrCreate(['floor_id' => $f1->id, 'code' => $code], [
-                'unit_id' => $unit1->id,
+                'unit_id' => $sewingUnit1->id,
                 'name' => "Sewing Line $code (Woven Topwear)",
                 'section' => 'SEWING',
                 'total_machines' => 36,
@@ -395,7 +509,7 @@ class PlantStructureService
         for ($i = 5; $i <= 8; $i++) {
             $code = sprintf('L-%02d', $i);
             ProductionLine::firstOrCreate(['floor_id' => $f2->id, 'code' => $code], [
-                'unit_id' => $unit1->id,
+                'unit_id' => $sewingUnit1->id,
                 'name' => "Sewing Line $code (Denim Bottoms)",
                 'section' => 'SEWING',
                 'total_machines' => 42,
@@ -407,7 +521,7 @@ class PlantStructureService
 
         // Floor 4 Finishing Lines
         ProductionLine::firstOrCreate(['floor_id' => $f4->id, 'code' => 'L-FIN-01'], [
-            'unit_id' => $unit1->id,
+            'unit_id' => $sewingUnit1->id,
             'name' => 'Steam Tunnel & Pressing Line 01',
             'section' => 'FINISHING',
             'total_machines' => 18,
@@ -417,7 +531,7 @@ class PlantStructureService
         ]);
 
         ProductionLine::firstOrCreate(['floor_id' => $f4->id, 'code' => 'L-PCK-01'], [
-            'unit_id' => $unit1->id,
+            'unit_id' => $sewingUnit1->id,
             'name' => 'Tagging, Folding & Carton Packing Line 01',
             'section' => 'PACKING',
             'total_machines' => 12,
