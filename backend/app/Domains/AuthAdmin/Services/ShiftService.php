@@ -44,10 +44,21 @@ class ShiftService
     public function createShift(array $data, User $actor, ?string $ip = null): Shift
     {
         return DB::transaction(function () use ($data, $actor, $ip) {
+            $shiftType = strtoupper(trim($data['shift_type'] ?? 'DAY'));
+            $shiftCode = !empty($data['shift_code']) ? strtoupper(trim($data['shift_code'])) : null;
+            if (! $shiftCode) {
+                $count = Shift::where('shift_type', $shiftType)->count() + 1;
+                $shiftCode = 'SH-' . $shiftType . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+                while (Shift::where('shift_code', $shiftCode)->exists()) {
+                    $count++;
+                    $shiftCode = 'SH-' . $shiftType . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+                }
+            }
+
             $shift = Shift::create([
                 'shift_name' => trim($data['shift_name']),
-                'shift_code' => strtoupper(trim($data['shift_code'])),
-                'shift_type' => strtoupper(trim($data['shift_type'] ?? 'DAY')),
+                'shift_code' => $shiftCode,
+                'shift_type' => $shiftType,
                 'unit_name' => trim($data['unit_name'] ?? 'Unit 01'),
                 'floor_name' => trim($data['floor_name'] ?? '1st Floor'),
                 'start_time' => $data['start_time'],

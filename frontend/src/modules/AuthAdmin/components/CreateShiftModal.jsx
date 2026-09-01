@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
-import { X, Clock, Sun, Moon, Flame, Plus, AlertCircle, Coffee } from 'lucide-react';
-
-const COMMON_UNITS = ['Unit 01', 'Unit 02', 'Unit 03', 'Washing Plant', 'Cutting Facility'];
-const COMMON_FLOORS = ['Ground Floor', '1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor'];
+import { X, Clock, Sun, Moon, Flame, Plus } from 'lucide-react';
 
 export default function CreateShiftModal({
   show,
   onClose,
   onSubmit,
+  units = [],
+  floors = [],
   isDark = true,
   errors = {}
 }) {
   const [shiftName, setShiftName] = useState('');
   const [shiftCode, setShiftCode] = useState('');
   const [shiftType, setShiftType] = useState('DAY'); // 'DAY' | 'NIGHT' | 'GENERAL'
-  const [unitName, setUnitName] = useState('Unit 01');
-  const [floorName, setFloorName] = useState('1st Floor');
+  const [unitName, setUnitName] = useState('');
+  const [floorName, setFloorName] = useState('All Floors (Entire Plant)');
   const [startTime, setStartTime] = useState('08:00');
   const [endTime, setEndTime] = useState('17:00');
   const [gracePeriod, setGracePeriod] = useState(10);
@@ -33,6 +32,37 @@ export default function CreateShiftModal({
   const [isActive, setIsActive] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  // Filter floors belonging to selected unit
+  const availableFloors = React.useMemo(() => {
+    if (!unitName) return floors;
+    const matchingUnit = units.find(u => u.name === unitName);
+    if (!matchingUnit) return floors;
+    return floors.filter(f => f.unit_id === matchingUnit.id);
+  }, [units, floors, unitName]);
+
+  React.useEffect(() => {
+    if (show) {
+      const initialUnit = units[0]?.name || 'Default Factory Unit';
+      setUnitName(initialUnit);
+      setFloorName('All Floors (Entire Plant)');
+      setShiftName('');
+      setShiftCode('');
+      setShiftType('DAY');
+      setStartTime('08:00');
+      setEndTime('17:00');
+      setGracePeriod(10);
+      setBreakStartTime('13:00');
+      setBreakEndTime('14:00');
+      setNetHours(8.00);
+      setAllowsOvertime(true);
+      setMaxOtHours(2.00);
+      setTiffinBreakStart('17:00');
+      setTiffinBreakEnd('17:30');
+      setOvertimeStartTime('17:30');
+      setIsActive(true);
+    }
+  }, [show, units]);
+
   if (!show) return null;
 
   const handleShiftTypeChange = (type) => {
@@ -43,7 +73,7 @@ export default function CreateShiftModal({
       setBreakStartTime('00:30');
       setBreakEndTime('01:30');
       setNetHours(11.00);
-      setAllowsOvertime(false); // Night shift usually has no extra OT
+      setAllowsOvertime(false);
     } else if (type === 'DAY') {
       setStartTime('08:00');
       setEndTime('17:00');
@@ -52,15 +82,14 @@ export default function CreateShiftModal({
       setNetHours(8.00);
       setAllowsOvertime(true);
       setOvertimeStartTime('17:30');
+    } else {
+      setStartTime('09:00');
+      setEndTime('18:00');
+      setBreakStartTime('13:00');
+      setBreakEndTime('14:00');
+      setNetHours(8.00);
+      setAllowsOvertime(false);
     }
-  };
-
-  const autoGenerateCode = () => {
-    const uCode = unitName.replace(/\s+/g, '').slice(0, 3).toUpperCase();
-    const fCode = floorName.replace(/\s+/g, '').slice(0, 2).toUpperCase();
-    const tCode = shiftType;
-    const otSuffix = allowsOvertime ? '-OT' : '';
-    setShiftCode(`SH-${uCode}-${fCode}-${tCode}${otSuffix}`);
   };
 
   const handleSubmit = async (e) => {
@@ -69,10 +98,10 @@ export default function CreateShiftModal({
     try {
       await onSubmit({
         shift_name: shiftName,
-        shift_code: shiftCode,
+        shift_code: shiftCode ? shiftCode.toUpperCase().trim() : null,
         shift_type: shiftType,
-        unit_name: unitName,
-        floor_name: floorName,
+        unit_name: unitName || 'Default Factory Unit',
+        floor_name: floorName || 'All Floors (Entire Plant)',
         start_time: startTime ? `${startTime}:00` : '',
         end_time: endTime ? `${endTime}:00` : '',
         grace_period_mins: parseInt(gracePeriod, 10) || 0,
@@ -191,9 +220,13 @@ export default function CreateShiftModal({
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
               >
-                {COMMON_UNITS.map(u => (
-                  <option key={u} value={u}>{u}</option>
-                ))}
+                {units.length > 0 ? (
+                  units.map(u => (
+                    <option key={u.id} value={u.name}>{u.name} ({u.code})</option>
+                  ))
+                ) : (
+                  <option value="Default Factory Unit">Default Factory Unit (All Units)</option>
+                )}
               </select>
               {errors?.unit_name && (
                 <p className="text-[11px] text-red-500 mt-1">{errors.unit_name[0]}</p>
@@ -211,8 +244,9 @@ export default function CreateShiftModal({
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
               >
-                {COMMON_FLOORS.map(f => (
-                  <option key={f} value={f}>{f}</option>
+                <option value="All Floors (Entire Plant)">All Floors (Entire Plant)</option>
+                {availableFloors.map(f => (
+                  <option key={f.id} value={f.name}>{f.name} ({f.code})</option>
                 ))}
               </select>
               {errors?.floor_name && (
@@ -230,7 +264,7 @@ export default function CreateShiftModal({
               <input
                 type="text"
                 value={shiftName}
-                onChange={(e) => setShiftName(e.target.value)}
+                onChange={(e) => setNameWithAuto(e.target.value)}
                 placeholder="e.g. Sewing Day Shift (Floor 1)"
                 className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
@@ -242,25 +276,16 @@ export default function CreateShiftModal({
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold">
-                  Shift Code <span className="text-red-500">*</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={autoGenerateCode}
-                  className="text-[10px] font-mono text-blue-500 hover:underline cursor-pointer"
-                >
-                  Auto-Gen Code
-                </button>
-              </div>
+              <label className="block text-xs font-bold mb-1.5">
+                Shift Code <span className="text-slate-400 font-normal">(Auto-generated)</span>
+              </label>
               <input
                 type="text"
                 value={shiftCode}
                 onChange={(e) => setShiftCode(e.target.value)}
-                placeholder="e.g. SH-U1-F1-DAY-OT"
-                className={`w-full px-3 py-2 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                placeholder="Auto (e.g. SH-DAY-01)"
+                className={`w-full px-3 py-2 rounded text-xs font-mono font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-blue-400 placeholder-slate-500' : 'bg-white border-slate-300 text-blue-600 placeholder-slate-400'
                 }`}
               />
               {errors?.shift_code && (
@@ -485,10 +510,10 @@ export default function CreateShiftModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
+              className="px-5 py-2 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
-              <span>{submitting ? 'Creating...' : 'Save Shift Schedule'}</span>
+              <span>{submitting ? 'Saving...' : 'Save Shift Schedule'}</span>
             </button>
           </div>
 
@@ -497,4 +522,8 @@ export default function CreateShiftModal({
       </div>
     </div>
   );
+
+  function setNameWithAuto(val) {
+    setShiftName(val);
+  }
 }

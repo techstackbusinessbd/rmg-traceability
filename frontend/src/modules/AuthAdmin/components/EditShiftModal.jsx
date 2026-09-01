@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { X, Clock, Sun, Moon, Flame, Save } from 'lucide-react';
 
-const COMMON_UNITS = ['Unit 01', 'Unit 02', 'Unit 03', 'Washing Plant', 'Cutting Facility'];
-const COMMON_FLOORS = ['Ground Floor', '1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor'];
-
 export default function EditShiftModal({
   show,
   onClose,
   onSubmit,
   shift,
+  units = [],
+  floors = [],
   isDark = true,
   errors = {}
 }) {
   const [shiftName, setShiftName] = useState('');
   const [shiftCode, setShiftCode] = useState('');
   const [shiftType, setShiftType] = useState('DAY');
-  const [unitName, setUnitName] = useState('Unit 01');
-  const [floorName, setFloorName] = useState('1st Floor');
+  const [unitName, setUnitName] = useState('');
+  const [floorName, setFloorName] = useState('All Floors (Entire Plant)');
   const [startTime, setStartTime] = useState('08:00');
   const [endTime, setEndTime] = useState('17:00');
   const [gracePeriod, setGracePeriod] = useState(10);
@@ -34,13 +33,21 @@ export default function EditShiftModal({
   const [isActive, setIsActive] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  // Filter floors belonging to selected unit
+  const availableFloors = React.useMemo(() => {
+    if (!unitName) return floors;
+    const matchingUnit = units.find(u => u.name === unitName);
+    if (!matchingUnit) return floors;
+    return floors.filter(f => f.unit_id === matchingUnit.id);
+  }, [units, floors, unitName]);
+
   useEffect(() => {
     if (shift) {
       setShiftName(shift.shift_name || '');
       setShiftCode(shift.shift_code || '');
       setShiftType(shift.shift_type || 'DAY');
-      setUnitName(shift.unit_name || 'Unit 01');
-      setFloorName(shift.floor_name || '1st Floor');
+      setUnitName(shift.unit_name || units[0]?.name || 'Default Factory Unit');
+      setFloorName(shift.floor_name || 'All Floors (Entire Plant)');
       setStartTime(shift.start_time ? shift.start_time.slice(0, 5) : '08:00');
       setEndTime(shift.end_time ? shift.end_time.slice(0, 5) : '17:00');
       setGracePeriod(shift.grace_period_mins ?? 10);
@@ -54,7 +61,7 @@ export default function EditShiftModal({
       setOvertimeStartTime(shift.overtime_start_time ? shift.overtime_start_time.slice(0, 5) : '17:30');
       setIsActive(shift.is_active ?? true);
     }
-  }, [shift]);
+  }, [shift, units]);
 
   if (!show || !shift) return null;
 
@@ -65,10 +72,10 @@ export default function EditShiftModal({
       await onSubmit({
         id: shift.id,
         shift_name: shiftName,
-        shift_code: shiftCode,
+        shift_code: shiftCode ? shiftCode.toUpperCase().trim() : null,
         shift_type: shiftType,
-        unit_name: unitName,
-        floor_name: floorName,
+        unit_name: unitName || 'Default Factory Unit',
+        floor_name: floorName || 'All Floors (Entire Plant)',
         start_time: startTime ? `${startTime}:00` : '',
         end_time: endTime ? `${endTime}:00` : '',
         grace_period_mins: parseInt(gracePeriod, 10) || 0,
@@ -98,19 +105,15 @@ export default function EditShiftModal({
           isDark ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-50 border-slate-200'
         }`}>
           <div className="flex items-center space-x-2.5">
-            <div className={`p-2 rounded border ${
-              shiftType === 'NIGHT' 
-                ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' 
-                : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-            }`}>
-              {shiftType === 'NIGHT' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <Clock className="h-5 w-5" />
             </div>
             <div>
               <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                Edit Shift Schedule
+                Edit Floor Shift Schedule
               </h3>
-              <p className="text-xs text-slate-400 font-mono">
-                {shift.shift_code} • {unitName} • {floorName}
+              <p className="text-xs text-slate-400">
+                Update shift timings, break periods and overtime boundaries
               </p>
             </div>
           </div>
@@ -127,54 +130,6 @@ export default function EditShiftModal({
         {/* Modal Form */}
         <form onSubmit={handleSubmit} noValidate className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           
-          {/* Shift Type Buttons */}
-          <div>
-            <label className="block text-xs font-bold mb-1.5">
-              Shift Classification <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setShiftType('DAY')}
-                className={`py-2 px-3 rounded text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer border ${
-                  shiftType === 'DAY'
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : isDark ? 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-850' : 'bg-slate-100 text-slate-600 border-slate-200'
-                }`}
-              >
-                <Sun className="h-3.5 w-3.5" />
-                <span>Day Shift</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShiftType('NIGHT')}
-                className={`py-2 px-3 rounded text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer border ${
-                  shiftType === 'NIGHT'
-                    ? 'bg-purple-600 text-white border-purple-600'
-                    : isDark ? 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-850' : 'bg-slate-100 text-slate-600 border-slate-200'
-                }`}
-              >
-                <Moon className="h-3.5 w-3.5" />
-                <span>Night Shift</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShiftType('GENERAL')}
-                className={`py-2 px-3 rounded text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer border ${
-                  shiftType === 'GENERAL'
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : isDark ? 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-850' : 'bg-slate-100 text-slate-600 border-slate-200'
-                }`}
-              >
-                <Clock className="h-3.5 w-3.5" />
-                <span>General Shift</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Unit & Floor Selector Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold mb-1.5">
@@ -187,13 +142,14 @@ export default function EditShiftModal({
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
               >
-                {COMMON_UNITS.map(u => (
-                  <option key={u} value={u}>{u}</option>
-                ))}
+                {units.length > 0 ? (
+                  units.map(u => (
+                    <option key={u.id} value={u.name}>{u.name} ({u.code})</option>
+                  ))
+                ) : (
+                  <option value="Default Factory Unit">Default Factory Unit (All Units)</option>
+                )}
               </select>
-              {errors?.unit_name && (
-                <p className="text-[11px] text-red-500 mt-1">{errors.unit_name[0]}</p>
-              )}
             </div>
 
             <div>
@@ -207,17 +163,14 @@ export default function EditShiftModal({
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
               >
-                {COMMON_FLOORS.map(f => (
-                  <option key={f} value={f}>{f}</option>
+                <option value="All Floors (Entire Plant)">All Floors (Entire Plant)</option>
+                {availableFloors.map(f => (
+                  <option key={f.id} value={f.name}>{f.name} ({f.code})</option>
                 ))}
               </select>
-              {errors?.floor_name && (
-                <p className="text-[11px] text-red-500 mt-1">{errors.floor_name[0]}</p>
-              )}
             </div>
           </div>
 
-          {/* Shift Name & Code */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold mb-1.5">
@@ -231,30 +184,24 @@ export default function EditShiftModal({
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
               />
-              {errors?.shift_name && (
-                <p className="text-[11px] text-red-500 mt-1">{errors.shift_name[0]}</p>
-              )}
             </div>
 
             <div>
               <label className="block text-xs font-bold mb-1.5">
-                Shift Code <span className="text-red-500">*</span>
+                Shift Code <span className="text-slate-400 font-normal">(Auto-generated)</span>
               </label>
               <input
                 type="text"
                 value={shiftCode}
                 onChange={(e) => setShiftCode(e.target.value)}
-                className={`w-full px-3 py-2 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                className={`w-full px-3 py-2 rounded text-xs font-mono font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-blue-400 placeholder-slate-500' : 'bg-white border-slate-300 text-blue-600 placeholder-slate-400'
                 }`}
               />
-              {errors?.shift_code && (
-                <p className="text-[11px] text-red-500 mt-1">{errors.shift_code[0]}</p>
-              )}
             </div>
           </div>
 
-          {/* Staggered Timings */}
+          {/* Staggered Timings: In-Time & Out-Time */}
           <div className="p-3.5 rounded border border-blue-500/20 bg-blue-500/5">
             <h4 className="text-xs font-bold text-blue-400 mb-3 flex items-center space-x-1.5">
               <Clock className="h-3.5 w-3.5" />
@@ -274,9 +221,6 @@ export default function EditShiftModal({
                     isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
-                {errors?.start_time && (
-                  <p className="text-[11px] text-red-500 mt-1">{errors.start_time[0]}</p>
-                )}
               </div>
 
               <div>
@@ -291,9 +235,6 @@ export default function EditShiftModal({
                     isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
-                {errors?.end_time && (
-                  <p className="text-[11px] text-red-500 mt-1">{errors.end_time[0]}</p>
-                )}
               </div>
 
               <div>
@@ -470,10 +411,10 @@ export default function EditShiftModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
+              className="px-5 py-2 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
-              <span>{submitting ? 'Updating...' : 'Update Shift'}</span>
+              <span>{submitting ? 'Saving...' : 'Update Shift Schedule'}</span>
             </button>
           </div>
 

@@ -39,7 +39,7 @@ class ShiftController extends Controller
     {
         $validated = $request->validate([
             'shift_name' => 'required|string|max:100',
-            'shift_code' => 'required|string|max:50|unique:shifts,shift_code',
+            'shift_code' => 'nullable|string|max:50|unique:shifts,shift_code',
             'shift_type' => 'required|string|in:DAY,NIGHT,GENERAL',
             'unit_name' => 'required|string|max:100',
             'floor_name' => 'required|string|max:100',
@@ -75,17 +75,18 @@ class ShiftController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        $shift = Shift::findOrFail($id);
+        $shift = Shift::find($id);
+
+        if (! $shift) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Shift not found.',
+            ], 404);
+        }
 
         $validated = $request->validate([
             'shift_name' => 'sometimes|required|string|max:100',
-            'shift_code' => [
-                'sometimes',
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('shifts', 'shift_code')->ignore($shift->id),
-            ],
+            'shift_code' => ['sometimes', 'nullable', 'string', 'max:50', Rule::unique('shifts', 'shift_code')->ignore($id)],
             'shift_type' => 'sometimes|required|string|in:DAY,NIGHT,GENERAL',
             'unit_name' => 'sometimes|required|string|max:100',
             'floor_name' => 'sometimes|required|string|max:100',

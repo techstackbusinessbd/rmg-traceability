@@ -1409,6 +1409,8 @@ export default function AdminConsolePage() {
           setShiftFormErrors({});
         }}
         onSubmit={handleCreateShift}
+        units={unitsList}
+        floors={floorsList}
         isDark={isDark}
         errors={shiftFormErrors}
       />
@@ -1421,6 +1423,8 @@ export default function AdminConsolePage() {
         }}
         onSubmit={handleUpdateShift}
         shift={editingShift}
+        units={unitsList}
+        floors={floorsList}
         isDark={isDark}
         errors={shiftFormErrors}
       />
