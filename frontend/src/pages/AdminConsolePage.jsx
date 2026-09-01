@@ -217,7 +217,7 @@ export default function AdminConsolePage() {
         setRolesList(rRes.value.data?.data?.roles || []);
         setAllPermissionsList(rRes.value.data?.data?.permissions || []);
       }
-      if (aRes.status === 'fulfilled') setAuditList(aRes.value.data?.data?.data || []);
+      if (aRes.status === 'fulfilled') setAuditList(aRes.value.data?.data?.data || aRes.value.data?.data || []);
       if (shRes.status === 'fulfilled') setShiftsList(shRes.value.data?.data || []);
       if (sRes.status === 'fulfilled') {
         const sData = sRes.value.data?.data || [];
@@ -1186,7 +1186,7 @@ export default function AdminConsolePage() {
             <EnterpriseAuditTrailDashboard
               auditLogs={auditList}
               loading={fetchLoading}
-              onRefresh={fetchAllData}
+              onRefresh={fetchAdminData}
               onExportCsv={handleExportAuditCsv}
               isDark={isDark}
             />
