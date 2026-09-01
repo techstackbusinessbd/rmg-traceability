@@ -14,12 +14,13 @@ class ShiftService
     const CACHE_KEY = 'global_factory_shifts';
 
     /**
-     * Get All Shifts with optional Unit & Floor filtering
+     * Get All Shifts with optional Unit, Floor & Shift Type filtering
      */
-    public function getAllShifts(?string $unit = null, ?string $floor = null): Collection
+    public function getAllShifts(?string $unit = null, ?string $floor = null, ?string $shiftType = null): Collection
     {
         $query = Shift::orderBy('unit_name')
             ->orderBy('floor_name')
+            ->orderBy('shift_type')
             ->orderBy('start_time');
 
         if (! empty($unit) && $unit !== 'ALL') {
@@ -28,6 +29,10 @@ class ShiftService
 
         if (! empty($floor) && $floor !== 'ALL') {
             $query->where('floor_name', $floor);
+        }
+
+        if (! empty($shiftType) && $shiftType !== 'ALL') {
+            $query->where('shift_type', $shiftType);
         }
 
         return $query->get();
@@ -42,6 +47,7 @@ class ShiftService
             $shift = Shift::create([
                 'shift_name' => trim($data['shift_name']),
                 'shift_code' => strtoupper(trim($data['shift_code'])),
+                'shift_type' => strtoupper(trim($data['shift_type'] ?? 'DAY')),
                 'unit_name' => trim($data['unit_name'] ?? 'Unit 01'),
                 'floor_name' => trim($data['floor_name'] ?? '1st Floor'),
                 'start_time' => $data['start_time'],
@@ -50,7 +56,11 @@ class ShiftService
                 'break_start_time' => $data['break_start_time'] ?? null,
                 'break_end_time' => $data['break_end_time'] ?? null,
                 'net_work_hours' => $data['net_work_hours'] ?? 8.00,
+                'allows_overtime' => $data['allows_overtime'] ?? false,
+                'max_ot_hours' => $data['max_ot_hours'] ?? 0.00,
                 'overtime_start_time' => $data['overtime_start_time'] ?? null,
+                'tiffin_break_start' => $data['tiffin_break_start'] ?? null,
+                'tiffin_break_end' => $data['tiffin_break_end'] ?? null,
                 'is_active' => $data['is_active'] ?? true,
             ]);
 
@@ -65,9 +75,10 @@ class ShiftService
                 'payload' => [
                     'shift_id' => $shift->id,
                     'shift_code' => $shift->shift_code,
+                    'shift_type' => $shift->shift_type,
                     'unit_name' => $shift->unit_name,
                     'floor_name' => $shift->floor_name,
-                    'start_time' => $shift->start_time,
+                    'allows_overtime' => $shift->allows_overtime,
                 ],
             ]);
 
@@ -86,6 +97,7 @@ class ShiftService
             $shift->update([
                 'shift_name' => trim($data['shift_name'] ?? $shift->shift_name),
                 'shift_code' => isset($data['shift_code']) ? strtoupper(trim($data['shift_code'])) : $shift->shift_code,
+                'shift_type' => isset($data['shift_type']) ? strtoupper(trim($data['shift_type'])) : $shift->shift_type,
                 'unit_name' => trim($data['unit_name'] ?? $shift->unit_name),
                 'floor_name' => trim($data['floor_name'] ?? $shift->floor_name),
                 'start_time' => $data['start_time'] ?? $shift->start_time,
@@ -94,7 +106,11 @@ class ShiftService
                 'break_start_time' => $data['break_start_time'] ?? $shift->break_start_time,
                 'break_end_time' => $data['break_end_time'] ?? $shift->break_end_time,
                 'net_work_hours' => $data['net_work_hours'] ?? $shift->net_work_hours,
+                'allows_overtime' => $data['allows_overtime'] ?? $shift->allows_overtime,
+                'max_ot_hours' => $data['max_ot_hours'] ?? $shift->max_ot_hours,
                 'overtime_start_time' => $data['overtime_start_time'] ?? $shift->overtime_start_time,
+                'tiffin_break_start' => $data['tiffin_break_start'] ?? $shift->tiffin_break_start,
+                'tiffin_break_end' => $data['tiffin_break_end'] ?? $shift->tiffin_break_end,
                 'is_active' => $data['is_active'] ?? $shift->is_active,
             ]);
 
@@ -147,75 +163,116 @@ class ShiftService
     }
 
     /**
-     * Seed Default Realistic RMG Staggered Floor Shifts
+     * Seed Default Realistic RMG Shifts (Dual Shifts for Cutting & Day+OT for Sewing Floors)
      */
     public function seedDefaults(): void
     {
         $defaultShifts = [
-            // Unit 01 - Ground Floor (Cutting & Fabric Store)
+            // 1. Dual-Shift Floor: Ground Floor (Cutting) -> DAY SHIFT
             [
-                'shift_name' => 'Cutting General Shift',
-                'shift_code' => 'SH-U1-GF-CUT',
+                'shift_name' => 'Cutting Floor Day Shift',
+                'shift_code' => 'SH-U1-GF-DAY',
+                'shift_type' => 'DAY',
                 'unit_name' => 'Unit 01',
                 'floor_name' => 'Ground Floor',
-                'start_time' => '07:30:00', // Early start for cutting floor
-                'end_time' => '16:30:00',
+                'start_time' => '07:30:00',
+                'end_time' => '19:30:00',
                 'grace_period_mins' => 10,
                 'break_start_time' => '12:30:00',
                 'break_end_time' => '13:30:00',
-                'net_work_hours' => 8.00,
-                'overtime_start_time' => '17:00:00',
+                'net_work_hours' => 11.00,
+                'allows_overtime' => false, // Handover to Night Shift immediately
+                'max_ot_hours' => 0.00,
+                'overtime_start_time' => null,
                 'is_active' => true,
             ],
-            // Unit 01 - 1st Floor (Sewing Lines 1-8: Stagger Group A)
+            // 2. Dual-Shift Floor: Ground Floor (Cutting) -> NIGHT SHIFT
             [
-                'shift_name' => 'Sewing Shift (Floor 1)',
-                'shift_code' => 'SH-U1-F1-SEW',
+                'shift_name' => 'Cutting Floor Night Shift',
+                'shift_code' => 'SH-U1-GF-NIGHT',
+                'shift_type' => 'NIGHT',
+                'unit_name' => 'Unit 01',
+                'floor_name' => 'Ground Floor',
+                'start_time' => '19:30:00',
+                'end_time' => '07:30:00',
+                'grace_period_mins' => 10,
+                'break_start_time' => '00:30:00',
+                'break_end_time' => '01:30:00',
+                'net_work_hours' => 11.00,
+                'allows_overtime' => false,
+                'max_ot_hours' => 0.00,
+                'overtime_start_time' => null,
+                'is_active' => true,
+            ],
+
+            // 3. Single-Shift Floor with OT: 1st Floor (Sewing Lines 1-8) -> DAY + OT
+            [
+                'shift_name' => 'Sewing Day Shift (Floor 1)',
+                'shift_code' => 'SH-U1-F1-DAY-OT',
+                'shift_type' => 'DAY',
                 'unit_name' => 'Unit 01',
                 'floor_name' => '1st Floor',
-                'start_time' => '07:45:00', // 15 mins staggered
+                'start_time' => '07:45:00',
                 'end_time' => '16:45:00',
                 'grace_period_mins' => 10,
                 'break_start_time' => '12:45:00',
                 'break_end_time' => '13:45:00',
                 'net_work_hours' => 8.00,
+                'allows_overtime' => true, // Overtime enabled for single shift floor
+                'max_ot_hours' => 2.50,
+                'tiffin_break_start' => '16:45:00',
+                'tiffin_break_end' => '17:15:00',
                 'overtime_start_time' => '17:15:00',
                 'is_active' => true,
             ],
-            // Unit 01 - 2nd Floor (Sewing Lines 9-16: Stagger Group B)
+
+            // 4. Single-Shift Floor with OT: 2nd Floor (Sewing Lines 9-16) -> DAY + OT
             [
-                'shift_name' => 'Sewing Shift (Floor 2)',
-                'shift_code' => 'SH-U1-F2-SEW',
+                'shift_name' => 'Sewing Day Shift (Floor 2)',
+                'shift_code' => 'SH-U1-F2-DAY-OT',
+                'shift_type' => 'DAY',
                 'unit_name' => 'Unit 01',
                 'floor_name' => '2nd Floor',
-                'start_time' => '08:00:00', // Standard 08:00 AM start
+                'start_time' => '08:00:00',
                 'end_time' => '17:00:00',
                 'grace_period_mins' => 10,
                 'break_start_time' => '13:00:00',
                 'break_end_time' => '14:00:00',
                 'net_work_hours' => 8.00,
+                'allows_overtime' => true,
+                'max_ot_hours' => 3.00,
+                'tiffin_break_start' => '17:00:00',
+                'tiffin_break_end' => '17:30:00',
                 'overtime_start_time' => '17:30:00',
                 'is_active' => true,
             ],
-            // Unit 01 - 3rd Floor (Sewing Lines 17-24: Stagger Group C)
+
+            // 5. Single-Shift Floor with OT: 3rd Floor (Sewing Lines 17-24) -> DAY + OT
             [
-                'shift_name' => 'Sewing Shift (Floor 3)',
-                'shift_code' => 'SH-U1-F3-SEW',
+                'shift_name' => 'Sewing Day Shift (Floor 3)',
+                'shift_code' => 'SH-U1-F3-DAY-OT',
+                'shift_type' => 'DAY',
                 'unit_name' => 'Unit 01',
                 'floor_name' => '3rd Floor',
-                'start_time' => '08:15:00', // 15 mins staggered to avoid stairway congestion
+                'start_time' => '08:15:00',
                 'end_time' => '17:15:00',
                 'grace_period_mins' => 10,
                 'break_start_time' => '13:15:00',
                 'break_end_time' => '14:15:00',
                 'net_work_hours' => 8.00,
+                'allows_overtime' => true,
+                'max_ot_hours' => 2.00,
+                'tiffin_break_start' => '17:15:00',
+                'tiffin_break_end' => '17:45:00',
                 'overtime_start_time' => '17:45:00',
                 'is_active' => true,
             ],
-            // Unit 01 - 4th Floor (Finishing & Packing Floor)
+
+            // 6. Finishing & Packing Floor with OT: 4th Floor -> DAY + OT
             [
-                'shift_name' => 'Finishing & Packing Shift',
-                'shift_code' => 'SH-U1-F4-FIN',
+                'shift_name' => 'Finishing & Packing Day Shift',
+                'shift_code' => 'SH-U1-F4-FIN-OT',
+                'shift_type' => 'DAY',
                 'unit_name' => 'Unit 01',
                 'floor_name' => '4th Floor',
                 'start_time' => '08:30:00',
@@ -224,22 +281,11 @@ class ShiftService
                 'break_start_time' => '13:30:00',
                 'break_end_time' => '14:30:00',
                 'net_work_hours' => 8.00,
+                'allows_overtime' => true,
+                'max_ot_hours' => 3.50, // Shipment rush OT
+                'tiffin_break_start' => '17:30:00',
+                'tiffin_break_end' => '18:00:00',
                 'overtime_start_time' => '18:00:00',
-                'is_active' => true,
-            ],
-            // Unit 02 - General Shift
-            [
-                'shift_name' => 'Unit 02 General Day Shift',
-                'shift_code' => 'SH-U2-DAY',
-                'unit_name' => 'Unit 02',
-                'floor_name' => '1st Floor',
-                'start_time' => '08:00:00',
-                'end_time' => '17:00:00',
-                'grace_period_mins' => 10,
-                'break_start_time' => '13:00:00',
-                'break_end_time' => '14:00:00',
-                'net_work_hours' => 8.00,
-                'overtime_start_time' => '17:30:00',
                 'is_active' => true,
             ],
         ];

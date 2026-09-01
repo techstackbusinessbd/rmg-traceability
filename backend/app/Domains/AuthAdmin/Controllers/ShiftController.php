@@ -16,14 +16,15 @@ class ShiftController extends Controller
     ) {}
 
     /**
-     * Get All Factory Floor Shifts with Unit & Floor filters
+     * Get All Factory Floor Shifts with Unit, Floor & Shift Type filters
      */
     public function index(Request $request): JsonResponse
     {
         $unit = $request->query('unit');
         $floor = $request->query('floor');
+        $shiftType = $request->query('shift_type');
 
-        $shifts = $this->shiftService->getAllShifts($unit, $floor);
+        $shifts = $this->shiftService->getAllShifts($unit, $floor, $shiftType);
 
         return response()->json([
             'status' => 'success',
@@ -39,6 +40,7 @@ class ShiftController extends Controller
         $validated = $request->validate([
             'shift_name' => 'required|string|max:100',
             'shift_code' => 'required|string|max:50|unique:shifts,shift_code',
+            'shift_type' => 'required|string|in:DAY,NIGHT,GENERAL',
             'unit_name' => 'required|string|max:100',
             'floor_name' => 'required|string|max:100',
             'start_time' => 'required',
@@ -47,7 +49,11 @@ class ShiftController extends Controller
             'break_start_time' => 'nullable',
             'break_end_time' => 'nullable',
             'net_work_hours' => 'nullable|numeric|min:1|max:24',
+            'allows_overtime' => 'nullable|boolean',
+            'max_ot_hours' => 'nullable|numeric|min:0|max:12',
             'overtime_start_time' => 'nullable',
+            'tiffin_break_start' => 'nullable',
+            'tiffin_break_end' => 'nullable',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -80,6 +86,7 @@ class ShiftController extends Controller
                 'max:50',
                 Rule::unique('shifts', 'shift_code')->ignore($shift->id),
             ],
+            'shift_type' => 'sometimes|required|string|in:DAY,NIGHT,GENERAL',
             'unit_name' => 'sometimes|required|string|max:100',
             'floor_name' => 'sometimes|required|string|max:100',
             'start_time' => 'sometimes|required',
@@ -88,7 +95,11 @@ class ShiftController extends Controller
             'break_start_time' => 'nullable',
             'break_end_time' => 'nullable',
             'net_work_hours' => 'nullable|numeric|min:1|max:24',
+            'allows_overtime' => 'nullable|boolean',
+            'max_ot_hours' => 'nullable|numeric|min:0|max:12',
             'overtime_start_time' => 'nullable',
+            'tiffin_break_start' => 'nullable',
+            'tiffin_break_end' => 'nullable',
             'is_active' => 'nullable|boolean',
         ]);
 

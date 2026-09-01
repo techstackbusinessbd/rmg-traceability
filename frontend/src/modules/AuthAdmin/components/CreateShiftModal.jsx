@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Clock, Building2, Layers, AlertCircle, Plus, Sparkles } from 'lucide-react';
+import { X, Clock, Sun, Moon, Flame, Plus, AlertCircle, Coffee } from 'lucide-react';
 
 const COMMON_UNITS = ['Unit 01', 'Unit 02', 'Unit 03', 'Washing Plant', 'Cutting Facility'];
 const COMMON_FLOORS = ['Ground Floor', '1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor'];
@@ -13,6 +13,7 @@ export default function CreateShiftModal({
 }) {
   const [shiftName, setShiftName] = useState('');
   const [shiftCode, setShiftCode] = useState('');
+  const [shiftType, setShiftType] = useState('DAY'); // 'DAY' | 'NIGHT' | 'GENERAL'
   const [unitName, setUnitName] = useState('Unit 01');
   const [floorName, setFloorName] = useState('1st Floor');
   const [startTime, setStartTime] = useState('08:00');
@@ -21,11 +22,46 @@ export default function CreateShiftModal({
   const [breakStartTime, setBreakStartTime] = useState('13:00');
   const [breakEndTime, setBreakEndTime] = useState('14:00');
   const [netHours, setNetHours] = useState(8.00);
+
+  // Overtime (OT) facilities
+  const [allowsOvertime, setAllowsOvertime] = useState(true);
+  const [maxOtHours, setMaxOtHours] = useState(2.00);
+  const [tiffinBreakStart, setTiffinBreakStart] = useState('17:00');
+  const [tiffinBreakEnd, setTiffinBreakEnd] = useState('17:30');
   const [overtimeStartTime, setOvertimeStartTime] = useState('17:30');
+  
   const [isActive, setIsActive] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   if (!show) return null;
+
+  const handleShiftTypeChange = (type) => {
+    setShiftType(type);
+    if (type === 'NIGHT') {
+      setStartTime('19:30');
+      setEndTime('07:30');
+      setBreakStartTime('00:30');
+      setBreakEndTime('01:30');
+      setNetHours(11.00);
+      setAllowsOvertime(false); // Night shift usually has no extra OT
+    } else if (type === 'DAY') {
+      setStartTime('08:00');
+      setEndTime('17:00');
+      setBreakStartTime('13:00');
+      setBreakEndTime('14:00');
+      setNetHours(8.00);
+      setAllowsOvertime(true);
+      setOvertimeStartTime('17:30');
+    }
+  };
+
+  const autoGenerateCode = () => {
+    const uCode = unitName.replace(/\s+/g, '').slice(0, 3).toUpperCase();
+    const fCode = floorName.replace(/\s+/g, '').slice(0, 2).toUpperCase();
+    const tCode = shiftType;
+    const otSuffix = allowsOvertime ? '-OT' : '';
+    setShiftCode(`SH-${uCode}-${fCode}-${tCode}${otSuffix}`);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,6 +70,7 @@ export default function CreateShiftModal({
       await onSubmit({
         shift_name: shiftName,
         shift_code: shiftCode,
+        shift_type: shiftType,
         unit_name: unitName,
         floor_name: floorName,
         start_time: startTime ? `${startTime}:00` : '',
@@ -42,19 +79,16 @@ export default function CreateShiftModal({
         break_start_time: breakStartTime ? `${breakStartTime}:00` : null,
         break_end_time: breakEndTime ? `${breakEndTime}:00` : null,
         net_work_hours: parseFloat(netHours) || 8.0,
-        overtime_start_time: overtimeStartTime ? `${overtimeStartTime}:00` : null,
+        allows_overtime: allowsOvertime,
+        max_ot_hours: allowsOvertime ? (parseFloat(maxOtHours) || 0) : 0,
+        overtime_start_time: allowsOvertime && overtimeStartTime ? `${overtimeStartTime}:00` : null,
+        tiffin_break_start: allowsOvertime && tiffinBreakStart ? `${tiffinBreakStart}:00` : null,
+        tiffin_break_end: allowsOvertime && tiffinBreakEnd ? `${tiffinBreakEnd}:00` : null,
         is_active: isActive
       });
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const autoGenerateCode = () => {
-    const uCode = unitName.replace(/\s+/g, '').slice(0, 3).toUpperCase();
-    const fCode = floorName.replace(/\s+/g, '').slice(0, 2).toUpperCase();
-    const sCode = shiftName.slice(0, 3).toUpperCase() || 'SH';
-    setShiftCode(`SH-${uCode}-${fCode}-${sCode}`);
   };
 
   return (
@@ -68,15 +102,19 @@ export default function CreateShiftModal({
           isDark ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-50 border-slate-200'
         }`}>
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded bg-blue-600/10 text-blue-500 border border-blue-500/20">
-              <Clock className="h-5 w-5" />
+            <div className={`p-2 rounded border ${
+              shiftType === 'NIGHT'
+                ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+            }`}>
+              {shiftType === 'NIGHT' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </div>
             <div>
               <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 Configure Floor Shift Schedule
               </h3>
               <p className="text-xs text-slate-400">
-                Define unit and floor-specific in-times, staggered lunch breaks, and work hours
+                Setup Day / Night shifts and Floor Overtime (OT) parameters
               </p>
             </div>
           </div>
@@ -93,6 +131,53 @@ export default function CreateShiftModal({
         {/* Modal Form */}
         <form onSubmit={handleSubmit} noValidate className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           
+          {/* Shift Type Selection */}
+          <div>
+            <label className="block text-xs font-bold mb-1.5">
+              Shift Classification <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleShiftTypeChange('DAY')}
+                className={`py-2 px-3 rounded text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer border ${
+                  shiftType === 'DAY'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : isDark ? 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-850' : 'bg-slate-100 text-slate-600 border-slate-200'
+                }`}
+              >
+                <Sun className="h-3.5 w-3.5" />
+                <span>Day Shift (Regular)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleShiftTypeChange('NIGHT')}
+                className={`py-2 px-3 rounded text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer border ${
+                  shiftType === 'NIGHT'
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : isDark ? 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-850' : 'bg-slate-100 text-slate-600 border-slate-200'
+                }`}
+              >
+                <Moon className="h-3.5 w-3.5" />
+                <span>Night Shift (Dual)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleShiftTypeChange('GENERAL')}
+                className={`py-2 px-3 rounded text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer border ${
+                  shiftType === 'GENERAL'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : isDark ? 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-850' : 'bg-slate-100 text-slate-600 border-slate-200'
+                }`}
+              >
+                <Clock className="h-3.5 w-3.5" />
+                <span>General Office Shift</span>
+              </button>
+            </div>
+          </div>
+
           {/* Unit & Floor Selector Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -146,7 +231,7 @@ export default function CreateShiftModal({
                 type="text"
                 value={shiftName}
                 onChange={(e) => setShiftName(e.target.value)}
-                placeholder="e.g. Day Shift - Sewing Floor 1"
+                placeholder="e.g. Sewing Day Shift (Floor 1)"
                 className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
@@ -173,7 +258,7 @@ export default function CreateShiftModal({
                 type="text"
                 value={shiftCode}
                 onChange={(e) => setShiftCode(e.target.value)}
-                placeholder="e.g. SH-U1-F1-MORN"
+                placeholder="e.g. SH-U1-F1-DAY-OT"
                 className={`w-full px-3 py-2 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
@@ -188,7 +273,7 @@ export default function CreateShiftModal({
           <div className="p-3.5 rounded border border-blue-500/20 bg-blue-500/5">
             <h4 className="text-xs font-bold text-blue-400 mb-3 flex items-center space-x-1.5">
               <Clock className="h-3.5 w-3.5" />
-              <span>Floor In-Time & Out-Time (Stagger Schedule)</span>
+              <span>Floor In-Time, Out-Time & Meal Break</span>
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -242,57 +327,122 @@ export default function CreateShiftModal({
                 />
               </div>
             </div>
+
+            {/* Meal / Lunch Break */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-2.5 border-t border-slate-700/20">
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Meal / Lunch Break Start
+                </label>
+                <input
+                  type="time"
+                  value={breakStartTime}
+                  onChange={(e) => setBreakStartTime(e.target.value)}
+                  className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Meal / Lunch Break End
+                </label>
+                <input
+                  type="time"
+                  value={breakEndTime}
+                  onChange={(e) => setBreakEndTime(e.target.value)}
+                  className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                  }`}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Break & Overtime Timings */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-medium mb-1">
-                Lunch/Tiffin Start
+          {/* Overtime (OT) Facilities Section */}
+          <div className={`p-4 rounded border transition-colors ${
+            allowsOvertime 
+              ? (isDark ? 'bg-orange-950/20 border-orange-500/30' : 'bg-orange-50/50 border-orange-200')
+              : (isDark ? 'bg-slate-950/40 border-slate-800' : 'bg-slate-50 border-slate-200')
+          }`}>
+            <div className="flex items-center justify-between mb-3">
+              <label className="flex items-center space-x-2 text-xs font-bold cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allowsOvertime}
+                  onChange={(e) => setAllowsOvertime(e.target.checked)}
+                  className="h-4 w-4 rounded text-orange-600 focus:ring-0 border-slate-700 bg-slate-950 cursor-pointer"
+                />
+                <span className="flex items-center space-x-1.5">
+                  <Flame className="h-4 w-4 text-orange-500" />
+                  <span>Enable Overtime (OT) Facility (Day Shift Floor)</span>
+                </span>
               </label>
-              <input
-                type="time"
-                value={breakStartTime}
-                onChange={(e) => setBreakStartTime(e.target.value)}
-                className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                }`}
-              />
+
+              {allowsOvertime && (
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                  OT Active
+                </span>
+              )}
             </div>
 
-            <div>
-              <label className="block text-xs font-medium mb-1">
-                Lunch/Tiffin End
-              </label>
-              <input
-                type="time"
-                value={breakEndTime}
-                onChange={(e) => setBreakEndTime(e.target.value)}
-                className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                }`}
-              />
-            </div>
+            {allowsOvertime && (
+              <div className="space-y-3 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">
+                      Max OT Allowed (Hours)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0.5"
+                      max="8"
+                      value={maxOtHours}
+                      onChange={(e) => setMaxOtHours(e.target.value)}
+                      className={`w-full px-2.5 py-1.5 rounded text-xs font-mono font-bold border ${
+                        isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    />
+                  </div>
 
-            <div>
-              <label className="block text-xs font-medium mb-1">
-                Overtime (OT) Start
-              </label>
-              <input
-                type="time"
-                value={overtimeStartTime}
-                onChange={(e) => setOvertimeStartTime(e.target.value)}
-                className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                }`}
-              />
-            </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">
+                      Evening Tiffin Start
+                    </label>
+                    <input
+                      type="time"
+                      value={tiffinBreakStart}
+                      onChange={(e) => setTiffinBreakStart(e.target.value)}
+                      className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border ${
+                        isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium mb-1">
+                      OT Production Start
+                    </label>
+                    <input
+                      type="time"
+                      value={overtimeStartTime}
+                      onChange={(e) => setOvertimeStartTime(e.target.value)}
+                      className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border ${
+                        isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Net Work Hours & Active Status */}
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center space-x-2">
-              <label className="text-xs font-medium">Effective Work Hours:</label>
+              <label className="text-xs font-medium">Regular Work Hours:</label>
               <input
                 type="number"
                 step="0.5"
@@ -314,7 +464,7 @@ export default function CreateShiftModal({
                 onChange={(e) => setIsActive(e.target.checked)}
                 className="h-4 w-4 rounded text-blue-600 focus:ring-0 border-slate-700 bg-slate-950 cursor-pointer"
               />
-              <span>Active Schedule</span>
+              <span>Active Shift</span>
             </label>
           </div>
 

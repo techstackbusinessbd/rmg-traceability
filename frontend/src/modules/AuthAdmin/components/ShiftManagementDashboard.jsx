@@ -8,8 +8,6 @@ import {
   Edit2, 
   Trash2, 
   Power, 
-  CheckCircle2, 
-  XCircle, 
   Coffee, 
   Sun, 
   Moon, 
@@ -32,6 +30,7 @@ export default function ShiftManagementDashboard({
   const { isDark } = useThemeStore();
   const [selectedUnit, setSelectedUnit] = useState('ALL');
   const [selectedFloor, setSelectedFloor] = useState('ALL');
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState('ALL'); // 'ALL' | 'DAY' | 'NIGHT' | 'OT'
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filtered shifts
@@ -39,17 +38,26 @@ export default function ShiftManagementDashboard({
     return shifts.filter(s => {
       const matchUnit = selectedUnit === 'ALL' || s.unit_name === selectedUnit;
       const matchFloor = selectedFloor === 'ALL' || s.floor_name === selectedFloor;
+      
+      let matchType = true;
+      if (selectedTypeFilter === 'DAY') matchType = s.shift_type === 'DAY';
+      if (selectedTypeFilter === 'NIGHT') matchType = s.shift_type === 'NIGHT';
+      if (selectedTypeFilter === 'OT') matchType = Boolean(s.allows_overtime);
+
       const q = searchQuery.toLowerCase().trim();
       const matchSearch = !q || 
         s.shift_name?.toLowerCase().includes(q) || 
         s.shift_code?.toLowerCase().includes(q) || 
         s.unit_name?.toLowerCase().includes(q) || 
         s.floor_name?.toLowerCase().includes(q);
-      return matchUnit && matchFloor && matchSearch;
-    });
-  }, [shifts, selectedUnit, selectedFloor, searchQuery]);
 
-  const activeCount = shifts.filter(s => s.is_active).length;
+      return matchUnit && matchFloor && matchType && matchSearch;
+    });
+  }, [shifts, selectedUnit, selectedFloor, selectedTypeFilter, searchQuery]);
+
+  const totalDayShifts = shifts.filter(s => s.shift_type === 'DAY').length;
+  const totalNightShifts = shifts.filter(s => s.shift_type === 'NIGHT').length;
+  const totalOtFloors = shifts.filter(s => s.allows_overtime).length;
 
   const formatTime = (timeStr) => {
     if (!timeStr) return '—';
@@ -84,7 +92,7 @@ export default function ShiftManagementDashboard({
                   Unit & Floor Shift Schedules
                 </h3>
                 <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Staggered in-times, lunch break windows, and floor operating rosters
+                  Dual shifts (Day & Night) for Cutting and Day Shift + Overtime (OT) for Sewing & Finishing floors
                 </p>
               </div>
             </div>
@@ -102,8 +110,62 @@ export default function ShiftManagementDashboard({
           </div>
         </div>
 
-        {/* Filter Controls */}
-        <div className={`mt-4 pt-3.5 border-t flex flex-col md:flex-row items-center justify-between gap-3 ${
+        {/* Shift Type Filter Tabs */}
+        <div className="mt-4 pt-3.5 border-t border-slate-700/20 flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setSelectedTypeFilter('ALL')}
+            className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
+              selectedTypeFilter === 'ALL'
+                ? 'bg-blue-600 text-white'
+                : isDark ? 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
+            }`}
+          >
+            All Shifts ({shifts.length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedTypeFilter('DAY')}
+            className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer ${
+              selectedTypeFilter === 'DAY'
+                ? 'bg-blue-600 text-white'
+                : isDark ? 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
+            }`}
+          >
+            <Sun className="h-3.5 w-3.5 text-amber-400" />
+            <span>Day Shifts ({totalDayShifts})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedTypeFilter('NIGHT')}
+            className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer ${
+              selectedTypeFilter === 'NIGHT'
+                ? 'bg-purple-600 text-white'
+                : isDark ? 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
+            }`}
+          >
+            <Moon className="h-3.5 w-3.5 text-purple-400" />
+            <span>Night Shifts (Dual Floors) ({totalNightShifts})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedTypeFilter('OT')}
+            className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer ${
+              selectedTypeFilter === 'OT'
+                ? 'bg-orange-600 text-white'
+                : isDark ? 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
+            }`}
+          >
+            <Flame className="h-3.5 w-3.5 text-orange-400" />
+            <span>Overtime (OT) Enabled ({totalOtFloors})</span>
+          </button>
+        </div>
+
+        {/* Filter Dropdowns & Search */}
+        <div className={`mt-3 pt-3 border-t flex flex-col md:flex-row items-center justify-between gap-3 ${
           isDark ? 'border-slate-800' : 'border-slate-200'
         }`}>
           <div className="flex items-center flex-wrap gap-2 w-full md:w-auto">
@@ -171,10 +233,10 @@ export default function ShiftManagementDashboard({
         }`}>
           <AlertCircle className="h-10 w-10 text-slate-400 mx-auto mb-2 opacity-60" />
           <p className={`text-sm font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-            No shifts found for selected unit or floor.
+            No shifts found matching selected filters.
           </p>
           <p className={`text-xs mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            Click "Configure New Shift" above to add a floor shift schedule.
+            Click "Configure New Shift" above to add a Day/Night or Overtime floor shift schedule.
           </p>
         </div>
       ) : (
@@ -183,24 +245,48 @@ export default function ShiftManagementDashboard({
             <div
               key={shift.id}
               className={`p-4 rounded-md border transition-all flex flex-col justify-between ${
-                isDark 
-                  ? 'bg-slate-900 border-slate-800 hover:border-slate-700' 
-                  : 'bg-white border-slate-200 hover:border-slate-300 shadow-2xs'
+                shift.shift_type === 'NIGHT'
+                  ? (isDark ? 'bg-slate-900 border-purple-900/40 hover:border-purple-700/60' : 'bg-white border-purple-200 hover:border-purple-300 shadow-2xs')
+                  : shift.allows_overtime
+                    ? (isDark ? 'bg-slate-900 border-orange-900/30 hover:border-orange-700/50' : 'bg-white border-orange-200 hover:border-orange-300 shadow-2xs')
+                    : (isDark ? 'bg-slate-900 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300 shadow-2xs')
               }`}
             >
               <div>
-                {/* Card Header */}
+                {/* Card Header & Badges */}
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
-                    <span className="text-[11px] font-mono font-bold text-blue-500 px-1.5 py-0.2 rounded bg-blue-500/10 border border-blue-500/20">
-                      {shift.shift_code}
-                    </span>
-                    <h4 className={`text-sm font-bold mt-1.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                      <span className="text-[11px] font-mono font-bold text-blue-500 px-1.5 py-0.2 rounded bg-blue-500/10 border border-blue-500/20">
+                        {shift.shift_code}
+                      </span>
+
+                      {shift.shift_type === 'NIGHT' ? (
+                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center space-x-1">
+                          <Moon className="h-2.5 w-2.5" />
+                          <span>NIGHT SHIFT</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center space-x-1">
+                          <Sun className="h-2.5 w-2.5" />
+                          <span>DAY SHIFT</span>
+                        </span>
+                      )}
+
+                      {shift.allows_overtime && (
+                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center space-x-1">
+                          <Flame className="h-2.5 w-2.5" />
+                          <span>OT +{shift.max_ot_hours || '2.0'}h</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <h4 className={`text-sm font-bold mt-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {shift.shift_name}
                     </h4>
                   </div>
 
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${
                     shift.is_active 
                       ? (isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-200')
                       : (isDark ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-red-50 text-red-700 border-red-200')
@@ -222,14 +308,16 @@ export default function ShiftManagementDashboard({
                   </div>
                 </div>
 
-                {/* In-Time & Out-Time Big Display */}
+                {/* In-Time & Out-Time Display */}
                 <div className={`p-3 rounded border mb-3 ${
                   isDark ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[10px] text-slate-400 block font-medium">IN-TIME (START)</span>
-                      <span className="text-base font-black font-mono text-emerald-500">
+                      <span className={`text-base font-black font-mono ${
+                        shift.shift_type === 'NIGHT' ? 'text-purple-400' : 'text-emerald-500'
+                      }`}>
                         {formatTime(shift.start_time)}
                       </span>
                     </div>
@@ -244,7 +332,7 @@ export default function ShiftManagementDashboard({
 
                   {shift.grace_period_mins > 0 && (
                     <div className="mt-2 pt-2 border-t border-slate-700/20 flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400">Grace Window:</span>
+                      <span className="text-slate-400">Late Grace Window:</span>
                       <span className="font-mono font-semibold text-amber-400">
                         +{shift.grace_period_mins} mins
                       </span>
@@ -258,7 +346,7 @@ export default function ShiftManagementDashboard({
                     <div className="flex items-center justify-between">
                       <span className="flex items-center space-x-1">
                         <Coffee className="h-3 w-3 text-amber-500" />
-                        <span>Lunch Break:</span>
+                        <span>{shift.shift_type === 'NIGHT' ? 'Midnight Dinner:' : 'Lunch Break:'}</span>
                       </span>
                       <span className={`font-mono ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                         {formatTime(shift.break_start_time)} - {formatTime(shift.break_end_time)}
@@ -266,20 +354,28 @@ export default function ShiftManagementDashboard({
                     </div>
                   )}
 
-                  {shift.overtime_start_time && (
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center space-x-1">
-                        <Flame className="h-3 w-3 text-orange-400" />
-                        <span>Overtime (OT) Starts:</span>
-                      </span>
-                      <span className={`font-mono font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                        {formatTime(shift.overtime_start_time)}
-                      </span>
+                  {shift.allows_overtime && shift.overtime_start_time && (
+                    <div className="p-2 rounded bg-orange-500/5 border border-orange-500/15 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="flex items-center space-x-1 text-orange-400 font-semibold">
+                          <Flame className="h-3 w-3 text-orange-500" />
+                          <span>Overtime Facility:</span>
+                        </span>
+                        <span className="font-mono font-bold text-orange-400">
+                          Max {shift.max_ot_hours || '2.0'} Hours
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-slate-400">
+                        <span>OT Starts: {formatTime(shift.overtime_start_time)}</span>
+                        {shift.tiffin_break_start && (
+                          <span>Tiffin: {formatTime(shift.tiffin_break_start)}</span>
+                        )}
+                      </div>
                     </div>
                   )}
 
                   <div className="flex items-center justify-between pt-1">
-                    <span>Effective Working Hours:</span>
+                    <span>Regular Hours:</span>
                     <span className="font-mono font-bold text-blue-400">
                       {shift.net_work_hours || '8.00'} Hrs/Day
                     </span>
@@ -307,7 +403,7 @@ export default function ShiftManagementDashboard({
                 <button
                   type="button"
                   onClick={() => onOpenEditModal(shift)}
-                  title="Edit Shift Timings"
+                  title="Edit Shift Timings & OT"
                   className="p-1.5 rounded hover:bg-blue-500/10 text-slate-400 hover:text-blue-500 transition-colors cursor-pointer"
                 >
                   <Edit2 className="h-4 w-4" />
