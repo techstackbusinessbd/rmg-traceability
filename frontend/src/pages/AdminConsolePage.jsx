@@ -26,7 +26,9 @@ import {
   UserCheck,
   UserX,
   Power,
-  Eye
+  Eye,
+  Radio,
+  SlidersHorizontal
 } from 'lucide-react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -785,7 +787,7 @@ export default function AdminConsolePage() {
           </p>
           <button
             type="button"
-            onClick={() => setActiveTab('users')}
+            onClick={() => handleTabChange('users')}
             className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer transition-colors"
           >
             Back to Users Management

@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import AdminConsolePage from './pages/AdminConsolePage';
 import UserDetailsPage from './pages/UserDetailsPage';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './store/themeStore';
 
@@ -31,50 +32,52 @@ export default function App() {
   }, [initTheme]);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route 
-          path="/" 
-          element={
-            <GuestOnlyRoute>
-              <HomePage />
-            </GuestOnlyRoute>
-          } 
-        />
-        <Route 
-          path="/login" 
-          element={
-            <GuestOnlyRoute>
-              <LoginPage />
-            </GuestOnlyRoute>
-          } 
-        />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedAdminRoute>
-              <AdminConsolePage />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/admin/users/:id" 
-          element={
-            <ProtectedAdminRoute>
-              <UserDetailsPage />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route 
-          path="/admin/:subRoute" 
-          element={
-            <ProtectedAdminRoute>
-              <AdminConsolePage />
-            </ProtectedAdminRoute>
-          } 
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <GuestOnlyRoute>
+                <HomePage />
+              </GuestOnlyRoute>
+            } 
+          />
+          <Route 
+            path="/login" 
+            element={
+              <GuestOnlyRoute>
+                <LoginPage />
+              </GuestOnlyRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedAdminRoute>
+                <AdminConsolePage />
+              </ProtectedAdminRoute>
+            } 
+          />
+          <Route 
+            path="/admin/users/:id" 
+            element={
+              <ProtectedAdminRoute>
+                <UserDetailsPage />
+              </ProtectedAdminRoute>
+            } 
+          />
+          <Route 
+            path="/admin/:subRoute" 
+            element={
+              <ProtectedAdminRoute>
+                <AdminConsolePage />
+              </ProtectedAdminRoute>
+            } 
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
