@@ -57,10 +57,10 @@ const navigationGroups = [
         label: 'Master Data Setup',
         icon: Database,
         children: [
-          { id: 'master_buyers', label: 'Buyers & Brands', icon: Building2 },
+          { id: 'master_plant', label: 'Factory Plant Structure', icon: Building2 },
+          { id: 'master_buyers', label: 'Buyers & Brand Labels', icon: ShieldCheck },
           { id: 'master_styles', label: 'Styles & SMV Library', icon: Layers },
-          { id: 'master_lines', label: 'Production Lines', icon: SlidersHorizontal },
-          { id: 'master_attributes', label: 'Colors & Size Matrix', icon: Database },
+          { id: 'master_attributes', label: 'Colors, Sizes & Defects', icon: Database },
         ]
       },
       {

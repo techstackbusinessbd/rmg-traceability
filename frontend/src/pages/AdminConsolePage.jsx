@@ -29,10 +29,13 @@ import {
   Eye,
   Radio,
   SlidersHorizontal,
-  Clock
+  Clock,
+  Building2
 } from 'lucide-react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
+
+// Module 01 Components
 import RegisterUserModal from '../modules/AuthAdmin/components/RegisterUserModal';
 import RegisterDeviceModal from '../modules/AuthAdmin/components/RegisterDeviceModal';
 import EditUserModal from '../modules/AuthAdmin/components/EditUserModal';
@@ -41,6 +44,25 @@ import SystemSettingsDashboard from '../modules/AuthAdmin/components/SystemSetti
 import ShiftManagementDashboard from '../modules/AuthAdmin/components/ShiftManagementDashboard';
 import CreateShiftModal from '../modules/AuthAdmin/components/CreateShiftModal';
 import EditShiftModal from '../modules/AuthAdmin/components/EditShiftModal';
+
+// Module 02 Components (Master Data Setup)
+import PlantStructureDashboard from '../modules/MasterData/components/PlantStructureDashboard';
+import CreateUnitModal from '../modules/MasterData/components/CreateUnitModal';
+import CreateFloorModal from '../modules/MasterData/components/CreateFloorModal';
+import CreateLineModal from '../modules/MasterData/components/CreateLineModal';
+import BuyerBrandDashboard from '../modules/MasterData/components/BuyerBrandDashboard';
+import CreateBuyerModal from '../modules/MasterData/components/CreateBuyerModal';
+import CreateBrandModal from '../modules/MasterData/components/CreateBrandModal';
+import StyleCatalogDashboard from '../modules/MasterData/components/StyleCatalogDashboard';
+import CreateStyleModal from '../modules/MasterData/components/CreateStyleModal';
+import OperationBulletinModal from '../modules/MasterData/components/OperationBulletinModal';
+import AttributeMatrixDashboard from '../modules/MasterData/components/AttributeMatrixDashboard';
+import { 
+  CreateColorModal, 
+  CreateSizeModal, 
+  CreateDefectModal 
+} from '../modules/MasterData/components/CreateAttributeModals';
+
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
@@ -59,6 +81,8 @@ export default function AdminConsolePage() {
   const handleTabChange = (tabId) => {
     navigate(`/admin/${tabId}`);
   };
+
+  // Module 01 Modals State
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [showNewDeviceModal, setShowNewDeviceModal] = useState(false);
   const [showCreateShiftModal, setShowCreateShiftModal] = useState(false);
@@ -67,22 +91,59 @@ export default function AdminConsolePage() {
 
   const [editingUser, setEditingUser] = useState(null);
   const [editFormErrors, setEditFormErrors] = useState({});
-  const [editingRolePermissions, setEditingRolePermissions] = useState(null);
-  const [allPermissionsList, setAllPermissionsList] = useState([]);
   const [savingRoleMatrix, setSavingRoleMatrix] = useState(false);
 
-  // Admin lists
+  // Module 02 Modals State
+  const [showCreateUnitModal, setShowCreateUnitModal] = useState(false);
+  const [editingUnit, setEditingUnit] = useState(null);
+  const [unitFormErrors, setUnitFormErrors] = useState({});
+
+  const [showCreateFloorModal, setShowCreateFloorModal] = useState(false);
+  const [editingFloor, setEditingFloor] = useState(null);
+  const [floorFormErrors, setFloorFormErrors] = useState({});
+
+  const [showCreateLineModal, setShowCreateLineModal] = useState(false);
+  const [editingLine, setEditingLine] = useState(null);
+  const [lineFormErrors, setLineFormErrors] = useState({});
+
+  const [showCreateBuyerModal, setShowCreateBuyerModal] = useState(false);
+  const [editingBuyer, setEditingBuyer] = useState(null);
+  const [buyerFormErrors, setBuyerFormErrors] = useState({});
+  const [targetBuyerForBrand, setTargetBuyerForBrand] = useState(null);
+
+  const [showCreateStyleModal, setShowCreateStyleModal] = useState(false);
+  const [editingStyle, setEditingStyle] = useState(null);
+  const [styleFormErrors, setStyleFormErrors] = useState({});
+  const [viewingObStyle, setViewingObStyle] = useState(null);
+
+  const [showCreateColorModal, setShowCreateColorModal] = useState(false);
+  const [showCreateSizeModal, setShowCreateSizeModal] = useState(false);
+  const [showCreateDefectModal, setShowCreateDefectModal] = useState(false);
+
+  // Module 01 Lists
   const [usersList, setUsersList] = useState([]);
   const [devicesList, setDevicesList] = useState([]);
   const [rolesList, setRolesList] = useState([]);
+  const [allPermissionsList, setAllPermissionsList] = useState([]);
   const [shiftsList, setShiftsList] = useState([]);
   const [auditList, setAuditList] = useState([]);
   const [settingsList, setSettingsList] = useState([]);
   const [settingsForm, setSettingsForm] = useState({});
+
+  // Module 02 Lists
+  const [unitsList, setUnitsList] = useState([]);
+  const [floorsList, setFloorsList] = useState([]);
+  const [linesList, setLinesList] = useState([]);
+  const [buyersList, setBuyersList] = useState([]);
+  const [stylesList, setStylesList] = useState([]);
+  const [colorsList, setColorsList] = useState([]);
+  const [sizesList, setSizesList] = useState([]);
+  const [defectsList, setDefectsList] = useState([]);
+
   const [fetchLoading, setFetchLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
 
-  // Form states
+  // User form states
   const [newEmpId, setNewEmpId] = useState('');
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
@@ -92,6 +153,7 @@ export default function AdminConsolePage() {
   const [newUserStatus, setNewUserStatus] = useState(true);
   const [userFormErrors, setUserFormErrors] = useState({});
 
+  // Device form states
   const [newDevName, setNewDevName] = useState('');
   const [newDevCode, setNewDevCode] = useState('');
   const [newDevPin, setNewDevPin] = useState('123456');
@@ -111,31 +173,39 @@ export default function AdminConsolePage() {
     setFetchLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const [uRes, dRes, rRes, aRes, sRes, shRes] = await Promise.allSettled([
+      const [
+        uRes, dRes, rRes, aRes, sRes, shRes,
+        unitsRes, floorsRes, linesRes,
+        buyersRes, stylesRes,
+        colorsRes, sizesRes, defectsRes
+      ] = await Promise.allSettled([
+        // Module 01
         axios.get(`${API_BASE}/admin/users`, config),
         axios.get(`${API_BASE}/admin/devices`, config),
         axios.get(`${API_BASE}/admin/roles`, config),
         axios.get(`${API_BASE}/admin/audit-logs`, config),
         axios.get(`${API_BASE}/admin/settings`, config),
         axios.get(`${API_BASE}/admin/shifts`, config),
+        // Module 02
+        axios.get(`${API_BASE}/master/units`, config),
+        axios.get(`${API_BASE}/master/floors`, config),
+        axios.get(`${API_BASE}/master/lines`, config),
+        axios.get(`${API_BASE}/master/buyers`, config),
+        axios.get(`${API_BASE}/master/styles`, config),
+        axios.get(`${API_BASE}/master/colors`, config),
+        axios.get(`${API_BASE}/master/sizes`, config),
+        axios.get(`${API_BASE}/master/defects`, config),
       ]);
 
-      if (uRes.status === 'fulfilled') {
-        setUsersList(uRes.value.data?.data?.data || []);
-      }
-      if (dRes.status === 'fulfilled') {
-        setDevicesList(dRes.value.data?.data || []);
-      }
+      // Set Module 01
+      if (uRes.status === 'fulfilled') setUsersList(uRes.value.data?.data?.data || []);
+      if (dRes.status === 'fulfilled') setDevicesList(dRes.value.data?.data || []);
       if (rRes.status === 'fulfilled') {
         setRolesList(rRes.value.data?.data?.roles || []);
         setAllPermissionsList(rRes.value.data?.data?.permissions || []);
       }
-      if (aRes.status === 'fulfilled') {
-        setAuditList(aRes.value.data?.data?.data || []);
-      }
-      if (shRes.status === 'fulfilled') {
-        setShiftsList(shRes.value.data?.data || []);
-      }
+      if (aRes.status === 'fulfilled') setAuditList(aRes.value.data?.data?.data || []);
+      if (shRes.status === 'fulfilled') setShiftsList(shRes.value.data?.data || []);
       if (sRes.status === 'fulfilled') {
         const sData = sRes.value.data?.data || [];
         setSettingsList(sData);
@@ -144,11 +214,16 @@ export default function AdminConsolePage() {
         setSettingsForm(initialMap);
       }
 
-      // If all failed, show toast
-      const allFailed = [uRes, dRes, rRes, aRes, sRes, shRes].every(r => r.status === 'rejected');
-      if (allFailed) {
-        toast.error('Unable to reach backend API. Please verify server connection.');
-      }
+      // Set Module 02
+      if (unitsRes.status === 'fulfilled') setUnitsList(unitsRes.value.data?.data || []);
+      if (floorsRes.status === 'fulfilled') setFloorsList(floorsRes.value.data?.data || []);
+      if (linesRes.status === 'fulfilled') setLinesList(linesRes.value.data?.data || []);
+      if (buyersRes.status === 'fulfilled') setBuyersList(buyersRes.value.data?.data || []);
+      if (stylesRes.status === 'fulfilled') setStylesList(stylesRes.value.data?.data || []);
+      if (colorsRes.status === 'fulfilled') setColorsList(colorsRes.value.data?.data || []);
+      if (sizesRes.status === 'fulfilled') setSizesList(sizesRes.value.data?.data || []);
+      if (defectsRes.status === 'fulfilled') setDefectsList(defectsRes.value.data?.data || []);
+
     } catch (e) {
       console.error('Error fetching admin data', e);
     } finally {
@@ -156,397 +231,543 @@ export default function AdminConsolePage() {
     }
   };
 
-  const handleSaveRolePermissions = async ({ roleId, permissions }) => {
-    setSavingRoleMatrix(true);
-    try {
-      await axios.put(`${API_BASE}/admin/roles/${roleId}/permissions`, {
-        permissions
-      }, { headers: { Authorization: `Bearer ${token}` } });
-
-      toast.success('Role Permission Matrix updated successfully!');
-      setEditingRolePermissions(null);
-      fetchAdminData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update role permissions');
-    } finally {
-      setSavingRoleMatrix(false);
-    }
-  };
-
-  const handleSaveSettings = async (e) => {
-    e.preventDefault();
-    setSaveLoading(true);
-    try {
-      await axios.post(`${API_BASE}/admin/settings`, {
-        settings: settingsForm
-      }, { headers: { Authorization: `Bearer ${token}` } });
-
-      toast.success('System settings saved & Redis cache refreshed!');
-      fetchAdminData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Error updating settings');
-    } finally {
-      setSaveLoading(false);
-    }
-  };
-
+  // Module 01 Action Handlers
   const handleCreateUser = async (e) => {
     e.preventDefault();
     setUserFormErrors({});
-
     try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.post(`${API_BASE}/admin/users`, {
-        emp_id: newEmpId || null,
+        emp_id: newEmpId,
         name: newUserName,
-        email: newUserEmail,
+        email: newUserEmail || null,
         password: newUserPassword,
         password_confirmation: newUserConfirmPassword,
         role: newUserRole,
         is_active: newUserStatus
-      }, { headers: { Authorization: `Bearer ${token}` } });
+      }, config);
 
-      toast.success('User registered successfully by Admin!');
+      toast.success('New user account registered successfully.');
+      setShowNewUserModal(false);
       setNewEmpId('');
       setNewUserName('');
       setNewUserEmail('');
-      setNewUserPassword('Password123!');
-      setNewUserConfirmPassword('Password123!');
-      setNewUserStatus(true);
-      setUserFormErrors({});
-      setShowNewUserModal(false);
       fetchAdminData();
     } catch (err) {
-      const resp = err.response?.data;
-      if (resp?.errors) {
-        setUserFormErrors(resp.errors);
-        const firstErrorKey = Object.keys(resp.errors)[0];
-        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
+      if (err.response?.status === 422) {
+        setUserFormErrors(err.response.data.errors || {});
       } else {
-        toast.error(resp?.message || 'Error creating user');
+        toast.error('Failed to create user account.');
       }
-    }
-  };
-
-  const handleCreateDevice = async (e) => {
-    e.preventDefault();
-    setDeviceFormErrors({});
-
-    try {
-      await axios.post(`${API_BASE}/admin/devices`, {
-        device_name: newDevName,
-        device_code: newDevCode,
-        pin_code: newDevPin,
-        line_name: newDevLine,
-        device_type: 'Tablet'
-      }, { headers: { Authorization: `Bearer ${token}` } });
-
-      toast.success('Floor Tablet registered & line-locked!');
-      setNewDevName('');
-      setNewDevCode('');
-      setDeviceFormErrors({});
-      setShowNewDeviceModal(false);
-      fetchAdminData();
-    } catch (err) {
-      const resp = err.response?.data;
-      if (resp?.errors) {
-        setDeviceFormErrors(resp.errors);
-        const firstErrorKey = Object.keys(resp.errors)[0];
-        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
-      } else {
-        toast.error(resp?.message || 'Error registering device');
-      }
-    }
-  };
-
-  const handleToggleUserStatus = async (user) => {
-    const newStatus = !user.is_active;
-    try {
-      await axios.put(`${API_BASE}/admin/users/${user.id}`, {
-        is_active: newStatus
-      }, { headers: { Authorization: `Bearer ${token}` } });
-
-      toast.success(`User ${user.name} ${newStatus ? 'activated' : 'suspended'}!`);
-      fetchAdminData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update user status');
     }
   };
 
   const handleUpdateUser = async (formData) => {
     setEditFormErrors({});
     try {
-      await axios.put(`${API_BASE}/admin/users/${formData.id}`, {
-        name: formData.name,
-        role: formData.role,
-        is_active: formData.is_active
-      }, { headers: { Authorization: `Bearer ${token}` } });
-
-      toast.success('User updated successfully!');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.put(`${API_BASE}/admin/users/${formData.id}`, formData, config);
+      toast.success('User updated successfully.');
       setEditingUser(null);
-      setEditFormErrors({});
       fetchAdminData();
     } catch (err) {
-      const resp = err.response?.data;
-      if (resp?.errors) {
-        setEditFormErrors(resp.errors);
-        const firstErrorKey = Object.keys(resp.errors)[0];
-        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
+      if (err.response?.status === 422) {
+        setEditFormErrors(err.response.data.errors || {});
       } else {
-        toast.error(resp?.message || 'Failed to update user');
+        toast.error('Failed to update user.');
       }
+    }
+  };
+
+  const handleToggleUserStatus = async (user) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.put(`${API_BASE}/admin/users/${user.id}`, { is_active: !user.is_active }, config);
+      toast.success(`User status changed.`);
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to update user status.');
     }
   };
 
   const handleDeleteUser = async (user) => {
-    if (!window.confirm(`Are you sure you want to delete user ${user.name}? This action cannot be undone.`)) {
-      return;
-    }
-
+    if (!window.confirm(`Are you sure you want to delete user ${user.name}?`)) return;
     try {
-      await axios.delete(`${API_BASE}/admin/users/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      toast.success(`User ${user.name} removed successfully!`);
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/admin/users/${user.id}`, config);
+      toast.success('User deleted successfully.');
       fetchAdminData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete user');
+      toast.error('Failed to delete user.');
     }
   };
 
-  const handleToggleDeviceStatus = async (device) => {
-    const newStatus = !device.is_active;
+  const handleCreateDevice = async (e) => {
+    e.preventDefault();
+    setDeviceFormErrors({});
     try {
-      await axios.put(`${API_BASE}/admin/devices/${device.id}`, {
-        is_active: newStatus
-      }, { headers: { Authorization: `Bearer ${token}` } });
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/admin/devices`, {
+        device_name: newDevName,
+        device_code: newDevCode,
+        pin: newDevPin,
+        line_name: newDevLine,
+      }, config);
 
-      toast.success(`Device ${device.device_name} is now ${newStatus ? 'ONLINE' : 'OFFLINE'}!`);
+      toast.success('Tablet device registered.');
+      setShowNewDeviceModal(false);
+      setNewDevName('');
+      setNewDevCode('');
       fetchAdminData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update device');
-    }
-  };
-
-  const handleDeleteDevice = async (device) => {
-    if (!window.confirm(`Are you sure you want to delete floor device ${device.device_name}?`)) {
-      return;
-    }
-
-    try {
-      await axios.delete(`${API_BASE}/admin/devices/${device.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      toast.success(`Device ${device.device_name} deleted!`);
-      fetchAdminData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete device');
-    }
-  };
-
-  const handleCreateShift = async (formData) => {
-    setShiftFormErrors({});
-    try {
-      await axios.post(`${API_BASE}/admin/shifts`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      toast.success(`Shift schedule '${formData.shift_name}' created successfully!`);
-      setShowCreateShiftModal(false);
-      setShiftFormErrors({});
-      fetchAdminData();
-    } catch (err) {
-      const resp = err.response?.data;
-      if (resp?.errors) {
-        setShiftFormErrors(resp.errors);
-        const firstErrorKey = Object.keys(resp.errors)[0];
-        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
+      if (err.response?.status === 422) {
+        setDeviceFormErrors(err.response.data.errors || {});
       } else {
-        toast.error(resp?.message || 'Error creating shift schedule');
+        toast.error('Failed to register tablet.');
       }
     }
   };
 
-  const handleUpdateShift = async (formData) => {
-    setShiftFormErrors({});
+  const handleToggleDeviceStatus = async (device) => {
     try {
-      await axios.put(`${API_BASE}/admin/shifts/${formData.id}`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      toast.success('Shift schedule updated successfully!');
-      setEditingShift(null);
-      setShiftFormErrors({});
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.put(`${API_BASE}/admin/devices/${device.id}`, { is_active: !device.is_active }, config);
+      toast.success('Tablet status updated.');
       fetchAdminData();
     } catch (err) {
-      const resp = err.response?.data;
-      if (resp?.errors) {
-        setShiftFormErrors(resp.errors);
-        const firstErrorKey = Object.keys(resp.errors)[0];
-        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
+      toast.error('Failed to update tablet status.');
+    }
+  };
+
+  const handleDeleteDevice = async (device) => {
+    if (!window.confirm(`Are you sure you want to delete device ${device.device_name}?`)) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/admin/devices/${device.id}`, config);
+      toast.success('Device deleted.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to delete device.');
+    }
+  };
+
+  const handleSaveRolePermissions = async ({ roleId, permissions }) => {
+    setSavingRoleMatrix(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.put(`${API_BASE}/admin/roles/${roleId}/permissions`, { permissions }, config);
+      toast.success('Role permissions updated.');
+      fetchAdminData();
+    } catch (e) {
+      toast.error('Failed to save permissions.');
+    } finally {
+      setSavingRoleMatrix(false);
+    }
+  };
+
+  const handleCreateShift = async (data) => {
+    setShiftFormErrors({});
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/admin/shifts`, data, config);
+      toast.success('Shift schedule created.');
+      setShowCreateShiftModal(false);
+      fetchAdminData();
+    } catch (err) {
+      if (err.response?.status === 422) {
+        setShiftFormErrors(err.response.data.errors || {});
       } else {
-        toast.error(resp?.message || 'Failed to update shift schedule');
+        toast.error('Failed to create shift.');
+      }
+    }
+  };
+
+  const handleUpdateShift = async (data) => {
+    setShiftFormErrors({});
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.put(`${API_BASE}/admin/shifts/${data.id}`, data, config);
+      toast.success('Shift schedule updated.');
+      setEditingShift(null);
+      fetchAdminData();
+    } catch (err) {
+      if (err.response?.status === 422) {
+        setShiftFormErrors(err.response.data.errors || {});
+      } else {
+        toast.error('Failed to update shift.');
       }
     }
   };
 
   const handleToggleShiftStatus = async (shift) => {
-    const newStatus = !shift.is_active;
     try {
-      await axios.put(`${API_BASE}/admin/shifts/${shift.id}`, {
-        is_active: newStatus
-      }, { headers: { Authorization: `Bearer ${token}` } });
-
-      toast.success(`Shift '${shift.shift_name}' is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}!`);
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.put(`${API_BASE}/admin/shifts/${shift.id}`, { is_active: !shift.is_active }, config);
+      toast.success('Shift status toggled.');
       fetchAdminData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update shift status');
+      toast.error('Failed to toggle shift status.');
     }
   };
 
   const handleDeleteShift = async (shift) => {
-    if (!window.confirm(`Are you sure you want to delete shift ${shift.shift_name}?`)) {
-      return;
-    }
-
+    if (!window.confirm(`Delete shift schedule ${shift.shift_name}?`)) return;
     try {
-      await axios.delete(`${API_BASE}/admin/shifts/${shift.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      toast.success(`Shift '${shift.shift_name}' deleted!`);
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/admin/shifts/${shift.id}`, config);
+      toast.success('Shift schedule deleted.');
       fetchAdminData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete shift');
+      toast.error('Failed to delete shift.');
     }
   };
 
-  // Table Columns
+  const handleSaveSettings = async () => {
+    setSaveLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/admin/settings`, { settings: settingsForm }, config);
+      toast.success('System settings saved.');
+      fetchAdminData();
+    } catch (e) {
+      toast.error('Failed to save settings.');
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  // Module 02 Action Handlers (Master Data Setup)
+  const handleSaveUnit = async (data) => {
+    setUnitFormErrors({});
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      if (data.id) {
+        await axios.put(`${API_BASE}/master/units/${data.id}`, data, config);
+        toast.success('Manufacturing unit updated.');
+      } else {
+        await axios.post(`${API_BASE}/master/units`, data, config);
+        toast.success('Manufacturing unit registered.');
+      }
+      setShowCreateUnitModal(false);
+      setEditingUnit(null);
+      fetchAdminData();
+    } catch (err) {
+      if (err.response?.status === 422) setUnitFormErrors(err.response.data.errors || {});
+      else toast.error('Failed to save unit.');
+    }
+  };
+
+  const handleDeleteUnit = async (unit) => {
+    if (!window.confirm(`Delete Unit ${unit.name}? This will remove all associated floors and lines.`)) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/master/units/${unit.id}`, config);
+      toast.success('Manufacturing unit deleted.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to delete unit.');
+    }
+  };
+
+  const handleSaveFloor = async (data) => {
+    setFloorFormErrors({});
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      if (data.id) {
+        await axios.put(`${API_BASE}/master/floors/${data.id}`, data, config);
+        toast.success('Factory floor updated.');
+      } else {
+        await axios.post(`${API_BASE}/master/floors`, data, config);
+        toast.success('Factory floor configured.');
+      }
+      setShowCreateFloorModal(false);
+      setEditingFloor(null);
+      fetchAdminData();
+    } catch (err) {
+      if (err.response?.status === 422) setFloorFormErrors(err.response.data.errors || {});
+      else toast.error('Failed to save floor.');
+    }
+  };
+
+  const handleDeleteFloor = async (floor) => {
+    if (!window.confirm(`Delete Floor ${floor.name}?`)) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/master/floors/${floor.id}`, config);
+      toast.success('Floor removed.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to delete floor.');
+    }
+  };
+
+  const handleSaveLine = async (data) => {
+    setLineFormErrors({});
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      if (data.id) {
+        await axios.put(`${API_BASE}/master/lines/${data.id}`, data, config);
+        toast.success('Production line updated.');
+      } else {
+        await axios.post(`${API_BASE}/master/lines`, data, config);
+        toast.success('Production line registered.');
+      }
+      setShowCreateLineModal(false);
+      setEditingLine(null);
+      fetchAdminData();
+    } catch (err) {
+      if (err.response?.status === 422) setLineFormErrors(err.response.data.errors || {});
+      else toast.error('Failed to save production line.');
+    }
+  };
+
+  const handleDeleteLine = async (line) => {
+    if (!window.confirm(`Delete Production Line ${line.name}?`)) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/master/lines/${line.id}`, config);
+      toast.success('Line removed.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to delete line.');
+    }
+  };
+
+  // Buyer & Brand Handlers
+  const handleSaveBuyer = async (data) => {
+    setBuyerFormErrors({});
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      if (data.id) {
+        await axios.put(`${API_BASE}/master/buyers/${data.id}`, data, config);
+        toast.success('Buyer profile updated.');
+      } else {
+        await axios.post(`${API_BASE}/master/buyers`, data, config);
+        toast.success('Buyer registered successfully.');
+      }
+      setShowCreateBuyerModal(false);
+      setEditingBuyer(null);
+      fetchAdminData();
+    } catch (err) {
+      if (err.response?.status === 422) setBuyerFormErrors(err.response.data.errors || {});
+      else toast.error('Failed to save buyer.');
+    }
+  };
+
+  const handleDeleteBuyer = async (buyer) => {
+    if (!window.confirm(`Delete Buyer ${buyer.name}?`)) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/master/buyers/${buyer.id}`, config);
+      toast.success('Buyer removed.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to delete buyer.');
+    }
+  };
+
+  const handleSaveBrand = async (data) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/master/brands`, data, config);
+      toast.success('Brand label added.');
+      setTargetBuyerForBrand(null);
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to create brand.');
+    }
+  };
+
+  // Style & OB Handlers
+  const handleSaveStyle = async (data) => {
+    setStyleFormErrors({});
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      if (data.id) {
+        await axios.put(`${API_BASE}/master/styles/${data.id}`, data, config);
+        toast.success('Garment style updated.');
+      } else {
+        await axios.post(`${API_BASE}/master/styles`, data, config);
+        toast.success('Garment style and OB created.');
+      }
+      setShowCreateStyleModal(false);
+      setEditingStyle(null);
+      fetchAdminData();
+    } catch (err) {
+      if (err.response?.status === 422) setStyleFormErrors(err.response.data.errors || {});
+      else toast.error('Failed to save style.');
+    }
+  };
+
+  const handleDeleteStyle = async (style) => {
+    if (!window.confirm(`Delete Style ${style.style_number}?`)) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/master/styles/${style.id}`, config);
+      toast.success('Garment style removed.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to delete style.');
+    }
+  };
+
+  const handleAddStyleOperation = async (styleId, opData) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const res = await axios.post(`${API_BASE}/master/styles/${styleId}/operations`, opData, config);
+      toast.success('Operation added to bulletin.');
+      fetchAdminData();
+      // Update active viewing modal
+      setViewingObStyle(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          operations: [...(prev.operations || []), res.data.data]
+        };
+      });
+    } catch (err) {
+      toast.error('Failed to add operation.');
+    }
+  };
+
+  // Attributes: Color, Size, Defect
+  const handleSaveColor = async (data) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/master/colors`, data, config);
+      toast.success('Colorway shade added.');
+      setShowCreateColorModal(false);
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to save color.');
+    }
+  };
+
+  const handleDeleteColor = async (color) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/master/colors/${color.id}`, config);
+      toast.success('Color removed.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to delete color.');
+    }
+  };
+
+  const handleSaveSize = async (data) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/master/sizes`, data, config);
+      toast.success('Size scale added.');
+      setShowCreateSizeModal(false);
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to save size.');
+    }
+  };
+
+  const handleDeleteSize = async (size) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/master/sizes/${size.id}`, config);
+      toast.success('Size removed.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to delete size.');
+    }
+  };
+
+  const handleSaveDefect = async (data) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/master/defects`, data, config);
+      toast.success('Quality defect code added.');
+      setShowCreateDefectModal(false);
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to save defect code.');
+    }
+  };
+
+  const handleDeleteDefect = async (defect) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/master/defects/${defect.id}`, config);
+      toast.success('Defect code removed.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error('Failed to delete defect.');
+    }
+  };
+
+  // User table columns
   const userColumns = [
-    { 
-      key: 'emp_id', 
-      label: 'Emp ID', 
-      sortable: true, 
-      className: 'font-mono text-blue-500 font-bold',
-      render: (row) => row.emp_id ? (
-        <span className="px-2 py-0.5 rounded font-mono text-[11px] bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">
-          {row.emp_id}
-        </span>
-      ) : (
-        <span className="text-slate-500 text-xs">—</span>
-      )
+    { key: 'emp_id', label: 'Employee ID', sortable: true, className: 'font-mono font-bold text-blue-500' },
+    { key: 'name', label: 'Full Name', sortable: true, render: (row) => <span className="font-semibold">{row.name}</span> },
+    { key: 'email', label: 'Email / Account', sortable: true, render: (row) => row.email || <span className="text-slate-400 font-mono text-[11px]">N/A (Emp ID Only)</span> },
+    {
+      key: 'roles',
+      label: 'Designated Role',
+      render: (row) => {
+        const rName = row.roles?.[0]?.name || 'Standard Operator';
+        return (
+          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            {rName}
+          </span>
+        );
+      }
     },
-    { 
-      key: 'name', 
-      label: 'Full Name', 
-      sortable: true, 
-      className: 'font-semibold',
+    {
+      key: 'is_active',
+      label: 'Security Status',
       render: (row) => (
-        <div className="flex items-center space-x-2">
-          <div className="h-6 w-6 rounded bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-[10px]">
-            {row.name?.charAt(0) || 'U'}
-          </div>
-          <span className="font-bold">{row.name}</span>
-        </div>
-      )
-    },
-    { key: 'email', label: 'Email Address', sortable: true, className: 'font-mono text-slate-400' },
-    { 
-      key: 'roles', 
-      label: 'Assigned Role', 
-      sortable: false,
-      render: (row) => (
-        <span className="px-2 py-0.5 rounded font-mono font-semibold text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20">
-          {row.roles?.[0]?.name || 'Standard User'}
-        </span>
-      )
-    },
-    { 
-      key: 'is_active', 
-      label: 'Status', 
-      sortable: true,
-      render: (row) => (
-        <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-bold ${
-          row.is_active ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'
+        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+          row.is_active 
+            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+            : 'bg-red-500/10 text-red-400 border-red-500/20'
         }`}>
-          {row.is_active ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-          <span>{row.is_active ? 'ACTIVE' : 'SUSPENDED'}</span>
-        </span>
-      )
-    },
-    { 
-      key: 'created_at', 
-      label: 'Registered On', 
-      sortable: true, 
-      render: (row) => (
-        <span className="font-mono text-slate-400 text-[11px]">
-          {new Date(row.created_at).toLocaleDateString()}
+          {row.is_active ? 'ACTIVE' : 'DEACTIVATED'}
         </span>
       )
     },
     {
       key: 'actions',
       label: 'Actions',
-      sortable: false,
       align: 'right',
       render: (row) => {
-        const isSuperAdmin = row.roles?.[0]?.name === 'Super Admin' || row.emp_id === 'EMP-SUPERADMIN' || row.email === 'admin@rmgtrace.com';
-
+        const isSuperAdmin = row.roles?.[0]?.name === 'Super Admin';
         return (
           <div className="flex items-center justify-end space-x-1">
-            {/* View User Page Link */}
             <button
               type="button"
-              onClick={() => navigate(`/admin/users/${row.id}`)}
-              title="View User Details Page"
-              className="p-1.5 rounded hover:bg-blue-500/10 text-slate-400 hover:text-blue-500 transition-colors cursor-pointer"
+              onClick={() => handleToggleUserStatus(row)}
+              disabled={isSuperAdmin}
+              title={row.is_active ? 'Deactivate Operator' : 'Activate Operator'}
+              className={`p-1.5 rounded transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${
+                row.is_active 
+                  ? 'hover:bg-amber-500/10 text-slate-400 hover:text-amber-500' 
+                  : 'hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-500'
+              }`}
             >
-              <Eye className="h-4 w-4" />
+              <Power className="h-4 w-4" />
             </button>
-
-            {/* Edit User Button */}
             <button
               type="button"
               onClick={() => setEditingUser(row)}
-              title="Edit User"
+              title="Edit Operator Role & Info"
               className="p-1.5 rounded hover:bg-blue-500/10 text-slate-400 hover:text-blue-500 transition-colors cursor-pointer"
             >
               <Edit2 className="h-4 w-4" />
             </button>
-
-            {isSuperAdmin ? (
-              <span className="inline-flex items-center space-x-1 text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 ml-1" title="Platform Root Administrator (Protected)">
-                <ShieldCheck className="h-3 w-3" />
-                <span>ROOT</span>
-              </span>
-            ) : (
-              <>
-                {/* Toggle Suspend / Activate */}
-                <button
-                  type="button"
-                  onClick={() => handleToggleUserStatus(row)}
-                  title={row.is_active ? 'Suspend User' : 'Activate User'}
-                  className={`p-1.5 rounded transition-colors cursor-pointer ${
-                    row.is_active 
-                      ? 'hover:bg-amber-500/10 text-slate-400 hover:text-amber-500' 
-                      : 'hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-500'
-                  }`}
-                >
-                  {row.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                </button>
-
-                {/* Delete User */}
-                <button
-                  type="button"
-                  onClick={() => handleDeleteUser(row)}
-                  title="Delete User"
-                  className="p-1.5 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              onClick={() => handleDeleteUser(row)}
+              disabled={isSuperAdmin}
+              title="Delete User Account"
+              className="p-1.5 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
         );
       }
@@ -581,15 +802,26 @@ export default function AdminConsolePage() {
 
   const getBreadcrumbs = () => {
     switch (activeTab) {
+      // Module 01
       case 'users': return ['Identity & Security', 'Users & Operators'];
       case 'devices': return ['Identity & Security', 'Floor Tablets'];
       case 'roles': return ['Identity & Security', 'Role Permissions & Gates'];
       case 'shifts': return ['Identity & Security', 'Unit & Floor Shifts'];
       case 'audit': return ['Identity & Security', 'Audit Trail'];
       case 'settings': return ['System Config', 'Global Settings'];
+      
+      // Module 02
+      case 'master_plant': return ['Master Data Setup', 'Plant Structure (Units/Lines)'];
+      case 'master_buyers': return ['Master Data Setup', 'Buyers & Brands'];
+      case 'master_styles': return ['Master Data Setup', 'Styles & SMV Library'];
+      case 'master_attributes': return ['Master Data Setup', 'Colors, Sizes & Defects'];
+
       default: return ['Master Data Setup', 'Catalog Overview'];
     }
   };
+
+  const isMod1Active = ['users', 'devices', 'roles', 'shifts', 'audit', 'settings'].includes(activeTab);
+  const isMod2Active = ['master_plant', 'master_buyers', 'master_styles', 'master_attributes'].includes(activeTab);
 
   return (
     <AdminLayout 
@@ -599,11 +831,13 @@ export default function AdminConsolePage() {
     >
       <Toaster position="top-right" />
 
-      {/* Module 01: Auth & Administration View */}
-      {['users', 'devices', 'roles', 'shifts', 'audit', 'settings'].includes(activeTab) && (
+      {/* ========================================================= */}
+      {/* MODULE 01: AUTH & ADMINISTRATION VIEW                      */}
+      {/* ========================================================= */}
+      {isMod1Active && (
         <div className="space-y-5">
           
-          {/* Top KPI Cards (Enterprise Stat Bar) */}
+          {/* Top KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className={`p-4 sm:p-5 rounded border transition-colors ${
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
@@ -662,7 +896,7 @@ export default function AdminConsolePage() {
             </div>
           </div>
 
-          {/* Module 01 Sub-Views based on activeTab */}
+          {/* Module 01 Sub-Views */}
           {activeTab === 'users' && (
             <div className={`p-6 rounded border transition-colors ${
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
@@ -833,8 +1067,113 @@ export default function AdminConsolePage() {
         </div>
       )}
 
-      {/* Placeholder / Hub for other modules */}
-      {!['users', 'devices', 'roles', 'shifts', 'audit', 'settings'].includes(activeTab) && (
+      {/* ========================================================= */}
+      {/* MODULE 02: MASTER DATA SETUP VIEW                          */}
+      {/* ========================================================= */}
+      {isMod2Active && (
+        <div className="space-y-5">
+          
+          {activeTab === 'master_plant' && (
+            <PlantStructureDashboard
+              units={unitsList}
+              floors={floorsList}
+              lines={linesList}
+              loading={fetchLoading}
+              onOpenCreateUnit={() => {
+                setEditingUnit(null);
+                setUnitFormErrors({});
+                setShowCreateUnitModal(true);
+              }}
+              onOpenCreateFloor={() => {
+                setEditingFloor(null);
+                setFloorFormErrors({});
+                setShowCreateFloorModal(true);
+              }}
+              onOpenCreateLine={() => {
+                setEditingLine(null);
+                setLineFormErrors({});
+                setShowCreateLineModal(true);
+              }}
+              onEditUnit={(u) => {
+                setEditingUnit(u);
+                setUnitFormErrors({});
+                setShowCreateUnitModal(true);
+              }}
+              onEditFloor={(f) => {
+                setEditingFloor(f);
+                setFloorFormErrors({});
+                setShowCreateFloorModal(true);
+              }}
+              onEditLine={(l) => {
+                setEditingLine(l);
+                setLineFormErrors({});
+                setShowCreateLineModal(true);
+              }}
+              onDeleteUnit={handleDeleteUnit}
+              onDeleteFloor={handleDeleteFloor}
+              onDeleteLine={handleDeleteLine}
+            />
+          )}
+
+          {activeTab === 'master_buyers' && (
+            <BuyerBrandDashboard
+              buyers={buyersList}
+              loading={fetchLoading}
+              onOpenCreateBuyer={() => {
+                setEditingBuyer(null);
+                setBuyerFormErrors({});
+                setShowCreateBuyerModal(true);
+              }}
+              onOpenCreateBrand={(b) => setTargetBuyerForBrand(b)}
+              onEditBuyer={(b) => {
+                setEditingBuyer(b);
+                setBuyerFormErrors({});
+                setShowCreateBuyerModal(true);
+              }}
+              onDeleteBuyer={handleDeleteBuyer}
+            />
+          )}
+
+          {activeTab === 'master_styles' && (
+            <StyleCatalogDashboard
+              styles={stylesList}
+              buyers={buyersList}
+              loading={fetchLoading}
+              onOpenCreateStyle={() => {
+                setEditingStyle(null);
+                setStyleFormErrors({});
+                setShowCreateStyleModal(true);
+              }}
+              onOpenOperationBulletin={(s) => setViewingObStyle(s)}
+              onEditStyle={(s) => {
+                setEditingStyle(s);
+                setStyleFormErrors({});
+                setShowCreateStyleModal(true);
+              }}
+              onDeleteStyle={handleDeleteStyle}
+            />
+          )}
+
+          {activeTab === 'master_attributes' && (
+            <AttributeMatrixDashboard
+              colors={colorsList}
+              sizes={sizesList}
+              defects={defectsList}
+              loading={fetchLoading}
+              onOpenCreateColor={() => setShowCreateColorModal(true)}
+              onOpenCreateSize={() => setShowCreateSizeModal(true)}
+              onOpenCreateDefect={() => setShowCreateDefectModal(true)}
+              onDeleteColor={handleDeleteColor}
+              onDeleteSize={handleDeleteSize}
+              onDeleteDefect={handleDeleteDefect}
+            />
+          )}
+
+        </div>
+      )}
+
+      {/* Placeholder / Hub for future modules (PO, Planning, Cutting etc) */}
+      {!isMod1Active && !isMod2Active && (
         <div className={`p-12 text-center rounded border ${
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
         }`}>
@@ -843,19 +1182,23 @@ export default function AdminConsolePage() {
             {activeTab.toUpperCase().replace('_', ' ')}
           </h2>
           <p className="text-xs text-slate-400 max-w-md mx-auto mt-1 mb-4">
-            This module is scheduled for implementation in Sprint 2. Ready to proceed with Master Data Management.
+            This module is scheduled for implementation in Sprint 3. Ready to proceed with Order Management & PO Costing.
           </p>
           <button
             type="button"
-            onClick={() => handleTabChange('users')}
+            onClick={() => handleTabChange('master_plant')}
             className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer transition-colors"
           >
-            Back to Users Management
+            Back to Factory Plant Structure
           </button>
         </div>
       )}
 
-      {/* Modular Modal: Register New User */}
+      {/* ========================================================= */}
+      {/* MODALS SECTION                                            */}
+      {/* ========================================================= */}
+      
+      {/* Module 01 Modals */}
       <RegisterUserModal
         show={showNewUserModal}
         onClose={() => setShowNewUserModal(false)}
@@ -879,7 +1222,6 @@ export default function AdminConsolePage() {
         errors={userFormErrors}
       />
 
-      {/* Modular Modal: Register New Tablet Device */}
       <RegisterDeviceModal
         show={showNewDeviceModal}
         onClose={() => setShowNewDeviceModal(false)}
@@ -896,7 +1238,6 @@ export default function AdminConsolePage() {
         errors={deviceFormErrors}
       />
 
-      {/* Modular Modal: Edit User */}
       <EditUserModal
         show={Boolean(editingUser)}
         onClose={() => {
@@ -910,7 +1251,6 @@ export default function AdminConsolePage() {
         errors={editFormErrors}
       />
 
-      {/* Modular Modal: Create Shift */}
       <CreateShiftModal
         show={showCreateShiftModal}
         onClose={() => {
@@ -922,7 +1262,6 @@ export default function AdminConsolePage() {
         errors={shiftFormErrors}
       />
 
-      {/* Modular Modal: Edit Shift */}
       <EditShiftModal
         show={Boolean(editingShift)}
         onClose={() => {
@@ -933,6 +1272,113 @@ export default function AdminConsolePage() {
         shift={editingShift}
         isDark={isDark}
         errors={shiftFormErrors}
+      />
+
+      {/* Module 02 Modals */}
+      <CreateUnitModal
+        show={showCreateUnitModal}
+        onClose={() => {
+          setShowCreateUnitModal(false);
+          setEditingUnit(null);
+          setUnitFormErrors({});
+        }}
+        onSubmit={handleSaveUnit}
+        unit={editingUnit}
+        isDark={isDark}
+        errors={unitFormErrors}
+      />
+
+      <CreateFloorModal
+        show={showCreateFloorModal}
+        onClose={() => {
+          setShowCreateFloorModal(false);
+          setEditingFloor(null);
+          setFloorFormErrors({});
+        }}
+        onSubmit={handleSaveFloor}
+        units={unitsList}
+        floor={editingFloor}
+        isDark={isDark}
+        errors={floorFormErrors}
+      />
+
+      <CreateLineModal
+        show={showCreateLineModal}
+        onClose={() => {
+          setShowCreateLineModal(false);
+          setEditingLine(null);
+          setLineFormErrors({});
+        }}
+        onSubmit={handleSaveLine}
+        units={unitsList}
+        floors={floorsList}
+        line={editingLine}
+        isDark={isDark}
+        errors={lineFormErrors}
+      />
+
+      <CreateBuyerModal
+        show={showCreateBuyerModal}
+        onClose={() => {
+          setShowCreateBuyerModal(false);
+          setEditingBuyer(null);
+          setBuyerFormErrors({});
+        }}
+        onSubmit={handleSaveBuyer}
+        buyer={editingBuyer}
+        isDark={isDark}
+        errors={buyerFormErrors}
+      />
+
+      <CreateBrandModal
+        show={Boolean(targetBuyerForBrand)}
+        onClose={() => setTargetBuyerForBrand(null)}
+        onSubmit={handleSaveBrand}
+        buyer={targetBuyerForBrand}
+        isDark={isDark}
+      />
+
+      <CreateStyleModal
+        show={showCreateStyleModal}
+        onClose={() => {
+          setShowCreateStyleModal(false);
+          setEditingStyle(null);
+          setStyleFormErrors({});
+        }}
+        onSubmit={handleSaveStyle}
+        buyers={buyersList}
+        style={editingStyle}
+        isDark={isDark}
+        errors={styleFormErrors}
+      />
+
+      <OperationBulletinModal
+        show={Boolean(viewingObStyle)}
+        onClose={() => setViewingObStyle(null)}
+        style={viewingObStyle}
+        onAddOperation={handleAddStyleOperation}
+        isDark={isDark}
+      />
+
+      <CreateColorModal
+        show={showCreateColorModal}
+        onClose={() => setShowCreateColorModal(false)}
+        onSubmit={handleSaveColor}
+        isDark={isDark}
+      />
+
+      <CreateSizeModal
+        show={showCreateSizeModal}
+        onClose={() => setShowCreateSizeModal(false)}
+        onSubmit={handleSaveSize}
+        isDark={isDark}
+      />
+
+      <CreateDefectModal
+        show={showCreateDefectModal}
+        onClose={() => setShowCreateDefectModal(false)}
+        onSubmit={handleSaveDefect}
+        isDark={isDark}
       />
 
     </AdminLayout>
