@@ -16,11 +16,6 @@ class ShiftManagementFeatureTest extends TestCase
     {
         parent::setUp();
         $this->seed(AuthAdminSeeder::class);
-    }
-
-    public function test_admin_can_list_shifts_with_floor_filters(): void
-    {
-        $admin = User::where('email', 'admin@rmgtrace.com')->first();
 
         Shift::create([
             'shift_name' => 'General Floor 1 Shift',
@@ -38,6 +33,11 @@ class ShiftManagementFeatureTest extends TestCase
             'net_work_hours' => 8.00,
             'is_active' => true,
         ]);
+    }
+
+    public function test_admin_can_list_shifts_with_floor_filters(): void
+    {
+        $admin = User::where('email', 'admin@rmgtrace.com')->first();
 
         $response = $this->actingAs($admin, 'sanctum')
             ->getJson('/api/v1/admin/shifts?floor=1st Floor');
