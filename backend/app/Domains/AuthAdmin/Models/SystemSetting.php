@@ -18,6 +18,7 @@ class SystemSetting extends Model
         'key',
         'value',
         'type',
+        'options',
         'label',
         'description',
         'is_public',
@@ -27,6 +28,7 @@ class SystemSetting extends Model
     {
         return [
             'is_public' => 'boolean',
+            'options' => 'array',
         ];
     }
 }

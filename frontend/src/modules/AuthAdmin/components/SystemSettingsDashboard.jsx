@@ -13,16 +13,25 @@ import {
   Scale, 
   Lock,
   Smartphone,
-  Check
+  Check,
+  Globe,
+  Cpu,
+  Scissors,
+  AlertTriangle,
+  Server,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 import { useThemeStore } from '../../../store/themeStore';
 
 const CATEGORIES = [
-  { id: 'ALL', label: 'All Settings' },
-  { id: 'factory', label: 'Factory & Plant', icon: Building2 },
-  { id: 'qc', label: 'Quality Control', icon: CheckCircle2 },
-  { id: 'shipment', label: 'Packing & Shipment', icon: PackageCheck },
-  { id: 'security', label: 'Device & Security', icon: ShieldCheck },
+  { id: 'ALL', label: 'All Enterprise Settings' },
+  { id: 'enterprise', label: 'Enterprise & Localization', icon: Globe },
+  { id: 'production', label: 'Production & Shopfloor', icon: Scissors },
+  { id: 'qc', label: 'Quality Assurance (QC)', icon: CheckCircle2 },
+  { id: 'shipment', label: 'Packing & Compliance', icon: PackageCheck },
+  { id: 'security', label: 'Security & Access Control', icon: ShieldCheck },
+  { id: 'system', label: 'System & Cache Engine', icon: Server },
 ];
 
 export default function SystemSettingsDashboard({
@@ -50,7 +59,7 @@ export default function SystemSettingsDashboard({
     setSettingsForm(prev => ({ ...prev, [key]: value }));
     setDirtyKeys(prev => {
       const next = new Set(prev);
-      if (originalMap[key] !== value) {
+      if (String(originalMap[key]) !== String(value)) {
         next.add(key);
       } else {
         next.delete(key);
@@ -70,29 +79,33 @@ export default function SystemSettingsDashboard({
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch = !q || 
         s.label?.toLowerCase().includes(q) || 
-        s.description?.toLowerCase().includes(q);
+        s.description?.toLowerCase().includes(q) ||
+        s.key?.toLowerCase().includes(q);
       return matchesCategory && matchesSearch;
     });
   }, [settings, activeCategory, searchQuery]);
 
   const getUnit = (key) => {
-    if (key.includes('pct') || key.includes('threshold')) return '%';
+    if (key.includes('pct') || key.includes('threshold') || key.includes('variance')) return '%';
     if (key.includes('hours')) return 'Hours';
-    if (key.includes('min') || key.includes('timeout')) return 'Min';
+    if (key.includes('mins') || key.includes('min') || key.includes('timeout')) return 'Mins';
     if (key.includes('kg') || key.includes('weight')) return 'KG';
+    if (key.includes('days')) return 'Days';
+    if (key.includes('seconds')) return 'Sec';
     return null;
   };
 
   const hasChanges = dirtyKeys.size > 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       
-      {/* Header & Controls Bar */}
+      {/* Category Navigation & Search Header */}
       <div className={`p-4 rounded border transition-colors ${
         isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
       }`}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          
           {/* Category Tabs */}
           <div className="flex items-center flex-wrap gap-1.5">
             {CATEGORIES.map(cat => {
@@ -108,19 +121,19 @@ export default function SystemSettingsDashboard({
                   key={cat.id}
                   type="button"
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer border ${
                     isActive
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-blue-600 text-white border-blue-600'
                       : isDark
-                        ? 'bg-slate-800/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-700/60'
-                        : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 border border-slate-200'
+                        ? 'bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-750 border-slate-700'
+                        : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border-slate-200'
                   }`}
                 >
                   {Icon && <Icon className="h-3.5 w-3.5" />}
                   <span>{cat.label}</span>
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
                     isActive
-                      ? 'bg-blue-700/60 text-white'
+                      ? 'bg-blue-700 text-white'
                       : isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'
                   }`}>
                     {count}
@@ -131,7 +144,7 @@ export default function SystemSettingsDashboard({
           </div>
 
           {/* Search Box */}
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full lg:w-72">
             <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${
               isDark ? 'text-slate-500' : 'text-slate-400'
             }`} />
@@ -139,7 +152,7 @@ export default function SystemSettingsDashboard({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search settings..."
+              placeholder="Search global settings..."
               className={`w-full pl-9 pr-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${
                 isDark 
                   ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' 
@@ -150,155 +163,162 @@ export default function SystemSettingsDashboard({
         </div>
       </div>
 
-      {/* Settings Form */}
-      <form onSubmit={onSave} noValidate className="space-y-4">
-        
-        {filteredSettings.length === 0 ? (
-          <div className={`p-10 text-center rounded border ${
-            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
-          }`}>
-            <p className={`text-sm font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-              No settings found matching your search.
-            </p>
-          </div>
-        ) : (
-          <div className={`rounded border overflow-hidden transition-colors ${
-            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
-          }`}>
-            <div className="divide-y divide-slate-800/40 dark:divide-slate-800/60">
-              {filteredSettings.map((setting) => {
-                const isModified = dirtyKeys.has(setting.key);
-                const unit = getUnit(setting.key);
-                const val = settingsForm[setting.key] !== undefined 
-                  ? settingsForm[setting.key] 
-                  : (setting.value ?? '');
-
-                return (
-                  <div 
-                    key={setting.key} 
-                    className={`p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${
-                      isModified 
-                        ? (isDark ? 'bg-blue-950/20' : 'bg-blue-50/40') 
-                        : (isDark ? 'hover:bg-slate-850/40' : 'hover:bg-slate-50/60')
-                    }`}
-                  >
-                    {/* Setting Title & Description */}
-                    <div className="space-y-1 max-w-xl">
-                      <div className="flex items-center space-x-2">
-                        <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {setting.label || setting.key}
-                        </span>
-
-                        {isModified && (
-                          <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold font-mono ${
-                            isDark 
-                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
-                              : 'bg-amber-50 text-amber-700 border border-amber-200'
-                          }`}>
-                            Modified
-                          </span>
-                        )}
-
-                        {setting.is_public ? (
-                          <span className={`inline-flex items-center space-x-1 px-1.5 py-0.2 rounded text-[10px] font-semibold ${
-                            isDark 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}>
-                            <Smartphone className="h-2.5 w-2.5" />
-                            <span>Floor Tablet</span>
-                          </span>
-                        ) : (
-                          <span className={`inline-flex items-center space-x-1 px-1.5 py-0.2 rounded text-[10px] font-semibold ${
-                            isDark 
-                              ? 'bg-slate-800 text-slate-400 border border-slate-700' 
-                              : 'bg-slate-100 text-slate-600 border border-slate-200'
-                          }`}>
-                            <Lock className="h-2.5 w-2.5" />
-                            <span>Admin</span>
-                          </span>
-                        )}
-                      </div>
-
-                      <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                        {setting.description}
-                      </p>
-                    </div>
-
-                    {/* Input Control */}
-                    <div className="flex items-center space-x-2 shrink-0 md:w-60">
-                      <div className="relative w-full">
-                        <input
-                          type={setting.type === 'number' ? 'number' : 'text'}
-                          step={setting.type === 'number' ? '0.01' : undefined}
-                          value={val}
-                          onChange={(e) => handleChange(setting.key, e.target.value)}
-                          className={`w-full px-3 py-2 rounded text-xs sm:text-sm font-medium border focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${
-                            unit ? 'pr-14 font-mono' : ''
-                          } ${
-                            isDark 
-                              ? 'bg-slate-950 border-slate-700/80 text-white focus:border-blue-500' 
-                              : 'bg-white border-slate-300 text-slate-900 focus:border-blue-500'
-                          }`}
-                        />
-                        {unit && (
-                          <div className={`absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded text-[10px] font-mono font-bold pointer-events-none border ${
-                            isDark 
-                              ? 'bg-slate-800 text-slate-300 border-slate-700' 
-                              : 'bg-slate-100 text-slate-600 border-slate-200'
-                          }`}>
-                            {unit}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Action Bar (Only shows or highlights when needed) */}
-        <div className={`p-4 rounded border flex items-center justify-between gap-3 sticky bottom-4 backdrop-blur-md shadow-lg transition-colors ${
-          isDark ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200'
+      {/* Floating Save / Revert Bar */}
+      {hasChanges && (
+        <div className={`p-3.5 rounded border flex items-center justify-between shadow-lg animate-in slide-in-from-top-2 duration-150 ${
+          isDark ? 'bg-blue-950/80 border-blue-500/40 text-blue-100' : 'bg-blue-50 border-blue-200 text-blue-950'
         }`}>
-          <span className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            {hasChanges 
-              ? `${dirtyKeys.size} setting${dirtyKeys.size > 1 ? 's' : ''} modified`
-              : 'All settings are up to date'
-            }
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="text-xs font-bold">
+              {dirtyKeys.size} setting{dirtyKeys.size > 1 ? 's' : ''} modified. Don't forget to save your changes to invalidate Redis cache.
+            </span>
+          </div>
 
           <div className="flex items-center space-x-2">
-            {hasChanges && (
-              <button
-                type="button"
-                onClick={handleReset}
-                disabled={saving}
-                className={`px-3.5 py-1.5 rounded text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer border ${
-                  isDark 
-                    ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700' 
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
-                }`}
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span>Reset</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={saving}
+              className={`px-3 py-1 rounded text-xs font-semibold flex items-center space-x-1 border cursor-pointer transition-colors ${
+                isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
+              }`}
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>Discard</span>
+            </button>
 
             <button
-              type="submit"
+              type="button"
+              onClick={onSave}
               disabled={saving}
-              className="px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
+              className="px-4 py-1 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 cursor-pointer shadow-xs disabled:opacity-50 transition-colors"
             >
-              <Save className="h-4 w-4" />
-              <span>{saving ? 'Saving...' : 'Save Settings'}</span>
+              <Save className="h-3.5 w-3.5" />
+              <span>{saving ? 'Synchronizing...' : 'Save & Sync Settings'}</span>
             </button>
           </div>
         </div>
+      )}
 
-      </form>
+      {/* Settings Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filteredSettings.map(setting => {
+          const isDirty = dirtyKeys.has(setting.key);
+          const currentValue = settingsForm[setting.key] !== undefined ? settingsForm[setting.key] : setting.value;
+          const unit = getUnit(setting.key);
+          const isBoolean = setting.type === 'boolean';
+          const isSelect = setting.type === 'select' && Array.isArray(setting.options);
+          const isNumber = setting.type === 'number';
+
+          return (
+            <div 
+              key={setting.key}
+              className={`p-4 rounded border transition-all ${
+                isDirty 
+                  ? (isDark ? 'bg-slate-900 border-blue-500/50 shadow-md ring-1 ring-blue-500/20' : 'bg-white border-blue-400 shadow-md ring-1 ring-blue-400/20')
+                  : (isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs')
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h4 className={`text-xs font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      {setting.label || setting.key}
+                    </h4>
+                    {isDirty && (
+                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        Modified
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                    {setting.description}
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-1 shrink-0">
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border uppercase ${
+                    setting.is_public 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                  }`}>
+                    {setting.is_public ? 'Public Tablet' : 'Internal'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Input Control */}
+              <div className="pt-2">
+                {isBoolean ? (
+                  <div className="flex items-center justify-between p-2 rounded border bg-slate-950/40 border-slate-800">
+                    <span className="text-xs font-semibold text-slate-300">
+                      Feature Status: <span className={currentValue === 'true' || currentValue === true ? 'text-emerald-400 font-bold' : 'text-slate-500'}>
+                        {currentValue === 'true' || currentValue === true ? 'ENABLED' : 'DISABLED'}
+                      </span>
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => handleChange(setting.key, !(currentValue === 'true' || currentValue === true))}
+                      className={`px-3 py-1 rounded text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer border ${
+                        currentValue === 'true' || currentValue === true
+                          ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
+                          : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
+                      }`}
+                    >
+                      {currentValue === 'true' || currentValue === true ? (
+                        <>
+                          <Check className="h-3 w-3" />
+                          <span>Enabled</span>
+                        </>
+                      ) : (
+                        <span>Disabled</span>
+                      )}
+                    </button>
+                  </div>
+                ) : isSelect ? (
+                  <select
+                    value={currentValue}
+                    onChange={(e) => handleChange(setting.key, e.target.value)}
+                    className={`w-full px-3 py-2 rounded text-xs font-mono font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                      isDark ? 'bg-slate-950 border-slate-800 text-blue-400' : 'bg-white border-slate-300 text-blue-600'
+                    }`}
+                  >
+                    {setting.options.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type={isNumber ? 'number' : 'text'}
+                      step={isNumber ? '0.1' : undefined}
+                      value={currentValue}
+                      onChange={(e) => handleChange(setting.key, e.target.value)}
+                      className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                        isNumber ? 'font-mono font-bold text-blue-400 pr-12' : ''
+                      } ${
+                        isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    />
+                    {unit && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-slate-400 pointer-events-none">
+                        {unit}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mt-1.5 px-0.5">
+                  <span>Key: {setting.key}</span>
+                  <span>Group: {setting.group}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
     </div>
   );
