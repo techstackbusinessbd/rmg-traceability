@@ -23,6 +23,7 @@ class ProductionLine extends Model
         'estimated_manpower',
         'hourly_target',
         'supervisor_name',
+        'description',
         'is_active',
     ];
 

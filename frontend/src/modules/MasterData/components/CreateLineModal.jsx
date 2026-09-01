@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, SlidersHorizontal, Plus, Save, Users } from 'lucide-react';
+import { X, SlidersHorizontal, Plus, Save } from 'lucide-react';
 
 const SECTIONS = ['SEWING', 'CUTTING', 'FINISHING', 'PACKING'];
 
@@ -21,6 +21,7 @@ export default function CreateLineModal({
   const [totalMachines, setTotalMachines] = useState(line?.total_machines || 36);
   const [estimatedManpower, setEstimatedManpower] = useState(line?.estimated_manpower || 45);
   const [supervisorName, setSupervisorName] = useState(line?.supervisor_name || '');
+  const [description, setDescription] = useState(line?.description || '');
   const [isActive, setIsActive] = useState(line ? Boolean(line.is_active) : true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -39,6 +40,7 @@ export default function CreateLineModal({
       setTotalMachines(line.total_machines || 36);
       setEstimatedManpower(line.estimated_manpower || 45);
       setSupervisorName(line.supervisor_name || '');
+      setDescription(line.description || '');
       setIsActive(Boolean(line.is_active));
     } else {
       const firstUnit = units[0]?.id || '';
@@ -51,6 +53,7 @@ export default function CreateLineModal({
       setTotalMachines(36);
       setEstimatedManpower(45);
       setSupervisorName('');
+      setDescription('');
       setIsActive(true);
     }
   }, [line, show, units, floors]);
@@ -71,6 +74,7 @@ export default function CreateLineModal({
         total_machines: parseInt(totalMachines, 10) || 30,
         estimated_manpower: parseInt(estimatedManpower, 10) || 40,
         supervisor_name: supervisorName,
+        description: description || null,
         is_active: isActive
       });
     } finally {
@@ -226,7 +230,7 @@ export default function CreateLineModal({
 
             <div>
               <label className="block text-xs font-bold mb-1.5">
-                Estimated Manpower (Qty)
+                Estimated Manpower
               </label>
               <input
                 type="number"
@@ -257,7 +261,23 @@ export default function CreateLineModal({
             />
           </div>
 
-          <label className="flex items-center space-x-2 text-xs font-bold cursor-pointer pt-2">
+          <div>
+            <label className="block text-xs font-bold mb-1.5">
+              Description / Notes
+            </label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g. Dedicated woven shirt line with auto pocket setter"
+              className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+              }`}
+            />
+            {errors?.description && <p className="text-[11px] text-red-500 mt-1">{errors.description[0]}</p>}
+          </div>
+
+          <label className="flex items-center space-x-2 text-xs font-bold cursor-pointer pt-1">
             <input
               type="checkbox"
               checked={isActive}

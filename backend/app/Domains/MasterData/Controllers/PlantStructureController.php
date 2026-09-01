@@ -208,6 +208,7 @@ class PlantStructureController extends Controller
             'estimated_manpower' => 'nullable|integer|min:1|max:500',
             'hourly_target' => 'nullable|integer|min:1|max:2000',
             'supervisor_name' => 'nullable|string|max:100',
+            'description' => 'nullable|string|max:255',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -234,6 +235,7 @@ class PlantStructureController extends Controller
             'estimated_manpower' => 'nullable|integer|min:1|max:500',
             'hourly_target' => 'nullable|integer|min:1|max:2000',
             'supervisor_name' => 'nullable|string|max:100',
+            'description' => 'nullable|string|max:255',
             'is_active' => 'nullable|boolean',
         ]);
 

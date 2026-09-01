@@ -294,6 +294,7 @@ class PlantStructureService
                 'estimated_manpower' => $data['estimated_manpower'] ?? 40,
                 'hourly_target' => $data['hourly_target'] ?? 100,
                 'supervisor_name' => $data['supervisor_name'] ?? null,
+                'description' => $data['description'] ?? null,
                 'is_active' => $data['is_active'] ?? true,
             ]);
 
@@ -325,6 +326,7 @@ class PlantStructureService
                 'estimated_manpower' => $data['estimated_manpower'] ?? $line->estimated_manpower,
                 'hourly_target' => $data['hourly_target'] ?? $line->hourly_target,
                 'supervisor_name' => $data['supervisor_name'] ?? $line->supervisor_name,
+                'description' => array_key_exists('description', $data) ? $data['description'] : $line->description,
                 'is_active' => $data['is_active'] ?? $line->is_active,
             ]);
 
