@@ -41,7 +41,7 @@ class StyleMasterService
                 'garment_type' => strtoupper(trim($data['garment_type'] ?? 'SHIRT')),
                 'season' => $data['season'] ?? 'SS-2026',
                 'fabric_type' => $data['fabric_type'] ?? null,
-                'total_smv' => $data['total_smv'] ?? 14.50,
+                'total_smv' => isset($data['total_smv']) ? (float) $data['total_smv'] : 0.0,
                 'techpack_url' => $data['techpack_url'] ?? null,
                 'is_active' => $data['is_active'] ?? true,
             ]);

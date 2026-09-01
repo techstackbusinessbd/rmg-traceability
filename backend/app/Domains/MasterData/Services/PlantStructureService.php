@@ -79,13 +79,14 @@ class PlantStructureService
                 default => 'FACT-SEW',
             };
 
-            $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : null;
-            if (!$code) {
-                $count = Unit::where('factory_type', $factoryType)->count() + 1;
-                $code = sprintf('%s-%02d', $prefix, $count);
+            $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : $this->generateUniqueUnitCode($data['name'], $factoryType);
+            // If the user provided a colliding code, ensure fallback
+            if (Unit::where('code', $code)->exists()) {
+                $base = $code;
+                $counter = 1;
                 while (Unit::where('code', $code)->exists()) {
-                    $count++;
-                    $code = sprintf('%s-%02d', $prefix, $count);
+                    $code = $base . '-' . sprintf('%02d', $counter);
+                    $counter++;
                 }
             }
 
@@ -565,5 +566,33 @@ class PlantStructureService
         ]);
 
         Cache::forget(self::CACHE_KEY);
+    }
+
+    private function generateUniqueUnitCode(string $name, string $factoryType = 'SEWING_FACTORY'): string
+    {
+        $clean = preg_replace('/[^a-zA-Z0-9\s]/', '', $name);
+        $stopWords = ['ltd', 'limited', 'pvt', 'inc', 'corp', 'factory', 'plant', 'unit', 'mills', 'apparel', 'textiles', 'garments'];
+        $rawWords = array_filter(explode(' ', trim((string)$clean)));
+        $words = array_values(array_filter($rawWords, fn($w) => !in_array(strtolower($w), $stopWords)));
+        $finalWords = !empty($words) ? $words : array_values($rawWords);
+
+        if (count($finalWords) === 1) {
+            $acronym = strtoupper(substr(reset($finalWords), 0, 4));
+        } else {
+            $acronym = '';
+            foreach ($finalWords as $w) {
+                $acronym .= strtoupper(substr($w, 0, 1));
+            }
+            $acronym = substr($acronym, 0, 4);
+        }
+
+        $base = 'FACT-' . ($acronym ?: 'UNIT');
+        $code = $base;
+        $counter = 1;
+        while (Unit::where('code', $code)->exists()) {
+            $code = $base . '-' . sprintf('%02d', $counter);
+            $counter++;
+        }
+        return $code;
     }
 }

@@ -22,9 +22,11 @@ class BuyerMasterService
     public function createBuyer(array $data, User $actor, ?string $ip = null): Buyer
     {
         return DB::transaction(function () use ($data, $actor, $ip) {
+            $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : $this->generateUniqueBuyerCode($data['name']);
+
             $buyer = Buyer::create([
                 'name' => trim($data['name']),
-                'code' => strtoupper(trim($data['code'])),
+                'code' => $code,
                 'country' => $data['country'] ?? 'Bangladesh',
                 'currency' => strtoupper(trim($data['currency'] ?? 'USD')),
                 'contact_person' => $data['contact_person'] ?? null,
@@ -47,6 +49,29 @@ class BuyerMasterService
 
             return $buyer;
         });
+    }
+
+    private function generateUniqueBuyerCode(string $name): string
+    {
+        $clean = preg_replace('/[^a-zA-Z0-9\s]/', '', $name);
+        $words = array_filter(explode(' ', trim((string) $clean)));
+        if (count($words) === 1) {
+            $acronym = strtoupper(substr(reset($words), 0, 4));
+        } else {
+            $acronym = '';
+            foreach ($words as $w) {
+                $acronym .= strtoupper(substr($w, 0, 1));
+            }
+            $acronym = substr($acronym, 0, 5);
+        }
+        $baseCode = 'BUY-' . ($acronym ?: 'GEN');
+        $code = $baseCode;
+        $counter = 1;
+        while (Buyer::where('code', $code)->exists()) {
+            $code = $baseCode . '-' . sprintf('%02d', $counter);
+            $counter++;
+        }
+        return $code;
     }
 
     public function updateBuyer(Buyer $buyer, array $data, User $actor, ?string $ip = null): Buyer
@@ -105,10 +130,12 @@ class BuyerMasterService
     public function createBrand(array $data, User $actor, ?string $ip = null): Brand
     {
         return DB::transaction(function () use ($data, $actor, $ip) {
+            $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : $this->generateUniqueBrandCode($data['buyer_id'], $data['name']);
+
             $brand = Brand::create([
                 'buyer_id' => $data['buyer_id'],
                 'name' => trim($data['name']),
-                'code' => strtoupper(trim($data['code'])),
+                'code' => $code,
                 'description' => $data['description'] ?? null,
                 'is_active' => $data['is_active'] ?? true,
             ]);
@@ -126,6 +153,20 @@ class BuyerMasterService
 
             return $brand;
         });
+    }
+
+    private function generateUniqueBrandCode(string $buyerId, string $name): string
+    {
+        $clean = preg_replace('/[^a-zA-Z0-9\s_-]/', '', $name);
+        $slug = strtoupper(trim(preg_replace('/\s+/', '-', (string) $clean)));
+        $baseCode = 'BR-' . ($slug ?: 'LABEL');
+        $code = $baseCode;
+        $counter = 1;
+        while (Brand::where('buyer_id', $buyerId)->where('code', $code)->exists()) {
+            $code = $baseCode . '-' . sprintf('%02d', $counter);
+            $counter++;
+        }
+        return $code;
     }
 
     public function seedDefaults(): void

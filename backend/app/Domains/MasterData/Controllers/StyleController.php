@@ -37,7 +37,7 @@ class StyleController extends Controller
             'garment_type' => 'required|string|in:SHIRT,PANT,POLO,TEE,JACKET,DENIM,TROUSER,OTHER',
             'season' => 'nullable|string|max:50',
             'fabric_type' => 'nullable|string|max:150',
-            'total_smv' => 'nullable|numeric|min:0.1|max:500',
+            'total_smv' => 'nullable|numeric|min:0|max:500',
             'techpack_url' => 'nullable|string|max:255',
             'is_active' => 'nullable|boolean',
             'operations' => 'nullable|array',

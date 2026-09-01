@@ -30,7 +30,7 @@ class AttributeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'code' => 'required|string|max:50|unique:colors,code',
+            'code' => 'nullable|string|max:50|unique:colors,code',
             'hex_code' => 'nullable|string|max:10',
             'pantone_ref' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',

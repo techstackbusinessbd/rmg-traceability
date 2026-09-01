@@ -144,7 +144,7 @@ export default function OperationBulletinModal({
           </div>
 
           {/* Add Operation Inline Form */}
-          <form onSubmit={handleAdd} className={`p-4 rounded border ${
+          <form onSubmit={handleAdd} noValidate className={`p-4 rounded border ${
             isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
           }`}>
             <h4 className="text-xs font-bold text-blue-400 mb-3 flex items-center space-x-1.5">

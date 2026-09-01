@@ -10,11 +10,35 @@ export function CreateColorModal({ show, onClose, onSubmit, isDark = true, error
 
   if (!show) return null;
 
+  const generateColorCode = (colorName) => {
+    if (!colorName || !colorName.trim()) return '';
+    const clean = colorName.trim().replace(/[^a-zA-Z0-9\s]/g, '');
+    const words = clean.split(/\s+/).filter(Boolean);
+    let acronym = '';
+    if (words.length === 1) {
+      acronym = words[0].slice(0, 4).toUpperCase();
+    } else {
+      acronym = words.map(w => w[0]).join('').slice(0, 5).toUpperCase();
+    }
+    return `COL-${acronym || 'SHD'}`;
+  };
+
+  const handleNameChange = (val) => {
+    setName(val);
+    setCode(generateColorCode(val));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    const finalCode = (code && code.trim()) ? code.trim().toUpperCase() : generateColorCode(name);
     try {
-      await onSubmit({ name, code, hex_code: hexCode, pantone_ref: pantoneRef });
+      await onSubmit({ 
+        name: name.trim(), 
+        code: finalCode, 
+        hex_code: hexCode, 
+        pantone_ref: pantoneRef 
+      });
       setName('');
       setCode('');
       setPantoneRef('');
@@ -33,7 +57,7 @@ export function CreateColorModal({ show, onClose, onSubmit, isDark = true, error
             <Palette className="h-5 w-5 text-blue-400" />
             <h3 className="text-sm font-bold">Add Colorway Shade</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="text-slate-400 hover:text-white cursor-pointer"><X className="h-4 w-4" /></button>
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="p-5 space-y-3">
@@ -42,7 +66,7 @@ export function CreateColorModal({ show, onClose, onSubmit, isDark = true, error
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               placeholder="e.g. Heather Navy"
               className={`w-full px-2.5 py-1.5 rounded text-xs border ${
                 isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
@@ -53,14 +77,23 @@ export function CreateColorModal({ show, onClose, onSubmit, isDark = true, error
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold mb-1">Color Code *</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold">Color Code *</label>
+                <button
+                  type="button"
+                  onClick={() => setCode(generateColorCode(name))}
+                  className="text-[10px] text-blue-500 hover:text-blue-600 font-mono font-bold cursor-pointer"
+                >
+                  ⚡ Auto
+                </button>
+              </div>
               <input
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="e.g. COL-NVY"
-                className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                placeholder="e.g. COL-HN"
+                className={`w-full px-2.5 py-1.5 rounded text-xs font-mono font-bold border ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-blue-400' : 'bg-slate-50 border-slate-300 text-blue-700'
                 }`}
               />
               {errors?.code && <p className="text-[11px] text-red-500 mt-1">{errors.code[0]}</p>}
@@ -101,8 +134,8 @@ export function CreateColorModal({ show, onClose, onSubmit, isDark = true, error
           </div>
 
           <div className="flex justify-end space-x-2 pt-3 border-t border-slate-700/20">
-            <button type="button" onClick={onClose} className="px-3 py-1.5 rounded text-xs border">Cancel</button>
-            <button type="submit" disabled={submitting} className="px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold">
+            <button type="button" onClick={onClose} className="px-3 py-1.5 rounded text-xs border cursor-pointer">Cancel</button>
+            <button type="submit" disabled={submitting} className="px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer">
               {submitting ? 'Saving...' : 'Save Color'}
             </button>
           </div>
@@ -121,11 +154,28 @@ export function CreateSizeModal({ show, onClose, onSubmit, isDark = true, errors
 
   if (!show) return null;
 
+  const generateSizeCode = (sizeName) => {
+    if (!sizeName || !sizeName.trim()) return '';
+    const clean = sizeName.trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    return `SZ-${clean}`;
+  };
+
+  const handleNameChange = (val) => {
+    setName(val);
+    setCode(generateSizeCode(val));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    const finalCode = (code && code.trim()) ? code.trim().toUpperCase() : generateSizeCode(name);
     try {
-      await onSubmit({ name, code, category, sort_order: parseInt(sortOrder, 10) || 1 });
+      await onSubmit({ 
+        name: name.trim(), 
+        code: finalCode, 
+        category, 
+        sort_order: parseInt(sortOrder, 10) || 1 
+      });
       setName('');
       setCode('');
     } finally {
@@ -143,7 +193,7 @@ export function CreateSizeModal({ show, onClose, onSubmit, isDark = true, errors
             <Ruler className="h-5 w-5 text-blue-400" />
             <h3 className="text-sm font-bold">Add Size Scale</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="text-slate-400 hover:text-white cursor-pointer"><X className="h-4 w-4" /></button>
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="p-5 space-y-3">
@@ -153,7 +203,7 @@ export function CreateSizeModal({ show, onClose, onSubmit, isDark = true, errors
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="e.g. XL or 34"
                 className={`w-full px-2.5 py-1.5 rounded text-xs font-bold font-mono border ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
@@ -163,14 +213,23 @@ export function CreateSizeModal({ show, onClose, onSubmit, isDark = true, errors
             </div>
 
             <div>
-              <label className="block text-xs font-bold mb-1">Size Code *</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold">Size Code *</label>
+                <button
+                  type="button"
+                  onClick={() => setCode(generateSizeCode(name))}
+                  className="text-[10px] text-blue-500 hover:text-blue-600 font-mono font-bold cursor-pointer"
+                >
+                  ⚡ Auto
+                </button>
+              </div>
               <input
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="e.g. SZ-XL"
-                className={`w-full px-2.5 py-1.5 rounded text-xs font-mono border ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                className={`w-full px-2.5 py-1.5 rounded text-xs font-mono font-bold border ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-blue-400' : 'bg-slate-50 border-slate-300 text-blue-700'
                 }`}
               />
               {errors?.code && <p className="text-[11px] text-red-500 mt-1">{errors.code[0]}</p>}

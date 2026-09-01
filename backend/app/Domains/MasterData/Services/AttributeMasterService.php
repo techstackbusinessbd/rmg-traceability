@@ -24,9 +24,11 @@ class AttributeMasterService
     public function createColor(array $data, User $actor, ?string $ip = null): Color
     {
         return DB::transaction(function () use ($data, $actor, $ip) {
+            $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : $this->generateUniqueColorCode($data['name']);
+
             $color = Color::create([
                 'name' => trim($data['name']),
-                'code' => strtoupper(trim($data['code'])),
+                'code' => $code,
                 'hex_code' => $data['hex_code'] ?? '#000000',
                 'pantone_ref' => $data['pantone_ref'] ?? null,
                 'is_active' => $data['is_active'] ?? true,
@@ -35,6 +37,29 @@ class AttributeMasterService
             Cache::forget(self::CACHE_KEY);
             return $color;
         });
+    }
+
+    private function generateUniqueColorCode(string $name): string
+    {
+        $clean = preg_replace('/[^a-zA-Z0-9\s]/', '', $name);
+        $words = array_filter(explode(' ', trim((string) $clean)));
+        if (count($words) === 1) {
+            $acronym = strtoupper(substr(reset($words), 0, 4));
+        } else {
+            $acronym = '';
+            foreach ($words as $w) {
+                $acronym .= strtoupper(substr($w, 0, 1));
+            }
+            $acronym = substr($acronym, 0, 5);
+        }
+        $baseCode = 'COL-' . ($acronym ?: 'SHD');
+        $code = $baseCode;
+        $counter = 1;
+        while (Color::where('code', $code)->exists()) {
+            $code = $baseCode . '-' . sprintf('%02d', $counter);
+            $counter++;
+        }
+        return $code;
     }
 
     public function updateColor(Color $color, array $data, User $actor, ?string $ip = null): Color

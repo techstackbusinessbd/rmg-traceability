@@ -68,6 +68,15 @@ import {
   CreateDefectModal 
 } from '../modules/MasterData/components/CreateAttributeModals';
 
+// Module 03 Components (Order Management)
+import { OrdersDashboard } from '../modules/OrderManagement/components/OrdersDashboard';
+
+// Module 04 Components (IE & Production Planning)
+import { PlanningDashboard } from '../modules/Planning/components/PlanningDashboard';
+
+// Module 05 Components (Cutting & Bundle Ticket Generator)
+import { CuttingDashboard } from '../modules/Cutting/components/CuttingDashboard';
+
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
@@ -966,12 +975,27 @@ export default function AdminConsolePage() {
       case 'master_styles': return ['Master Data Setup', 'Styles & SMV Library'];
       case 'master_attributes': return ['Master Data Setup', 'Colors, Sizes & Defects'];
 
+      // Module 03
+      case 'orders_po': return ['Order Management', 'Purchase Orders (PO) & Matrix'];
+      case 'orders_bom': return ['Order Management', 'BOM Costing & Specs'];
+
+      // Module 04
+      case 'planning_routing': return ['Production Planning', 'Line Allocation & Capacity Routing'];
+      case 'planning_targets': return ['Production Planning', 'Hourly Output & Target Math'];
+
+      // Module 05
+      case 'cutting_lays': return ['Cutting Room', 'Fabric Lay Records & Cut Plans'];
+      case 'cutting_bundles': return ['Cutting Room', 'Bundle Tickets & Piece QR Codes'];
+
       default: return ['Master Data Setup', 'Catalog Overview'];
     }
   };
 
   const isMod1Active = ['users', 'devices', 'roles', 'shifts', 'audit', 'settings'].includes(activeTab);
   const isMod2Active = ['master_plant', 'master_buyers', 'master_styles', 'master_attributes'].includes(activeTab);
+  const isMod3Active = ['orders_po', 'orders_bom'].includes(activeTab);
+  const isMod4Active = ['planning_routing', 'planning_targets'].includes(activeTab);
+  const isMod5Active = ['cutting_lays', 'cutting_bundles'].includes(activeTab);
 
   return (
     <AdminLayout 
@@ -1347,8 +1371,35 @@ export default function AdminConsolePage() {
         </div>
       )}
 
-      {/* Placeholder / Hub for future modules (PO, Planning, Cutting etc) */}
-      {!isMod1Active && !isMod2Active && (
+      {/* ========================================================= */}
+      {/* MODULE 03: ORDER & PURCHASE ORDER (PO) MANAGEMENT         */}
+      {/* ========================================================= */}
+      {isMod3Active && (
+        <div className="space-y-5">
+          <OrdersDashboard isDark={isDark} />
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODULE 04: IE & PRODUCTION PLANNING                       */}
+      {/* ========================================================= */}
+      {isMod4Active && (
+        <div className="space-y-5">
+          <PlanningDashboard isDark={isDark} />
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODULE 05: CUTTING & BUNDLE TICKET GENERATION             */}
+      {/* ========================================================= */}
+      {isMod5Active && (
+        <div className="space-y-5">
+          <CuttingDashboard isDark={isDark} />
+        </div>
+      )}
+
+      {/* Placeholder / Hub for future modules (Sewing, QC, Washing etc) */}
+      {!isMod1Active && !isMod2Active && !isMod3Active && !isMod4Active && !isMod5Active && activeTab !== 'dashboard' && (
         <div className={`p-12 text-center rounded border ${
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
         }`}>
@@ -1357,14 +1408,14 @@ export default function AdminConsolePage() {
             {activeTab.toUpperCase().replace('_', ' ')}
           </h2>
           <p className="text-xs text-slate-400 max-w-md mx-auto mt-1 mb-4">
-            This module is scheduled for implementation in Sprint 3. Ready to proceed with Order Management & PO Costing.
+            This module is scheduled for implementation in upcoming sprints (Sewing Floor Tracking, QC Gates, Washing, Finishing).
           </p>
           <button
             type="button"
-            onClick={() => handleTabChange('master_plant')}
+            onClick={() => handleTabChange('orders_po')}
             className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold cursor-pointer transition-colors"
           >
-            Back to Factory Plant Structure
+            Go to Purchase Orders (PO) Book
           </button>
         </div>
       )}
@@ -1563,6 +1614,7 @@ export default function AdminConsolePage() {
         buyers={buyersList}
         style={editingStyle}
         isDark={isDark}
+        isIeEnabled={settingsForm['ie_operational_mode'] !== 'WITHOUT_IE_STANDARD'}
         errors={styleFormErrors}
       />
 

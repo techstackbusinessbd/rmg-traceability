@@ -24,14 +24,26 @@ export default function CreateBrandModal({
 
   if (!show || !buyer) return null;
 
+  const generateBrandCode = (brandName) => {
+    if (!brandName || !brandName.trim()) return '';
+    const clean = brandName.trim().replace(/[^a-zA-Z0-9\s_-]/g, '').replace(/\s+/g, '-').toUpperCase();
+    return `BR-${clean || 'LABEL'}`;
+  };
+
+  const handleNameChange = (val) => {
+    setName(val);
+    setCode(generateBrandCode(val));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    const finalCode = (code && code.trim()) ? code.trim().toUpperCase() : generateBrandCode(name);
     try {
       await onSubmit({
         buyer_id: buyer.id,
-        name,
-        code,
+        name: name.trim(),
+        code: finalCode,
         description,
         is_active: isActive
       });
@@ -83,8 +95,8 @@ export default function CreateBrandModal({
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Divided, Zara Man, COS"
+              onChange={(e) => handleNameChange(e.target.value)}
+              placeholder="e.g. Divided, AEO, Zara Man, COS"
               className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                 isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
               }`}
@@ -93,16 +105,25 @@ export default function CreateBrandModal({
           </div>
 
           <div>
-            <label className="block text-xs font-bold mb-1.5">
-              Brand Code <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold">
+                Brand Code <span className="text-slate-400 font-normal text-[10px]">(Auto)</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setCode(generateBrandCode(name))}
+                className="text-[10px] text-blue-500 hover:text-blue-600 font-mono font-bold cursor-pointer"
+              >
+                ⚡ Auto-Generate
+              </button>
+            </div>
             <input
               type="text"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="e.g. BR-DIVIDED"
-              className={`w-full px-3 py-2 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="e.g. BR-AEO"
+              className={`w-full px-3 py-2 rounded text-xs font-mono font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                isDark ? 'bg-slate-950 border-slate-800 text-blue-400' : 'bg-slate-50 border-slate-300 text-blue-700'
               }`}
             />
             {errors?.code && <p className="text-[11px] text-red-500 mt-1">{errors.code[0]}</p>}

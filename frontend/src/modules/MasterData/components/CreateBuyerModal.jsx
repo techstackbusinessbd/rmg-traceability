@@ -48,14 +48,35 @@ export default function CreateBuyerModal({
 
   if (!show) return null;
 
+  const generateBuyerCode = (buyerName) => {
+    if (!buyerName || !buyerName.trim()) return '';
+    const clean = buyerName.trim().replace(/[^a-zA-Z0-9\s]/g, '');
+    const words = clean.split(/\s+/).filter(Boolean);
+    let acronym = '';
+    if (words.length === 1) {
+      acronym = words[0].slice(0, 4).toUpperCase();
+    } else {
+      acronym = words.map(w => w[0]).join('').slice(0, 5).toUpperCase();
+    }
+    return `BUY-${acronym || 'GEN'}`;
+  };
+
+  const handleNameChange = (val) => {
+    setName(val);
+    if (!buyer) {
+      setCode(generateBuyerCode(val));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    const finalCode = (code && code.trim()) ? code.trim().toUpperCase() : generateBuyerCode(name);
     try {
       await onSubmit({
         id: buyer?.id,
-        name,
-        code,
+        name: name.trim(),
+        code: finalCode,
         country,
         currency,
         contact_person: contactPerson,
@@ -113,8 +134,8 @@ export default function CreateBuyerModal({
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. H&M Global"
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder="e.g. American Eagle Outfitters"
                 className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
@@ -123,16 +144,25 @@ export default function CreateBuyerModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold mb-1.5">
-                Buyer Code <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold">
+                  Buyer Code <span className="text-slate-400 font-normal text-[10px]">(Auto)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setCode(generateBuyerCode(name))}
+                  className="text-[10px] text-blue-500 hover:text-blue-600 font-mono font-bold cursor-pointer"
+                >
+                  ⚡ Auto-Generate
+                </button>
+              </div>
               <input
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="e.g. BUY-HM"
-                className={`w-full px-3 py-2 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                placeholder="e.g. BUY-AEO"
+                className={`w-full px-3 py-2 rounded text-xs font-mono font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-blue-400' : 'bg-slate-50 border-slate-300 text-blue-700'
                 }`}
               />
               {errors?.code && <p className="text-[11px] text-red-500 mt-1">{errors.code[0]}</p>}

@@ -10,6 +10,7 @@ export default function CreateStyleModal({
   buyers = [],
   style = null,
   isDark = true,
+  isIeEnabled = true,
   errors = {}
 }) {
   const [buyerId, setBuyerId] = useState(style?.buyer_id || buyers[0]?.id || '');
@@ -19,8 +20,9 @@ export default function CreateStyleModal({
   const [garmentType, setGarmentType] = useState(style?.garment_type || 'SHIRT');
   const [season, setSeason] = useState(style?.season || 'SS-2026');
   const [fabricType, setFabricType] = useState(style?.fabric_type || '');
-  const [totalSmv, setTotalSmv] = useState(style?.total_smv || 14.50);
+  const [totalSmv, setTotalSmv] = useState(style?.total_smv || (isIeEnabled ? 14.50 : ''));
   const [isActive, setIsActive] = useState(style ? Boolean(style.is_active) : true);
+  const [includeBulletin, setIncludeBulletin] = useState(isIeEnabled);
   
   // Dynamic Initial Operations
   const [operations, setOperations] = useState([
@@ -46,8 +48,9 @@ export default function CreateStyleModal({
       setGarmentType(style.garment_type || 'SHIRT');
       setSeason(style.season || 'SS-2026');
       setFabricType(style.fabric_type || '');
-      setTotalSmv(style.total_smv || 14.50);
+      setTotalSmv(style.total_smv || '');
       setIsActive(Boolean(style.is_active));
+      setIncludeBulletin(Boolean(style.operations && style.operations.length > 0));
     } else {
       const firstBuyer = buyers[0]?.id || '';
       setBuyerId(firstBuyer);
@@ -57,10 +60,11 @@ export default function CreateStyleModal({
       setGarmentType('SHIRT');
       setSeason('SS-2026');
       setFabricType('');
-      setTotalSmv(14.50);
+      setTotalSmv(isIeEnabled ? 14.50 : '');
       setIsActive(true);
+      setIncludeBulletin(isIeEnabled);
     }
-  }, [style, show, buyers]);
+  }, [style, show, buyers, isIeEnabled]);
 
   if (!show) return null;
 
@@ -86,18 +90,24 @@ export default function CreateStyleModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    
+    // Only send operations if in IE mode or user opted in
+    const opsToSend = (!style && includeBulletin) 
+      ? operations.filter(op => op.operation_name && op.operation_name.trim()) 
+      : undefined;
+
     try {
       await onSubmit({
         id: style?.id,
         buyer_id: buyerId,
         brand_id: brandId || null,
-        style_number: styleNumber,
-        style_name: styleName,
+        style_number: styleNumber.trim(),
+        style_name: styleName.trim(),
         garment_type: garmentType,
         season,
         fabric_type: fabricType,
-        total_smv: parseFloat(totalSmv) || 0,
-        operations: !style ? operations : undefined,
+        total_smv: totalSmv ? (parseFloat(totalSmv) || 0) : 0,
+        operations: opsToSend,
         is_active: isActive
       });
     } finally {
@@ -120,11 +130,23 @@ export default function CreateStyleModal({
               <Layers className="h-5 w-5" />
             </div>
             <div>
-              <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {style ? 'Edit Garment Style' : 'Create Garment Style & Operation Bulletin'}
-              </h3>
-              <p className="text-xs text-slate-400">
-                Setup style tech specifications, garment category, and operation breakdowns
+              <div className="flex items-center space-x-2">
+                <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  {style ? 'Edit Garment Style' : (isIeEnabled ? 'Create Garment Style & Operation Bulletin' : 'Create Garment Style Master')}
+                </h3>
+                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border ${
+                  isIeEnabled
+                    ? (isDark ? 'bg-blue-950/80 text-blue-300 border-blue-800' : 'bg-blue-50 text-blue-700 border-blue-200')
+                    : (isDark ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800' : 'bg-emerald-50 text-emerald-700 border-emerald-200')
+                }`}>
+                  {isIeEnabled ? '⚡ IE Mode: Bulletin Mandatory' : '📋 Direct Mode: Bulletin Optional'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {isIeEnabled 
+                  ? 'Setup style tech specifications, garment category, and line balancing operation breakdowns'
+                  : 'Setup style tech specifications and garment category without mandatory SMV breakdown'
+                }
               </p>
             </div>
           </div>
@@ -248,13 +270,14 @@ export default function CreateStyleModal({
 
             <div>
               <label className="block text-xs font-bold mb-1.5">
-                Total SMV (Minutes)
+                Total SMV (Minutes) {!isIeEnabled && <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>}
               </label>
               <input
                 type="number"
                 step="0.01"
                 value={totalSmv}
                 onChange={(e) => setTotalSmv(e.target.value)}
+                placeholder={isIeEnabled ? "e.g. 14.50" : "Optional (0.00)"}
                 className={`w-full px-2.5 py-1.5 rounded text-xs font-mono font-bold text-emerald-500 border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-300'
                 }`}
@@ -277,64 +300,97 @@ export default function CreateStyleModal({
             />
           </div>
 
-          {/* Initial Operation Breakdown (Only when creating new style) */}
+          {/* Initial Operation Breakdown (Conditional based on IE Operational Mode) */}
           {!style && (
-            <div className="p-3.5 rounded border border-blue-500/20 bg-blue-500/5 space-y-3">
+            <div className={`p-3.5 rounded border transition-colors ${
+              includeBulletin
+                ? (isDark ? 'border-blue-500/30 bg-blue-500/5' : 'border-blue-200 bg-blue-50/40')
+                : (isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50')
+            }`}>
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-blue-400">
-                  Initial Operation Bulletin Breakdown
-                </h4>
-                <button
-                  type="button"
-                  onClick={handleAddOpRow}
-                  className="text-[11px] font-bold text-blue-400 hover:text-blue-300 cursor-pointer"
-                >
-                  + Add Operation Row
-                </button>
+                <label className="flex items-center space-x-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={includeBulletin}
+                    disabled={isIeEnabled}
+                    onChange={(e) => setIncludeBulletin(e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-0 h-4 w-4 cursor-pointer"
+                  />
+                  <div>
+                    <span className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      {isIeEnabled 
+                        ? 'Operation Bulletin Breakdown (Mandatory in IE Mode)' 
+                        : 'Attach Operation Bulletin Breakdown (Optional)'}
+                    </span>
+                    <span className={`ml-2 text-[10px] font-mono px-1.5 py-0.2 rounded border ${
+                      isIeEnabled
+                        ? (isDark ? 'bg-blue-950 text-blue-300 border-blue-800' : 'bg-blue-50 text-blue-700 border-blue-200')
+                        : (isDark ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-200 text-slate-600 border-slate-300')
+                    }`}>
+                      {isIeEnabled ? 'IE MANDATORY' : 'OPTIONAL'}
+                    </span>
+                  </div>
+                </label>
+
+                {includeBulletin && (
+                  <button
+                    type="button"
+                    onClick={handleAddOpRow}
+                    className="text-[11px] font-bold text-blue-500 hover:text-blue-400 cursor-pointer"
+                  >
+                    + Add Operation Row
+                  </button>
+                )}
               </div>
 
-              <div className="space-y-2">
-                {operations.map((op, idx) => (
-                  <div key={idx} className="flex items-center space-x-2">
-                    <span className="text-xs font-mono text-slate-500 w-5">{idx + 1}.</span>
-                    <input
-                      type="text"
-                      placeholder="Operation Name"
-                      value={op.operation_name}
-                      onChange={(e) => handleOpChange(idx, 'operation_name', e.target.value)}
-                      className={`flex-1 px-2 py-1 rounded text-xs border ${
-                        isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                      }`}
-                    />
-                    <input
-                      type="number"
-                      step="0.05"
-                      placeholder="SMV"
-                      value={op.smv}
-                      onChange={(e) => handleOpChange(idx, 'smv', parseFloat(e.target.value) || 0)}
-                      className={`w-20 px-2 py-1 rounded text-xs font-mono font-bold text-emerald-500 border ${
-                        isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-300'
-                      }`}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Machine"
-                      value={op.machine_type}
-                      onChange={(e) => handleOpChange(idx, 'machine_type', e.target.value)}
-                      className={`w-32 px-2 py-1 rounded text-xs border ${
-                        isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveOpRow(idx)}
-                      className="p-1 text-slate-500 hover:text-red-400 cursor-pointer"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              {includeBulletin ? (
+                <div className="mt-3 space-y-2">
+                  {operations.map((op, idx) => (
+                    <div key={idx} className="flex items-center space-x-2">
+                      <span className="text-xs font-mono text-slate-500 w-5">{idx + 1}.</span>
+                      <input
+                        type="text"
+                        placeholder="Operation Name"
+                        value={op.operation_name}
+                        onChange={(e) => handleOpChange(idx, 'operation_name', e.target.value)}
+                        className={`flex-1 px-2 py-1 rounded text-xs border ${
+                          isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                        }`}
+                      />
+                      <input
+                        type="number"
+                        step="0.05"
+                        placeholder="SMV"
+                        value={op.smv}
+                        onChange={(e) => handleOpChange(idx, 'smv', parseFloat(e.target.value) || 0)}
+                        className={`w-20 px-2 py-1 rounded text-xs font-mono font-bold text-emerald-500 border ${
+                          isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-300'
+                        }`}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Machine"
+                        value={op.machine_type}
+                        onChange={(e) => handleOpChange(idx, 'machine_type', e.target.value)}
+                        className={`w-32 px-2 py-1 rounded text-xs border ${
+                          isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveOpRow(idx)}
+                        className="p-1 text-slate-500 hover:text-red-400 cursor-pointer"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className={`text-[11px] mt-2 ml-6 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Without-IE direct mode active. Garment styles do not require an operation bulletin breakdown. Production output will be recorded directly by total piece count against line targets.
+                </p>
+              )}
             </div>
           )}
 

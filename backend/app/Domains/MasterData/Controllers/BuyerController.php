@@ -27,7 +27,7 @@ class BuyerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:150',
-            'code' => 'required|string|max:50|unique:buyers,code',
+            'code' => 'nullable|string|max:50|unique:buyers,code',
             'country' => 'nullable|string|max:100',
             'currency' => 'nullable|string|max:10',
             'contact_person' => 'nullable|string|max:100',
@@ -87,7 +87,7 @@ class BuyerController extends Controller
         $validated = $request->validate([
             'buyer_id' => 'required|uuid|exists:buyers,id',
             'name' => 'required|string|max:150',
-            'code' => 'required|string|max:50',
+            'code' => 'nullable|string|max:50',
             'description' => 'nullable|string|max:255',
             'is_active' => 'nullable|boolean',
         ]);

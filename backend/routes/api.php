@@ -133,6 +133,61 @@ Route::prefix('v1')->group(function () {
             Route::delete('/defects/{id}', [AttributeController::class, 'destroyDefect']);
         });
 
+        // =========================================================
+        // MODULE 03: ORDER & PURCHASE ORDER (PO) MANAGEMENT
+        // =========================================================
+        Route::prefix('orders')->group(function () {
+            Route::get('/', [\App\Domains\OrderManagement\Controllers\OrderController::class, 'index']);
+            Route::post('/', [\App\Domains\OrderManagement\Controllers\OrderController::class, 'store']);
+            Route::get('/{id}', [\App\Domains\OrderManagement\Controllers\OrderController::class, 'show']);
+            Route::put('/{id}', [\App\Domains\OrderManagement\Controllers\OrderController::class, 'update']);
+            Route::delete('/{id}', [\App\Domains\OrderManagement\Controllers\OrderController::class, 'destroy']);
+            Route::post('/{id}/confirm', [\App\Domains\OrderManagement\Controllers\OrderController::class, 'confirm']);
+
+            // Child Purchase Orders
+            Route::post('/{orderId}/pos', [\App\Domains\OrderManagement\Controllers\PoBreakdownController::class, 'storePo']);
+
+            // Excel Ingestion Engine
+            Route::post('/import/preview', [\App\Domains\OrderManagement\Controllers\PoImportController::class, 'previewExcel']);
+            Route::post('/import/commit', [\App\Domains\OrderManagement\Controllers\PoImportController::class, 'commitStaging']);
+        });
+
+        Route::prefix('pos')->group(function () {
+            Route::put('/{id}', [\App\Domains\OrderManagement\Controllers\PoBreakdownController::class, 'updatePo']);
+            Route::delete('/{id}', [\App\Domains\OrderManagement\Controllers\PoBreakdownController::class, 'destroyPo']);
+            Route::get('/{id}/matrix', [\App\Domains\OrderManagement\Controllers\PoBreakdownController::class, 'getMatrix']);
+            Route::put('/{id}/matrix', [\App\Domains\OrderManagement\Controllers\PoBreakdownController::class, 'updateMatrix']);
+        });
+
+        // =========================================================
+        // MODULE 04: IE & PRODUCTION PLANNING
+        // =========================================================
+        Route::prefix('planning')->group(function () {
+            Route::get('/plans', [\App\Domains\Planning\Controllers\ProductionPlanController::class, 'index']);
+            Route::post('/plans', [\App\Domains\Planning\Controllers\ProductionPlanController::class, 'store']);
+            Route::post('/calculate-target', [\App\Domains\Planning\Controllers\ProductionPlanController::class, 'calculateMath']);
+            Route::get('/plans/{id}', [\App\Domains\Planning\Controllers\ProductionPlanController::class, 'show']);
+            Route::put('/plans/{id}', [\App\Domains\Planning\Controllers\ProductionPlanController::class, 'update']);
+            Route::delete('/plans/{id}', [\App\Domains\Planning\Controllers\ProductionPlanController::class, 'destroy']);
+        });
+
+        // =========================================================
+        // MODULE 05: CUTTING & BUNDLE TICKET GENERATION
+        // =========================================================
+        Route::prefix('cutting')->group(function () {
+            Route::get('/cuts', [\App\Domains\Cutting\Controllers\CutController::class, 'index']);
+            Route::post('/cuts', [\App\Domains\Cutting\Controllers\CutController::class, 'store']);
+            Route::get('/cuts/{id}', [\App\Domains\Cutting\Controllers\CutController::class, 'show']);
+            Route::delete('/cuts/{id}', [\App\Domains\Cutting\Controllers\CutController::class, 'destroy']);
+            Route::get('/check-eligibility/{poId}', [\App\Domains\Cutting\Controllers\CutController::class, 'checkPoEligibility']);
+
+            // Bundle Tickets & QR scanning
+            Route::get('/bundles', [\App\Domains\Cutting\Controllers\BundleController::class, 'index']);
+            Route::get('/bundles/{id}', [\App\Domains\Cutting\Controllers\BundleController::class, 'show']);
+            Route::post('/scan-qr', [\App\Domains\Cutting\Controllers\BundleController::class, 'scanQr']);
+        });
+
     });
 
 });
+

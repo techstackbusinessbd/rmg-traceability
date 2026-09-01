@@ -119,7 +119,7 @@ export default function PlantStructureDashboard({
         </div>
 
         {/* Inter-Factory Process Flow Pipeline */}
-        <div className="mt-3 pt-1 flex items-center overflow-x-auto pb-1 text-[11px] font-medium text-slate-400 gap-2">
+        <div className="mt-3 pt-1 flex items-center overflow-x-auto no-scrollbar pb-1 text-[11px] font-medium text-slate-400 gap-2">
           <span className="shrink-0 font-bold text-slate-300 uppercase text-[10px] font-mono">Traceability Flow:</span>
           
           <div className="flex items-center space-x-1.5 shrink-0 px-2 py-1 rounded bg-blue-500/5 border border-blue-500/15 text-blue-400">

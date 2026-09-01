@@ -30,15 +30,30 @@ export default function CreateUnitModal({
   const [isManualCode, setIsManualCode] = useState(Boolean(unit));
   const [submitting, setSubmitting] = useState(false);
 
-  // Auto-generate code from type and name
+  // Auto-generate code from factory name acronym and number
   const generateCode = (type, unitName) => {
-    const typeObj = FACTORY_TYPES.find(t => t.value === type);
-    const prefix = typeObj ? typeObj.prefix : 'FACT-SEW';
+    if (!unitName || !unitName.trim()) {
+      const typeObj = FACTORY_TYPES.find(t => t.value === type);
+      return `${typeObj ? typeObj.prefix : 'FACT-SEW'}-01`;
+    }
     
-    // Check if name has number (e.g. Unit 04, Plant 02)
+    const clean = unitName.trim().replace(/[^a-zA-Z0-9\s]/g, '');
+    const stopWords = ['ltd', 'limited', 'pvt', 'inc', 'corp', 'factory', 'plant', 'unit', 'mills', 'apparel', 'textiles', 'garments'];
+    const rawWords = clean.split(/\s+/).filter(Boolean);
+    const words = rawWords.filter(w => !stopWords.includes(w.toLowerCase()));
+    const finalWords = words.length > 0 ? words : rawWords;
+
+    let acronym = '';
+    if (finalWords.length === 1) {
+      acronym = finalWords[0].slice(0, 4).toUpperCase();
+    } else {
+      acronym = finalWords.map(w => w[0]).join('').slice(0, 5).toUpperCase();
+    }
+
     const numMatch = (unitName || '').match(/\d+/);
-    const numStr = numMatch ? String(numMatch[0]).padStart(2, '0') : '01';
-    return `${prefix}-${numStr}`;
+    const suffix = numMatch ? `-${String(numMatch[0]).padStart(2, '0')}` : '';
+
+    return `FACT-${acronym || 'UNIT'}${suffix}`;
   };
 
   const handleTypeChange = (e) => {
