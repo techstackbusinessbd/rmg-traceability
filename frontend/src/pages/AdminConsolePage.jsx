@@ -147,8 +147,11 @@ export default function AdminConsolePage() {
   const [saveLoading, setSaveLoading] = useState(false);
 
   // User form states
+  const [newCompanyId, setNewCompanyId] = useState('');
+  const [newUnitId, setNewUnitId] = useState('');
   const [newEmpId, setNewEmpId] = useState('');
   const [newUserName, setNewUserName] = useState('');
+  const [newDesignation, setNewDesignation] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('Password123!');
   const [newUserConfirmPassword, setNewUserConfirmPassword] = useState('Password123!');
@@ -243,8 +246,11 @@ export default function AdminConsolePage() {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.post(`${API_BASE}/admin/users`, {
+        company_id: newCompanyId || null,
+        unit_id: newUnitId || null,
         emp_id: newEmpId,
         name: newUserName,
+        designation: newDesignation || null,
         email: newUserEmail || null,
         password: newUserPassword,
         password_confirmation: newUserConfirmPassword,
@@ -252,10 +258,11 @@ export default function AdminConsolePage() {
         is_active: newUserStatus
       }, config);
 
-      toast.success('New user account registered successfully.');
+      toast.success('New user account registered and scoped successfully.');
       setShowNewUserModal(false);
       setNewEmpId('');
       setNewUserName('');
+      setNewDesignation('');
       setNewUserEmail('');
       fetchAdminData();
     } catch (err) {
@@ -720,15 +727,42 @@ export default function AdminConsolePage() {
   // User table columns
   const userColumns = [
     { key: 'emp_id', label: 'Employee ID', sortable: true, className: 'font-mono font-bold text-blue-500' },
-    { key: 'name', label: 'Full Name', sortable: true, render: (row) => <span className="font-semibold">{row.name}</span> },
-    { key: 'email', label: 'Email / Account', sortable: true, render: (row) => row.email || <span className="text-slate-400 font-mono text-[11px]">N/A (Emp ID Only)</span> },
+    { 
+      key: 'name', 
+      label: 'Full Name & Designation', 
+      sortable: true, 
+      render: (row) => (
+        <div>
+          <div className="font-semibold text-xs">{row.name}</div>
+          <div className="text-[10px] text-slate-400 font-mono">{row.designation || 'Staff / Operator'}</div>
+        </div>
+      )
+    },
+    {
+      key: 'unit',
+      label: 'Assigned Plant / Unit Scope',
+      render: (row) => {
+        if (row.unit) {
+          return (
+            <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              {row.unit.name} ({row.unit.code})
+            </span>
+          );
+        }
+        return (
+          <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            Global / All Units (HQ)
+          </span>
+        );
+      }
+    },
     {
       key: 'roles',
       label: 'Designated Role',
       render: (row) => {
         const rName = row.roles?.[0]?.name || 'Standard Operator';
         return (
-          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
             {rName}
           </span>
         );
@@ -1224,10 +1258,18 @@ export default function AdminConsolePage() {
         onSubmit={handleCreateUser}
         isDark={isDark}
         rolesList={rolesList}
+        companiesList={companiesList}
+        unitsList={unitsList}
+        companyId={newCompanyId}
+        setCompanyId={setNewCompanyId}
+        unitId={newUnitId}
+        setUnitId={setNewUnitId}
         empId={newEmpId}
         setEmpId={setNewEmpId}
         userName={newUserName}
         setUserName={setNewUserName}
+        designation={newDesignation}
+        setDesignation={setNewDesignation}
         userEmail={newUserEmail}
         setUserEmail={setNewUserEmail}
         userPassword={newUserPassword}
@@ -1267,6 +1309,8 @@ export default function AdminConsolePage() {
         user={editingUser}
         isDark={isDark}
         rolesList={rolesList}
+        companiesList={companiesList}
+        unitsList={unitsList}
         errors={editFormErrors}
       />
 

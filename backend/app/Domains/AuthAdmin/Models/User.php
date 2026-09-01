@@ -15,8 +15,11 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, HasRoles, HasUuids, SoftDeletes;
 
     protected $fillable = [
+        'company_id',
+        'unit_id',
         'emp_id',
         'name',
+        'designation',
         'email',
         'password',
         'is_active',
@@ -34,5 +37,15 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Domains\MasterData\Models\Company::class, 'company_id');
+    }
+
+    public function unit(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Domains\MasterData\Models\Unit::class, 'unit_id');
     }
 }

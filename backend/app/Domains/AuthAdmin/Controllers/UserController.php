@@ -58,8 +58,11 @@ class UserController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'company_id' => 'nullable|uuid|exists:companies,id',
+            'unit_id' => 'nullable|uuid|exists:units,id',
             'emp_id' => 'required|string|max:50|unique:users,emp_id',
             'name' => 'required|string|min:3|max:100',
+            'designation' => 'nullable|string|max:100',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'nullable|string|exists:roles,name',
@@ -94,7 +97,10 @@ class UserController extends Controller
         $isTargetSuperAdmin = $user->hasRole('Super Admin') || $user->emp_id === 'EMP-SUPERADMIN' || $user->email === 'admin@rmgtrace.com';
 
         $validated = $request->validate([
+            'company_id' => 'nullable|uuid|exists:companies,id',
+            'unit_id' => 'nullable|uuid|exists:units,id',
             'name' => 'sometimes|string|min:3|max:100',
+            'designation' => 'nullable|string|max:100',
             'is_active' => 'sometimes|boolean',
             'role' => 'sometimes|string|exists:roles,name',
         ]);

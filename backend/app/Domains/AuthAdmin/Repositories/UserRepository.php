@@ -28,14 +28,17 @@ class UserRepository
 
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
-        return User::with('roles')->latest()->paginate($perPage);
+        return User::with(['roles', 'company', 'unit'])->latest()->paginate($perPage);
     }
 
     public function create(array $data): User
     {
         return User::create([
+            'company_id' => $data['company_id'] ?? null,
+            'unit_id' => $data['unit_id'] ?? null,
             'emp_id' => $data['emp_id'],
             'name' => $data['name'],
+            'designation' => $data['designation'] ?? null,
             'email' => $data['email'] ?? null,
             'password' => $data['password'],
             'is_active' => $data['is_active'] ?? true,
