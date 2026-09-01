@@ -90,7 +90,7 @@ export default function PlantStructureDashboard({
                 </span>
               </div>
               <h3 className={`text-base font-bold tracking-tight mt-0.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {companies[0]?.name || 'Standard Group of Companies'}
+                {companies[0]?.name || 'No Corporate Group Registered Yet'}
               </h3>
             </div>
           </div>
