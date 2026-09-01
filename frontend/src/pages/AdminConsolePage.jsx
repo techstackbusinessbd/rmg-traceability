@@ -111,7 +111,7 @@ export default function AdminConsolePage() {
     setFetchLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const [uRes, dRes, rRes, aRes, sRes, shRes] = await Promise.all([
+      const [uRes, dRes, rRes, aRes, sRes, shRes] = await Promise.allSettled([
         axios.get(`${API_BASE}/admin/users`, config),
         axios.get(`${API_BASE}/admin/devices`, config),
         axios.get(`${API_BASE}/admin/roles`, config),
@@ -119,21 +119,38 @@ export default function AdminConsolePage() {
         axios.get(`${API_BASE}/admin/settings`, config),
         axios.get(`${API_BASE}/admin/shifts`, config),
       ]);
-      setUsersList(uRes.data.data.data || []);
-      setDevicesList(dRes.data.data || []);
-      setRolesList(rRes.data.data.roles || []);
-      setAllPermissionsList(rRes.data.data.permissions || []);
-      setAuditList(aRes.data.data.data || []);
-      setShiftsList(shRes.data.data || []);
-      
-      const sData = sRes.data.data || [];
-      setSettingsList(sData);
-      const initialMap = {};
-      sData.forEach(s => { initialMap[s.key] = s.value; });
-      setSettingsForm(initialMap);
+
+      if (uRes.status === 'fulfilled') {
+        setUsersList(uRes.value.data?.data?.data || []);
+      }
+      if (dRes.status === 'fulfilled') {
+        setDevicesList(dRes.value.data?.data || []);
+      }
+      if (rRes.status === 'fulfilled') {
+        setRolesList(rRes.value.data?.data?.roles || []);
+        setAllPermissionsList(rRes.value.data?.data?.permissions || []);
+      }
+      if (aRes.status === 'fulfilled') {
+        setAuditList(aRes.value.data?.data?.data || []);
+      }
+      if (shRes.status === 'fulfilled') {
+        setShiftsList(shRes.value.data?.data || []);
+      }
+      if (sRes.status === 'fulfilled') {
+        const sData = sRes.value.data?.data || [];
+        setSettingsList(sData);
+        const initialMap = {};
+        sData.forEach(s => { initialMap[s.key] = s.value; });
+        setSettingsForm(initialMap);
+      }
+
+      // If all failed, show toast
+      const allFailed = [uRes, dRes, rRes, aRes, sRes, shRes].every(r => r.status === 'rejected');
+      if (allFailed) {
+        toast.error('Unable to reach backend API. Please verify server connection.');
+      }
     } catch (e) {
       console.error('Error fetching admin data', e);
-      toast.error('Failed to load administrative records');
     } finally {
       setFetchLoading(false);
     }
