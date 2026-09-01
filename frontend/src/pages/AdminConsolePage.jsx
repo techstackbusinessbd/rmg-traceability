@@ -28,7 +28,8 @@ import {
   Power,
   Eye,
   Radio,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Clock
 } from 'lucide-react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -37,6 +38,9 @@ import RegisterDeviceModal from '../modules/AuthAdmin/components/RegisterDeviceM
 import EditUserModal from '../modules/AuthAdmin/components/EditUserModal';
 import RolesDataTable from '../modules/AuthAdmin/components/RolesDataTable';
 import SystemSettingsDashboard from '../modules/AuthAdmin/components/SystemSettingsDashboard';
+import ShiftManagementDashboard from '../modules/AuthAdmin/components/ShiftManagementDashboard';
+import CreateShiftModal from '../modules/AuthAdmin/components/CreateShiftModal';
+import EditShiftModal from '../modules/AuthAdmin/components/EditShiftModal';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
@@ -57,6 +61,10 @@ export default function AdminConsolePage() {
   };
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [showNewDeviceModal, setShowNewDeviceModal] = useState(false);
+  const [showCreateShiftModal, setShowCreateShiftModal] = useState(false);
+  const [editingShift, setEditingShift] = useState(null);
+  const [shiftFormErrors, setShiftFormErrors] = useState({});
+
   const [editingUser, setEditingUser] = useState(null);
   const [editFormErrors, setEditFormErrors] = useState({});
   const [editingRolePermissions, setEditingRolePermissions] = useState(null);
@@ -67,6 +75,7 @@ export default function AdminConsolePage() {
   const [usersList, setUsersList] = useState([]);
   const [devicesList, setDevicesList] = useState([]);
   const [rolesList, setRolesList] = useState([]);
+  const [shiftsList, setShiftsList] = useState([]);
   const [auditList, setAuditList] = useState([]);
   const [settingsList, setSettingsList] = useState([]);
   const [settingsForm, setSettingsForm] = useState({});
@@ -102,18 +111,20 @@ export default function AdminConsolePage() {
     setFetchLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const [uRes, dRes, rRes, aRes, sRes] = await Promise.all([
+      const [uRes, dRes, rRes, aRes, sRes, shRes] = await Promise.all([
         axios.get(`${API_BASE}/admin/users`, config),
         axios.get(`${API_BASE}/admin/devices`, config),
         axios.get(`${API_BASE}/admin/roles`, config),
         axios.get(`${API_BASE}/admin/audit-logs`, config),
         axios.get(`${API_BASE}/admin/settings`, config),
+        axios.get(`${API_BASE}/admin/shifts`, config),
       ]);
       setUsersList(uRes.data.data.data || []);
       setDevicesList(dRes.data.data || []);
       setRolesList(rRes.data.data.roles || []);
       setAllPermissionsList(rRes.data.data.permissions || []);
       setAuditList(aRes.data.data.data || []);
+      setShiftsList(shRes.data.data || []);
       
       const sData = sRes.data.data || [];
       setSettingsList(sData);
@@ -317,6 +328,83 @@ export default function AdminConsolePage() {
     }
   };
 
+  const handleCreateShift = async (formData) => {
+    setShiftFormErrors({});
+    try {
+      await axios.post(`${API_BASE}/admin/shifts`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      toast.success(`Shift schedule '${formData.shift_name}' created successfully!`);
+      setShowCreateShiftModal(false);
+      setShiftFormErrors({});
+      fetchAdminData();
+    } catch (err) {
+      const resp = err.response?.data;
+      if (resp?.errors) {
+        setShiftFormErrors(resp.errors);
+        const firstErrorKey = Object.keys(resp.errors)[0];
+        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
+      } else {
+        toast.error(resp?.message || 'Error creating shift schedule');
+      }
+    }
+  };
+
+  const handleUpdateShift = async (formData) => {
+    setShiftFormErrors({});
+    try {
+      await axios.put(`${API_BASE}/admin/shifts/${formData.id}`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      toast.success('Shift schedule updated successfully!');
+      setEditingShift(null);
+      setShiftFormErrors({});
+      fetchAdminData();
+    } catch (err) {
+      const resp = err.response?.data;
+      if (resp?.errors) {
+        setShiftFormErrors(resp.errors);
+        const firstErrorKey = Object.keys(resp.errors)[0];
+        toast.error(resp.errors[firstErrorKey][0] || 'Validation error');
+      } else {
+        toast.error(resp?.message || 'Failed to update shift schedule');
+      }
+    }
+  };
+
+  const handleToggleShiftStatus = async (shift) => {
+    const newStatus = !shift.is_active;
+    try {
+      await axios.put(`${API_BASE}/admin/shifts/${shift.id}`, {
+        is_active: newStatus
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      toast.success(`Shift '${shift.shift_name}' is now ${newStatus ? 'ACTIVE' : 'INACTIVE'}!`);
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update shift status');
+    }
+  };
+
+  const handleDeleteShift = async (shift) => {
+    if (!window.confirm(`Are you sure you want to delete shift ${shift.shift_name}?`)) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_BASE}/admin/shifts/${shift.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      toast.success(`Shift '${shift.shift_name}' deleted!`);
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete shift');
+    }
+  };
+
   // Table Columns
   const userColumns = [
     { 
@@ -479,7 +567,9 @@ export default function AdminConsolePage() {
       case 'users': return ['Identity & Security', 'Users & Operators'];
       case 'devices': return ['Identity & Security', 'Floor Tablets'];
       case 'roles': return ['Identity & Security', 'Role Permissions & Gates'];
+      case 'shifts': return ['Identity & Security', 'Unit & Floor Shifts'];
       case 'audit': return ['Identity & Security', 'Audit Trail'];
+      case 'settings': return ['System Config', 'Global Settings'];
       default: return ['Master Data Setup', 'Catalog Overview'];
     }
   };
@@ -493,7 +583,7 @@ export default function AdminConsolePage() {
       <Toaster position="top-right" />
 
       {/* Module 01: Auth & Administration View */}
-      {['users', 'devices', 'roles', 'audit', 'settings'].includes(activeTab) && (
+      {['users', 'devices', 'roles', 'shifts', 'audit', 'settings'].includes(activeTab) && (
         <div className="space-y-5">
           
           {/* Top KPI Cards (Enterprise Stat Bar) */}
@@ -530,12 +620,13 @@ export default function AdminConsolePage() {
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
             }`}>
               <div className="flex items-center justify-between text-slate-400 text-sm mb-1 font-medium">
-                <span>Defined Roles</span>
-                <KeyRound className="h-4.5 w-4.5 text-blue-500" />
+                <span>Floor Shifts Configured</span>
+                <Clock className="h-4.5 w-4.5 text-blue-500" />
               </div>
-              <div className="text-3xl font-black tracking-tight">{rolesList.length}</div>
-              <div className="text-xs text-slate-400 font-mono mt-1.5 font-medium">
-                Spatie Role Gates
+              <div className="text-3xl font-black tracking-tight">{shiftsList.length}</div>
+              <div className="text-xs text-emerald-500 font-semibold flex items-center space-x-1 mt-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                <span>Staggered Timings Active</span>
               </div>
             </div>
 
@@ -672,6 +763,23 @@ export default function AdminConsolePage() {
             />
           )}
 
+          {activeTab === 'shifts' && (
+            <ShiftManagementDashboard
+              shifts={shiftsList}
+              loading={fetchLoading}
+              onOpenCreateModal={() => {
+                setShiftFormErrors({});
+                setShowCreateShiftModal(true);
+              }}
+              onOpenEditModal={(shift) => {
+                setShiftFormErrors({});
+                setEditingShift(shift);
+              }}
+              onToggleStatus={handleToggleShiftStatus}
+              onDeleteShift={handleDeleteShift}
+            />
+          )}
+
           {activeTab === 'audit' && (
             <div className={`p-5 rounded border transition-colors ${
               isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
@@ -702,7 +810,6 @@ export default function AdminConsolePage() {
               setSettingsForm={setSettingsForm}
               onSave={handleSaveSettings}
               saving={saveLoading}
-              isDark={isDark}
             />
           )}
 
@@ -710,7 +817,7 @@ export default function AdminConsolePage() {
       )}
 
       {/* Placeholder / Hub for other modules */}
-      {!['users', 'devices', 'roles', 'audit', 'settings'].includes(activeTab) && (
+      {!['users', 'devices', 'roles', 'shifts', 'audit', 'settings'].includes(activeTab) && (
         <div className={`p-12 text-center rounded border ${
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
         }`}>
@@ -729,7 +836,9 @@ export default function AdminConsolePage() {
             Back to Users Management
           </button>
         </div>
-      )}      {/* Modular Modal: Register New User */}
+      )}
+
+      {/* Modular Modal: Register New User */}
       <RegisterUserModal
         show={showNewUserModal}
         onClose={() => setShowNewUserModal(false)}
@@ -782,6 +891,31 @@ export default function AdminConsolePage() {
         isDark={isDark}
         rolesList={rolesList}
         errors={editFormErrors}
+      />
+
+      {/* Modular Modal: Create Shift */}
+      <CreateShiftModal
+        show={showCreateShiftModal}
+        onClose={() => {
+          setShowCreateShiftModal(false);
+          setShiftFormErrors({});
+        }}
+        onSubmit={handleCreateShift}
+        isDark={isDark}
+        errors={shiftFormErrors}
+      />
+
+      {/* Modular Modal: Edit Shift */}
+      <EditShiftModal
+        show={Boolean(editingShift)}
+        onClose={() => {
+          setEditingShift(null);
+          setShiftFormErrors({});
+        }}
+        onSubmit={handleUpdateShift}
+        shift={editingShift}
+        isDark={isDark}
+        errors={shiftFormErrors}
       />
 
     </AdminLayout>

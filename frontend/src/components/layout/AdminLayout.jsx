@@ -25,7 +25,8 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   FolderTree,
-  Radio
+  Radio,
+  Clock
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
@@ -45,6 +46,7 @@ const navigationGroups = [
           { id: 'users', label: 'Users & Operators', icon: Users },
           { id: 'devices', label: 'Floor Tablets', icon: Smartphone, badge: 'PIN Locked' },
           { id: 'roles', label: 'Roles & Scopes', icon: KeyRound },
+          { id: 'shifts', label: 'Unit & Floor Shifts', icon: Clock },
           { id: 'audit', label: 'Audit Logs', icon: History },
           { id: 'settings', label: 'System Configuration', icon: SlidersHorizontal },
         ]

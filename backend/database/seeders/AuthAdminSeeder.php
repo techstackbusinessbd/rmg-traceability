@@ -171,5 +171,8 @@ class AuthAdminSeeder extends Seeder
 
         // 6. Seed Default Configurable System Settings (Redis Cached)
         app(\App\Domains\AuthAdmin\Services\SystemSettingService::class)->seedDefaults();
+
+        // 7. Seed Default Unit & Floor-wise Shifts (Staggered Floor Timing)
+        app(\App\Domains\AuthAdmin\Services\ShiftService::class)->seedDefaults();
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\AuthAdmin\Controllers\AuthController;
+use App\Domains\AuthAdmin\Controllers\ShiftController;
 use App\Domains\AuthAdmin\Controllers\SystemSettingController;
 use App\Domains\AuthAdmin\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,7 @@ Route::prefix('v1')->group(function () {
 
     // Public Settings for Floor Tablets
     Route::get('/settings/public', [SystemSettingController::class, 'publicSettings']);
+    Route::get('/shifts/active', [ShiftController::class, 'index']); // Public endpoint for line tablets
 
     // -------------------------------------------------------------
     // MODULE 01: PROTECTED ROUTES (SANCTUM BEARER TOKEN)
@@ -53,6 +55,12 @@ Route::prefix('v1')->group(function () {
             Route::put('/devices/{id}', [UserController::class, 'updateDevice']);
             Route::delete('/devices/{id}', [UserController::class, 'destroyDevice']);
             
+            // Unit & Floor-wise Shifts Management
+            Route::get('/shifts', [ShiftController::class, 'index']);
+            Route::post('/shifts', [ShiftController::class, 'store']);
+            Route::put('/shifts/{id}', [ShiftController::class, 'update']);
+            Route::delete('/shifts/{id}', [ShiftController::class, 'destroy']);
+
             // Immutable Audit Trail
             Route::get('/audit-logs', [UserController::class, 'auditLogs']);
 
