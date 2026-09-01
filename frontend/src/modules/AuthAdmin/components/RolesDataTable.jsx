@@ -15,9 +15,12 @@ import {
   CheckSquare, 
   Square,
   Layers,
-  KeyRound
+  KeyRound,
+  Trash2
 } from 'lucide-react';
 import { DataTable } from '../../../components/common/DataTable';
+
+const PROTECTED_ROLES = ['Super Admin', 'Admin', 'Plant Manager', 'Line Supervisor', 'QC Inspector', 'Cutting Master', 'Packing Operator', 'Store Keeper'];
 
 export default function RolesDataTable({
   roles = [],
@@ -25,6 +28,10 @@ export default function RolesDataTable({
   usersList = [],
   isDark,
   onSaveRolePermissions,
+  onOpenCreateRole,
+  onOpenCreatePermission,
+  onDeleteRole,
+  onDeletePermission,
   saving = false
 }) {
   const [editingRole, setEditingRole] = useState(null);
@@ -67,14 +74,15 @@ export default function RolesDataTable({
       orders: 'Order & Style PO',
       planning: 'Production Planning',
       cutting: 'Cutting & Bundling',
-      valueadd: 'Value Addition',
+      valueadd: 'Value Addition (Wash/Print/Emb)',
       sewing: 'Sewing Floor Telemetry',
-      qc: 'Quality Control (QC)',
-      washing: 'Washing & Finishing',
+      qc: 'Quality Control & DHU',
+      washing: 'Washing & Laundry',
+      finishing: 'Finishing & Pressing',
       packing: 'Carton Packing',
       shipment: 'Dispatch & Shipment',
       store: 'Warehouse Store Ledger',
-      analytics: 'Analytics & BI Reports'
+      analytics: 'Analytics & Deep Trace'
     };
     return map[key] || `${key.toUpperCase()}`;
   };
@@ -122,21 +130,27 @@ export default function RolesDataTable({
       sortable: true,
       render: (row) => {
         const isSuper = row.name === 'Super Admin';
+        const isCustom = !PROTECTED_ROLES.includes(row.name);
         return (
           <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-md bg-blue-600/10 text-blue-600 flex items-center justify-center font-bold text-xs">
+            <div className="h-8 w-8 rounded bg-blue-600/10 text-blue-600 flex items-center justify-center font-bold text-xs">
               {row.name.charAt(0)}
             </div>
             <div>
-              <div className="font-bold text-sm flex items-center space-x-2">
+              <div className="font-bold text-xs flex items-center space-x-2">
                 <span className={isDark ? 'text-white' : 'text-slate-900'}>{row.name}</span>
                 {isSuper && (
                   <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20 font-bold">
                     PLATFORM OWNER
                   </span>
                 )}
+                {isCustom && (
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 font-bold">
+                    CUSTOM ROLE
+                  </span>
+                )}
               </div>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-[11px] text-slate-400 font-mono">
                 {row.guard_name || 'web'} Guard
               </span>
             </div>
@@ -152,7 +166,7 @@ export default function RolesDataTable({
         const count = roleUserCountMap[row.name] || 0;
         return (
           <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-slate-400" />
+            <Users className="h-3.5 w-3.5 text-slate-400" />
             <span className="font-mono font-bold text-xs">
               {count} {count === 1 ? 'Operator' : 'Operators'}
             </span>
@@ -168,8 +182,8 @@ export default function RolesDataTable({
         const count = row.permissions?.length || 0;
         return (
           <div className="flex items-center space-x-2">
-            <span className="px-2.5 py-1 rounded font-mono font-bold text-xs bg-blue-500/10 text-blue-600 border border-blue-500/20">
-              {count} of {allPermissions.length} Scopes Active
+            <span className="px-2 py-0.5 rounded font-mono font-bold text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              {count} of {allPermissions.length} Scopes
             </span>
           </div>
         );
@@ -177,20 +191,20 @@ export default function RolesDataTable({
     },
     {
       key: 'access_level',
-      label: 'Access Level',
+      label: 'Access Scope',
       sortable: false,
       render: (row) => {
         const isSuper = row.name === 'Super Admin';
         const isAdmin = row.name === 'Admin';
         return (
-          <span className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded text-[11px] font-bold ${
+          <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
             isSuper 
-              ? 'bg-purple-500/10 text-purple-500 border border-purple-500/20'
+              ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
               : isAdmin
-                ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
+                ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                 : 'bg-slate-500/10 text-slate-400 border border-slate-700/20'
           }`}>
-            <span>{isSuper ? 'Full Root Access' : isAdmin ? 'Factory Operations' : 'Shopfloor Terminal'}</span>
+            <span>{isSuper ? 'Global Enterprise' : isAdmin ? 'Factory Level' : 'Floor Scoped'}</span>
           </span>
         );
       }
@@ -200,18 +214,31 @@ export default function RolesDataTable({
       label: 'Actions',
       sortable: false,
       align: 'right',
-      render: (row) => (
-        <div className="flex items-center justify-end space-x-2">
-          <button
-            type="button"
-            onClick={() => handleOpenEdit(row)}
-            className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 shadow-2xs cursor-pointer transition-colors"
-          >
-            <Sliders className="h-3.5 w-3.5" />
-            <span>Configure Matrix</span>
-          </button>
-        </div>
-      )
+      render: (row) => {
+        const isProtected = PROTECTED_ROLES.includes(row.name);
+        return (
+          <div className="flex items-center justify-end space-x-1.5">
+            <button
+              type="button"
+              onClick={() => handleOpenEdit(row)}
+              className="px-2.5 py-1.5 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1 shadow-2xs cursor-pointer transition-colors"
+            >
+              <Sliders className="h-3 w-3" />
+              <span>Configure</span>
+            </button>
+            {!isProtected && onDeleteRole && (
+              <button
+                type="button"
+                onClick={() => onDeleteRole(row)}
+                title="Delete Custom Role"
+                className="p-1.5 rounded hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        );
+      }
     }
   ];
 
@@ -234,11 +261,37 @@ export default function RolesDataTable({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-700/20">
           <div>
             <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Security Roles & Access Policies
+              Dynamic Security Roles & Permissions Matrix
             </h3>
-            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-              Granular Role-Based Access Control (RBAC) mapped across all 12 RMG modules
+            <p className="text-xs text-slate-400 mt-0.5">
+              100% Dynamic Role-Based Access Control (RBAC) across all 12 RMG Garments Modules
             </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {onOpenCreatePermission && (
+              <button
+                type="button"
+                onClick={onOpenCreatePermission}
+                className={`px-3 py-2 rounded text-xs font-semibold border flex items-center space-x-1.5 transition-colors cursor-pointer ${
+                  isDark ? 'border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200' : 'border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-800'
+                }`}
+              >
+                <KeyRound className="h-3.5 w-3.5 text-blue-500" />
+                <span>+ Add Permission Scope</span>
+              </button>
+            )}
+
+            {onOpenCreateRole && (
+              <button
+                type="button"
+                onClick={onOpenCreateRole}
+                className="px-3.5 py-2 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 shadow-xs cursor-pointer transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>+ Create Custom Role</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -261,17 +314,17 @@ export default function RolesDataTable({
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-700/20 shrink-0">
               <div className="flex items-center space-x-3.5">
-                <div className="h-10 w-10 rounded-md bg-blue-600/15 text-blue-600 flex items-center justify-center font-bold">
+                <div className="h-10 w-10 rounded bg-blue-600/15 text-blue-600 flex items-center justify-center font-bold">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold tracking-tight flex items-center space-x-2">
                     <span>{editingRole.name}</span>
-                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
                       {selectedPermissions.length} / {allPermissions.length} Scopes Active
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-400">Manage granular API gates and operational authorization scopes</p>
+                  <p className="text-xs text-slate-400">Configure dynamic API gates and operational authorization scopes</p>
                 </div>
               </div>
               <button
@@ -290,7 +343,7 @@ export default function RolesDataTable({
                 <select
                   value={moduleFilter}
                   onChange={(e) => setModuleFilter(e.target.value)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold border focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded text-xs font-semibold border focus:outline-none focus:ring-1 focus:ring-blue-600 cursor-pointer ${
                     isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                   }`}
                 >
@@ -310,7 +363,7 @@ export default function RolesDataTable({
                   value={modalSearch}
                   onChange={(e) => setModalSearch(e.target.value)}
                   placeholder="Search permission scopes..."
-                  className={`w-full pl-8 pr-3 py-1.5 rounded-md text-xs border focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium ${
+                  className={`w-full pl-8 pr-3 py-1.5 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-600 font-medium ${
                     isDark ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'
                   }`}
                 />
@@ -320,7 +373,7 @@ export default function RolesDataTable({
             {/* Permission Scopes Grid */}
             <div className="overflow-y-auto flex-1 py-4 space-y-4 pr-1">
               {editingRole.name === 'Super Admin' && (
-                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs flex items-center space-x-2">
+                <div className="p-3 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs flex items-center space-x-2">
                   <ShieldCheck className="h-4 w-4 shrink-0" />
                   <span>Super Admin is the platform owner. All permissions across all domains are permanently active.</span>
                 </div>
@@ -332,7 +385,7 @@ export default function RolesDataTable({
                 const count = perms.filter(p => selectedPermissions.includes(p.name)).length;
 
                 return (
-                  <div key={moduleKey} className={`rounded-lg border overflow-hidden ${
+                  <div key={moduleKey} className={`rounded border overflow-hidden ${
                     isDark ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-50/50 border-slate-200 shadow-2xs'
                   }`}>
                     {/* Header */}
@@ -368,22 +421,37 @@ export default function RolesDataTable({
                           <div
                             key={p.id}
                             onClick={() => togglePermission(p.name)}
-                            className={`p-2.5 rounded border text-xs font-mono flex items-center space-x-2 transition-all select-none ${
+                            className={`p-2 rounded border text-xs font-mono flex items-center justify-between transition-all select-none ${
                               editingRole.name === 'Super Admin'
                                 ? 'cursor-not-allowed opacity-90'
                                 : 'cursor-pointer hover:border-blue-500/40'
                             } ${
                               isChecked
-                                ? isDark ? 'bg-blue-950/40 border-blue-600/50 text-blue-300' : 'bg-blue-50/80 border-blue-300 text-blue-900'
+                                ? isDark ? 'bg-blue-950/40 border-blue-600/50 text-blue-300' : 'bg-blue-50/80 border-blue-300 text-blue-900 font-semibold'
                                 : isDark ? 'bg-slate-900/60 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
                             }`}
                           >
-                            {isChecked ? (
-                              <CheckSquare className="h-4 w-4 text-blue-600 shrink-0" />
-                            ) : (
-                              <Square className="h-4 w-4 text-slate-400 shrink-0" />
+                            <div className="flex items-center space-x-2 truncate">
+                              {isChecked ? (
+                                <CheckSquare className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                              ) : (
+                                <Square className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                              )}
+                              <span className="truncate">{p.name}</span>
+                            </div>
+                            {onDeletePermission && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeletePermission(p);
+                                }}
+                                title="Delete Permission Scope"
+                                className="opacity-0 hover:opacity-100 p-0.5 text-slate-400 hover:text-red-400 transition-opacity"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
                             )}
-                            <span className="truncate">{p.name}</span>
                           </div>
                         );
                       })}
@@ -398,7 +466,7 @@ export default function RolesDataTable({
               <button
                 type="button"
                 onClick={() => setEditingRole(null)}
-                className={`flex-1 py-2.5 rounded-md text-sm font-semibold border transition-colors cursor-pointer ${
+                className={`flex-1 py-2.5 rounded text-xs font-semibold border transition-colors cursor-pointer ${
                   isDark ? 'border-slate-800 hover:bg-slate-800 text-slate-300' : 'border-slate-300 hover:bg-slate-100 text-slate-700'
                 }`}
               >
@@ -409,7 +477,7 @@ export default function RolesDataTable({
                   type="button"
                   disabled={saving}
                   onClick={handleSave}
-                  className="flex-1 py-2.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-bold shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors disabled:opacity-50"
                 >
                   {saving ? 'Updating Policies...' : 'Save Matrix Policies'}
                 </button>

@@ -315,12 +315,71 @@ class UserController extends Controller
             'user_name' => $request->user()->name,
             'action' => 'DELETE_ROLE',
             'module' => 'AuthAdmin',
-            'payload' => ['role_id' => $id, 'role_name' => $role->name],
+            'payload' => ['role_id' => $id, 'role_name' => $roleName],
         ]);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Role deleted successfully.',
+            'message' => 'Security role deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Create New Granular Permission Scope (Super Admin Only)
+     */
+    public function storePermission(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|min:3|max:100|unique:permissions,name',
+        ]);
+
+        $perm = Permission::create([
+            'name' => strtolower(trim($validated['name'])),
+            'guard_name' => 'web',
+        ]);
+
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'user_name' => $request->user()->name,
+            'action' => 'CREATE_PERMISSION',
+            'module' => 'AuthAdmin',
+            'payload' => ['permission' => $perm->name],
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Dynamic Permission scope created successfully.',
+            'data' => $perm,
+        ], 201);
+    }
+
+    /**
+     * Delete Permission Scope (Super Admin Only)
+     */
+    public function destroyPermission(Request $request, string $id): JsonResponse
+    {
+        $perm = Permission::findById($id, 'web');
+        if (! $perm) {
+            return response()->json(['status' => 'error', 'message' => 'Permission not found.'], 404);
+        }
+
+        $permName = $perm->name;
+        $perm->delete();
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'user_name' => $request->user()->name,
+            'action' => 'DELETE_PERMISSION',
+            'module' => 'AuthAdmin',
+            'payload' => ['permission' => $permName],
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Permission scope removed successfully.',
         ]);
     }
 

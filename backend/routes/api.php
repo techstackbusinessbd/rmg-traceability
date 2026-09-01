@@ -54,6 +54,8 @@ Route::prefix('v1')->group(function () {
             Route::post('/roles', [UserController::class, 'storeRole']);
             Route::put('/roles/{id}/permissions', [UserController::class, 'updateRolePermissions']);
             Route::delete('/roles/{id}', [UserController::class, 'destroyRole']);
+            Route::post('/permissions', [UserController::class, 'storePermission']);
+            Route::delete('/permissions/{id}', [UserController::class, 'destroyPermission']);
             
             // Floor Devices (Tablets)
             Route::get('/devices', [UserController::class, 'devices']);

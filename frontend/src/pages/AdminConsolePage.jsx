@@ -40,6 +40,8 @@ import RegisterUserModal from '../modules/AuthAdmin/components/RegisterUserModal
 import RegisterDeviceModal from '../modules/AuthAdmin/components/RegisterDeviceModal';
 import EditUserModal from '../modules/AuthAdmin/components/EditUserModal';
 import RolesDataTable from '../modules/AuthAdmin/components/RolesDataTable';
+import CreateRoleModal from '../modules/AuthAdmin/components/CreateRoleModal';
+import CreatePermissionModal from '../modules/AuthAdmin/components/CreatePermissionModal';
 import SystemSettingsDashboard from '../modules/AuthAdmin/components/SystemSettingsDashboard';
 import ShiftManagementDashboard from '../modules/AuthAdmin/components/ShiftManagementDashboard';
 import CreateShiftModal from '../modules/AuthAdmin/components/CreateShiftModal';
@@ -121,6 +123,8 @@ export default function AdminConsolePage() {
   const [showCreateColorModal, setShowCreateColorModal] = useState(false);
   const [showCreateSizeModal, setShowCreateSizeModal] = useState(false);
   const [showCreateDefectModal, setShowCreateDefectModal] = useState(false);
+  const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
+  const [showCreatePermissionModal, setShowCreatePermissionModal] = useState(false);
 
   // Module 01 Lists
   const [usersList, setUsersList] = useState([]);
@@ -374,6 +378,54 @@ export default function AdminConsolePage() {
       toast.error('Failed to save permissions.');
     } finally {
       setSavingRoleMatrix(false);
+    }
+  };
+
+  const handleCreateRole = async (data) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/admin/roles`, data, config);
+      toast.success('Custom security role created.');
+      setShowCreateRoleModal(false);
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create role.');
+    }
+  };
+
+  const handleDeleteRole = async (role) => {
+    if (!window.confirm(`Are you sure you want to delete role "${role.name}"?`)) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/admin/roles/${role.id}`, config);
+      toast.success('Security role deleted.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete role.');
+    }
+  };
+
+  const handleCreatePermission = async (data) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`${API_BASE}/admin/permissions`, data, config);
+      toast.success('New permission scope added.');
+      setShowCreatePermissionModal(false);
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create permission.');
+    }
+  };
+
+  const handleDeletePermission = async (perm) => {
+    if (!window.confirm(`Are you sure you want to delete permission "${perm.name}"?`)) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${API_BASE}/admin/permissions/${perm.id}`, config);
+      toast.success('Permission scope removed.');
+      fetchAdminData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete permission.');
     }
   };
 
@@ -1061,6 +1113,10 @@ export default function AdminConsolePage() {
               usersList={usersList}
               isDark={isDark}
               onSaveRolePermissions={handleSaveRolePermissions}
+              onOpenCreateRole={() => setShowCreateRoleModal(true)}
+              onOpenCreatePermission={() => setShowCreatePermissionModal(true)}
+              onDeleteRole={handleDeleteRole}
+              onDeletePermission={handleDeletePermission}
               saving={savingRoleMatrix}
             />
           )}
@@ -1312,6 +1368,21 @@ export default function AdminConsolePage() {
         companiesList={companiesList}
         unitsList={unitsList}
         errors={editFormErrors}
+      />
+
+      <CreateRoleModal
+        show={showCreateRoleModal}
+        onClose={() => setShowCreateRoleModal(false)}
+        onSubmit={handleCreateRole}
+        allPermissions={allPermissionsList}
+        isDark={isDark}
+      />
+
+      <CreatePermissionModal
+        show={showCreatePermissionModal}
+        onClose={() => setShowCreatePermissionModal(false)}
+        onSubmit={handleCreatePermission}
+        isDark={isDark}
       />
 
       <CreateShiftModal
