@@ -51,6 +51,9 @@ class ShiftManagementFeatureTest extends TestCase
             ->postJson('/api/v1/admin/shifts', [
                 'shift_name' => 'Floor 5 Special Denim Shift',
                 'shift_code' => 'SH-U1-F5-DNM',
+                'shift_type' => 'DAY',
+                'allows_overtime' => true,
+                'max_ot_hours' => 2.0,
                 'unit_name' => 'Unit 01',
                 'floor_name' => '5th Floor',
                 'start_time' => '08:45:00',

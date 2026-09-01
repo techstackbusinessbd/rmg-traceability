@@ -40,21 +40,23 @@ class AuthAdminFeatureTest extends TestCase
     public function test_login_fails_with_invalid_password(): void
     {
         $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'admin@rmgtrace.com',
+            'identifier' => 'admin@rmgtrace.com',
             'password' => 'WrongPassword!',
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['login']);
     }
 
     public function test_unauthenticated_user_cannot_register_new_users(): void
     {
         // Protected Registration Rule Check
         $response = $this->postJson('/api/v1/admin/users', [
+            'emp_id' => 'EMP-TEST-01',
             'name' => 'John Operator',
             'email' => 'operator@rmgtrace.com',
             'password' => 'SecurePass123!',
+            'password_confirmation' => 'SecurePass123!',
             'role' => 'Line Supervisor',
         ]);
 
@@ -67,9 +69,11 @@ class AuthAdminFeatureTest extends TestCase
 
         $response = $this->actingAs($admin, 'sanctum')
             ->postJson('/api/v1/admin/users', [
+                'emp_id' => 'EMP-CUT-01',
                 'name' => 'Cutting Master User',
                 'email' => 'cutting@rmgtrace.com',
                 'password' => 'Password123!',
+                'password_confirmation' => 'Password123!',
                 'role' => 'Cutting Master',
                 'is_active' => true,
             ]);
