@@ -26,82 +26,77 @@ import {
   SlidersHorizontal,
   FolderTree,
   Radio,
-  Clock
+  Clock,
+  Sparkles,
+  Shield
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 
-// Official 12-Module ERP Structure
+// Official 12-Module ERP Structure - Clean & Uncluttered
 const navigationGroups = [
   {
-    category: 'SYSTEM & MASTER DATA',
+    category: 'System & Master Setup',
     modules: [
       {
         id: 'mod_01',
-        code: 'MOD 01',
         label: 'Auth & Administration',
         icon: ShieldCheck,
-        badge: 'Protected',
         children: [
-          { id: 'users', label: 'Users & Operators', icon: Users },
-          { id: 'devices', label: 'Floor Tablets', icon: Smartphone, badge: 'PIN Locked' },
-          { id: 'roles', label: 'Roles & Scopes', icon: KeyRound },
+          { id: 'users', label: 'Users & Access Scopes', icon: Users },
+          { id: 'devices', label: 'Floor Tablets & Hardware', icon: Smartphone },
+          { id: 'roles', label: 'Roles & Permissions Matrix', icon: KeyRound },
           { id: 'shifts', label: 'Unit & Floor Shifts', icon: Clock },
-          { id: 'audit', label: 'Audit Logs', icon: History },
+          { id: 'audit', label: 'Security Audit Trail', icon: History },
           { id: 'settings', label: 'System Configuration', icon: SlidersHorizontal },
         ]
       },
       {
         id: 'mod_02',
-        code: 'MOD 02',
         label: 'Master Data Setup',
         icon: Database,
         children: [
-          { id: 'master_plant', label: 'Factory Plant Structure', icon: Building2 },
-          { id: 'master_buyers', label: 'Buyers & Brand Labels', icon: ShieldCheck },
+          { id: 'master_plant', label: 'Group & Plant Structure', icon: Building2 },
+          { id: 'master_buyers', label: 'Buyers & Brand Labels', icon: Shield },
           { id: 'master_styles', label: 'Styles & SMV Library', icon: Layers },
           { id: 'master_attributes', label: 'Colors, Sizes & Defects', icon: Database },
         ]
       },
       {
         id: 'mod_03',
-        code: 'MOD 03',
         label: 'Order Management (PO)',
         icon: FileSpreadsheet,
         children: [
           { id: 'orders_po', label: 'Purchase Orders (PO)', icon: FileSpreadsheet },
-          { id: 'orders_bom', label: 'BOM Costing', icon: Layers },
+          { id: 'orders_bom', label: 'BOM Costing & Specs', icon: Layers },
         ]
       },
       {
         id: 'mod_04',
-        code: 'MOD 04',
         label: 'Production Planning',
         icon: SlidersHorizontal,
         children: [
           { id: 'planning_routing', label: 'Line Load & Routing', icon: SlidersHorizontal },
-          { id: 'planning_targets', label: 'Target Output Plans', icon: Activity },
+          { id: 'planning_targets', label: 'Daily Output Targets', icon: Activity },
         ]
       }
     ]
   },
   {
-    category: 'FACTORY FLOOR TRACEABILITY',
+    category: 'Shopfloor Traceability',
     modules: [
       {
         id: 'mod_05',
-        code: 'MOD 05',
         label: 'Cutting & Bundling',
         icon: Scissors,
         children: [
           { id: 'cutting_lays', label: 'Fabric Lay Records', icon: Scissors },
-          { id: 'cutting_bundles', label: 'Master & Piece QRs', icon: FolderTree },
+          { id: 'cutting_bundles', label: 'Piece QR Barcodes', icon: FolderTree },
         ]
       },
       {
         id: 'mod_06',
-        code: 'MOD 06',
-        label: 'Value Addition',
+        label: 'Value Addition Units',
         icon: Layers,
         children: [
           { id: 'va_print_emb', label: 'Print / Embroidery Dispatch', icon: Layers },
@@ -110,18 +105,15 @@ const navigationGroups = [
       },
       {
         id: 'mod_07',
-        code: 'MOD 07',
         label: 'Sewing Floor Tracking',
         icon: Activity,
-        badge: 'Live',
         children: [
-          { id: 'sewing_telemetry', label: 'Live Line Tracking', icon: Activity, badge: 'Live' },
+          { id: 'sewing_telemetry', label: 'Live Line Tracking', icon: Activity },
           { id: 'sewing_wip', label: 'Real-time Line WIP', icon: SlidersHorizontal },
         ]
       },
       {
         id: 'mod_08',
-        code: 'MOD 08',
         label: 'Quality Control (QC)',
         icon: CheckCircle,
         children: [
@@ -131,7 +123,6 @@ const navigationGroups = [
       },
       {
         id: 'mod_09',
-        code: 'MOD 09',
         label: 'Washing & Finishing',
         icon: Droplets,
         children: [
@@ -141,7 +132,6 @@ const navigationGroups = [
       },
       {
         id: 'mod_10',
-        code: 'MOD 10',
         label: 'Packing & Shipment',
         icon: PackageCheck,
         children: [
@@ -152,26 +142,24 @@ const navigationGroups = [
     ]
   },
   {
-    category: 'INVENTORY & BUSINESS INTELLIGENCE',
+    category: 'Inventory & Intelligence',
     modules: [
       {
         id: 'mod_11',
-        code: 'MOD 11',
         label: 'Fabric & Trims Store',
         icon: Warehouse,
         children: [
           { id: 'store_mrr', label: 'MRR Receive Ledger', icon: Warehouse },
-          { id: 'store_issue', label: 'Fabric & Trims Requisition', icon: FileSpreadsheet },
+          { id: 'store_issue', label: 'Fabric & Trims Issue', icon: FileSpreadsheet },
         ]
       },
       {
         id: 'mod_12',
-        code: 'MOD 12',
         label: 'BI & Executive Analytics',
         icon: BarChart3,
         children: [
           { id: 'analytics_kpi', label: 'Factory KPIs & Efficiency', icon: BarChart3 },
-          { id: 'analytics_reports', label: 'Traceability Audit Reports', icon: History },
+          { id: 'analytics_reports', label: 'Deep Traceability Reports', icon: History },
         ]
       }
     ]
@@ -200,12 +188,12 @@ export function AdminLayout({
     return 'mod_01';
   };
 
-  // State: Only the currently active module is expanded
+  // State: Expanded accordion sections
   const [expandedSections, setExpandedSections] = useState(() => ({
     [getActiveModuleId(activeTab)]: true
   }));
 
-  // Auto expand ONLY the active module when activeTab changes
+  // Auto expand the active module when activeTab changes
   React.useEffect(() => {
     const currentModuleId = getActiveModuleId(activeTab);
     setExpandedSections({
@@ -213,9 +201,10 @@ export function AdminLayout({
     });
   }, [activeTab]);
 
-  // Accordion Toggle: Clicking an accordion opens it and closes all others
+  // Accordion Toggle
   const toggleSection = (moduleId) => {
     setExpandedSections(prev => ({
+      ...prev,
       [moduleId]: !prev[moduleId]
     }));
   };
@@ -233,100 +222,90 @@ export function AdminLayout({
         ></div>
       )}
 
-      {/* Left Fixed Sidebar (w-72) - Always Enterprise Dark Theme */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 border-r flex flex-col transition-transform duration-200 lg:translate-x-0 bg-slate-950 border-slate-800/80 text-slate-100 shadow-xl ${
+      {/* Left Fixed Sidebar (w-64) - Clean Enterprise Dark Design */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col transition-transform duration-200 lg:translate-x-0 bg-slate-950 border-slate-800 text-slate-100 shadow-xl ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         
-        {/* Enterprise Brand Header */}
+        {/* Clean Enterprise Brand Header */}
         <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-950 shrink-0">
           <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 bg-blue-600 rounded flex items-center justify-center font-black text-white text-sm shadow-xs tracking-wider">
-              R
+            <div className="h-8 w-8 bg-blue-600 rounded flex items-center justify-center font-bold text-white text-xs shadow-xs tracking-wider">
+              RMG
             </div>
             <div>
-              <div className="font-black text-sm leading-none tracking-tight text-white">
-                RMG TRACEABILITY
+              <div className="font-bold text-xs leading-none tracking-tight text-white uppercase">
+                Traceability ERP
               </div>
-              <div className="text-[10px] text-slate-400 font-mono tracking-widest mt-1 uppercase font-semibold">
-                Enterprise Core v1.0
+              <div className="text-[10px] text-slate-400 font-mono tracking-wider mt-1">
+                Woven Garments Suite
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-1.5">
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            <button 
-              type="button"
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-1 text-slate-400 hover:text-white cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+          <button 
+            type="button"
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-1 text-slate-400 hover:text-white cursor-pointer"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        {/* Global Plant / Unit Indicator */}
-        <div className="px-4 py-2.5 border-b border-slate-800/60 bg-slate-900/60 text-slate-300 flex items-center justify-between text-xs shrink-0 font-medium">
+        {/* Dynamic User Scope / Context Pill */}
+        <div className="px-3.5 py-2.5 border-b border-slate-800/80 bg-slate-900/50 flex items-center justify-between text-xs shrink-0 font-medium">
           <div className="flex items-center space-x-2 truncate">
-            <Building2 className="h-4 w-4 text-blue-400 shrink-0" />
-            <span className="font-semibold truncate">Standard Unit 01 (Factory)</span>
+            <Building2 className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+            <span className="text-[11px] text-slate-300 truncate font-semibold">
+              {user?.unit?.name || 'Global Enterprise HQ'}
+            </span>
           </div>
-          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
-            ONLINE
+          <span className="flex h-2 w-2 relative shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
         </div>
 
-        {/* Navigation Modules (Strict 12 Official Modules) */}
-        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-5 sidebar-scroll">
+        {/* Clean Navigation Modules (12 Modules) */}
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 sidebar-scroll">
           {navigationGroups.map((grp, idx) => (
-            <div key={idx} className="space-y-1.5">
+            <div key={idx} className="space-y-1">
               
-              {/* Category Header */}
-              <div className="px-2 text-[10px] font-bold tracking-wider text-slate-400 mb-1.5 uppercase font-mono">
+              {/* Category Subheading */}
+              <div className="px-2 text-[9px] font-bold tracking-wider text-slate-400 uppercase font-mono mb-1">
                 {grp.category}
               </div>
 
-              {/* Module Items (Collapsible) */}
+              {/* Module Accordions */}
               {grp.modules.map((mod) => {
                 const ModIcon = mod.icon;
                 const isExpanded = expandedSections[mod.id] ?? false;
                 const hasActiveChild = mod.children?.some(c => c.id === activeTab);
 
                 return (
-                  <div key={mod.id} className="space-y-1">
+                  <div key={mod.id} className="space-y-0.5">
                     <button
                       type="button"
                       onClick={() => toggleSection(mod.id)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs font-semibold transition-colors cursor-pointer text-left ${
+                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer text-left ${
                         hasActiveChild 
                           ? 'text-white bg-slate-900 border border-slate-800' 
-                          : 'text-slate-300 hover:text-white hover:bg-slate-900/70'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
                       }`}
                     >
-                      <div className="flex items-center space-x-2.5 min-w-0 pr-2">
-                        <ModIcon className={`h-4 w-4 shrink-0 ${hasActiveChild ? 'text-blue-400' : 'text-slate-400'}`} />
-                        <span className="truncate">{mod.label}</span>
+                      <div className="flex items-center space-x-2 min-w-0 pr-1">
+                        <ModIcon className={`h-3.5 w-3.5 shrink-0 ${hasActiveChild ? 'text-blue-400' : 'text-slate-400'}`} />
+                        <span className="truncate text-xs">{mod.label}</span>
                       </div>
 
-                      <div className="flex items-center space-x-1.5 shrink-0">
-                        {mod.badge && (
-                          <span className="text-[8px] font-mono uppercase px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-300 border border-slate-700">
-                            {mod.badge}
-                          </span>
-                        )}
-                        <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-150 ${
-                          isExpanded ? 'rotate-180 text-slate-200' : ''
-                        }`} />
-                      </div>
+                      <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-150 shrink-0 ${
+                        isExpanded ? 'rotate-180 text-slate-200' : ''
+                      }`} />
                     </button>
 
-                    {/* Sub-Menus under each Module */}
+                    {/* Sub-Menus */}
                     {isExpanded && mod.children && (
-                      <div className="relative pl-3.5 ml-2.5 border-l border-slate-800 space-y-1 my-1">
+                      <div className="relative pl-3 ml-2 border-l border-slate-800 space-y-0.5 my-1">
                         {mod.children.map((sub) => {
                           const SubIcon = sub.icon;
                           const isSubActive = activeTab === sub.id;
@@ -339,26 +318,14 @@ export function AdminLayout({
                                 onTabChange(sub.id);
                                 setSidebarOpen(false);
                               }}
-                              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs transition-colors cursor-pointer text-left ${
+                              className={`w-full flex items-center space-x-2 px-2 py-1.5 rounded text-xs transition-colors cursor-pointer text-left ${
                                 isSubActive
-                                  ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                               }`}
                             >
-                              <div className="flex items-center space-x-2.5 min-w-0 pr-2">
-                                <span className={`h-2 w-2 rounded-full shrink-0 ${isSubActive ? 'bg-white' : 'bg-slate-600'}`}></span>
-                                <span className="truncate">{sub.label}</span>
-                              </div>
-
-                              {sub.badge && (
-                                <span className={`text-[8px] font-mono uppercase px-1.5 py-0.5 rounded font-bold ${
-                                  isSubActive
-                                    ? 'bg-white/20 text-white'
-                                    : 'bg-slate-800 text-slate-400 border border-slate-700'
-                                }`}>
-                                  {sub.badge}
-                                </span>
-                              )}
+                              <SubIcon className={`h-3 w-3 shrink-0 ${isSubActive ? 'text-white' : 'text-slate-400'}`} />
+                              <span className="truncate text-[11px]">{sub.label}</span>
                             </button>
                           );
                         })}
@@ -373,19 +340,19 @@ export function AdminLayout({
           ))}
         </div>
 
-        {/* User Account Info & Footer */}
-        <div className="p-3.5 border-t border-slate-800 bg-slate-950 shrink-0">
+        {/* Clean User Account Profile Footer */}
+        <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 min-w-0">
-              <div className="h-9 w-9 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
+            <div className="flex items-center space-x-2.5 min-w-0">
+              <div className="h-7 w-7 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
                 {user?.name?.charAt(0) || 'A'}
               </div>
               <div className="min-w-0">
                 <div className="text-xs font-bold truncate text-white">
                   {user?.name || 'Administrator'}
                 </div>
-                <div className="text-[11px] text-blue-400 truncate font-mono mt-0.5">
-                  {user?.roles?.[0] || 'Super Admin'}
+                <div className="text-[10px] text-slate-400 truncate font-mono">
+                  {user?.username ? `@${user.username}` : user?.emp_id || 'Root Admin'}
                 </div>
               </div>
             </div>
@@ -393,7 +360,7 @@ export function AdminLayout({
             <button
               type="button"
               onClick={logout}
-              className="p-2 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 cursor-pointer transition-colors"
+              className="p-1.5 rounded text-slate-400 hover:text-red-400 hover:bg-red-500/10 cursor-pointer transition-colors"
               title="Sign Out"
             >
               <LogOut className="h-4 w-4" />
@@ -403,8 +370,8 @@ export function AdminLayout({
 
       </aside>
 
-      {/* Main Content Area (offset by sidebar w-72 on desktop) */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-72">
+      {/* Main Content Area (offset by sidebar w-64 on desktop) */}
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
         
         {/* Top Navbar */}
         <header className={`h-16 border-b sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 backdrop-blur-md transition-colors ${
@@ -435,7 +402,7 @@ export function AdminLayout({
             </div>
           </div>
 
-          {/* Center/Right: Quick Search Bar & Global Status */}
+          {/* Right: Telemetry & Theme Toggle */}
           <div className="flex items-center space-x-3">
             
             {/* Realtime Telemetry Badge */}
@@ -443,48 +410,33 @@ export function AdminLayout({
               isDark ? 'bg-slate-950 border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
             }`}>
               <Radio className="h-3 w-3 text-emerald-500 animate-pulse" />
-              <span>Redis Horizon: Active</span>
+              <span>Trace Core: Online</span>
             </div>
 
             {/* Theme Toggle */}
             <button
               type="button"
               onClick={toggleTheme}
-              className={`p-1.5 rounded border transition-all flex items-center justify-center cursor-pointer ${
-                isDark
-                  ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-yellow-400 shadow-xs'
-                  : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-2xs'
+              className={`p-2 rounded border transition-colors cursor-pointer ${
+                isDark 
+                  ? 'border-slate-800 bg-slate-950 text-amber-400 hover:bg-slate-800' 
+                  : 'border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
-              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
             >
-              {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-
-            {/* User Profile Summary */}
-            <div className={`hidden sm:flex items-center space-x-2 text-xs pl-2 border-l ${
-              isDark ? 'border-slate-800' : 'border-slate-200'
-            }`}>
-              <div className="text-right">
-                <div className={`text-xs font-bold leading-none ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {user?.name || 'Administrator'}
-                </div>
-                <div className="text-[10px] text-slate-400 font-mono mt-0.5">
-                  {user?.roles?.[0] || 'Super Admin'}
-                </div>
-              </div>
-            </div>
-
           </div>
-
         </header>
 
         {/* Page Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-6 overflow-y-auto">
-          {children}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
 
       </div>
-
     </div>
   );
 }
