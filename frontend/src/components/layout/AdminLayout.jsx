@@ -222,22 +222,22 @@ export function AdminLayout({
         ></div>
       )}
 
-      {/* Left Fixed Sidebar (w-64) - Clean Enterprise Dark Design */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col transition-transform duration-200 lg:translate-x-0 bg-slate-950 border-slate-800 text-slate-100 shadow-xl ${
+      {/* Left Fixed Sidebar (w-72) - Clean Enterprise Dark Design */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 border-r flex flex-col transition-transform duration-200 lg:translate-x-0 bg-slate-950 border-slate-800 text-slate-100 shadow-xl ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         
         {/* Clean Enterprise Brand Header */}
         <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-950 shrink-0">
           <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 bg-blue-600 rounded flex items-center justify-center font-bold text-white text-xs shadow-xs tracking-wider">
+            <div className="h-9 w-9 bg-blue-600 rounded flex items-center justify-center font-bold text-white text-xs shadow-xs tracking-wider">
               RMG
             </div>
             <div>
-              <div className="font-bold text-xs leading-none tracking-tight text-white uppercase">
+              <div className="font-bold text-sm leading-none tracking-tight text-white uppercase">
                 Traceability ERP
               </div>
-              <div className="text-[10px] text-slate-400 font-mono tracking-wider mt-1">
+              <div className="text-xs text-slate-400 font-mono tracking-wider mt-1">
                 Woven Garments Suite
               </div>
             </div>
@@ -253,10 +253,10 @@ export function AdminLayout({
         </div>
 
         {/* Dynamic User Scope / Context Pill */}
-        <div className="px-3.5 py-2.5 border-b border-slate-800/80 bg-slate-900/50 flex items-center justify-between text-xs shrink-0 font-medium">
+        <div className="px-4 py-2.5 border-b border-slate-800/80 bg-slate-900/50 flex items-center justify-between text-xs shrink-0 font-medium">
           <div className="flex items-center space-x-2 truncate">
-            <Building2 className="h-3.5 w-3.5 text-blue-400 shrink-0" />
-            <span className="text-[11px] text-slate-300 truncate font-semibold">
+            <Building2 className="h-4 w-4 text-blue-400 shrink-0" />
+            <span className="text-xs text-slate-200 truncate font-semibold">
               {user?.unit?.name || 'Global Enterprise HQ'}
             </span>
           </div>
@@ -267,12 +267,12 @@ export function AdminLayout({
         </div>
 
         {/* Clean Navigation Modules (12 Modules) */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 sidebar-scroll">
+        <div className="flex-1 overflow-y-auto px-3 py-3.5 space-y-4 sidebar-scroll">
           {navigationGroups.map((grp, idx) => (
             <div key={idx} className="space-y-1">
               
               {/* Category Subheading */}
-              <div className="px-2 text-[9px] font-bold tracking-wider text-slate-400 uppercase font-mono mb-1">
+              <div className="px-2.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase font-mono mb-1.5">
                 {grp.category}
               </div>
 
@@ -287,25 +287,25 @@ export function AdminLayout({
                     <button
                       type="button"
                       onClick={() => toggleSection(mod.id)}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer text-left ${
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs font-semibold transition-colors cursor-pointer text-left ${
                         hasActiveChild 
                           ? 'text-white bg-slate-900 border border-slate-800' 
                           : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
                       }`}
                     >
-                      <div className="flex items-center space-x-2 min-w-0 pr-1">
-                        <ModIcon className={`h-3.5 w-3.5 shrink-0 ${hasActiveChild ? 'text-blue-400' : 'text-slate-400'}`} />
-                        <span className="truncate text-xs">{mod.label}</span>
+                      <div className="flex items-center space-x-2.5 min-w-0 pr-1">
+                        <ModIcon className={`h-4 w-4 shrink-0 ${hasActiveChild ? 'text-blue-400' : 'text-slate-400'}`} />
+                        <span className="truncate text-xs font-semibold">{mod.label}</span>
                       </div>
 
-                      <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-150 shrink-0 ${
+                      <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-150 shrink-0 ${
                         isExpanded ? 'rotate-180 text-slate-200' : ''
                       }`} />
                     </button>
 
                     {/* Sub-Menus */}
                     {isExpanded && mod.children && (
-                      <div className="relative pl-3 ml-2 border-l border-slate-800 space-y-0.5 my-1">
+                      <div className="relative pl-3.5 ml-2.5 border-l border-slate-800 space-y-0.5 my-1">
                         {mod.children.map((sub) => {
                           const SubIcon = sub.icon;
                           const isSubActive = activeTab === sub.id;
@@ -318,14 +318,14 @@ export function AdminLayout({
                                 onTabChange(sub.id);
                                 setSidebarOpen(false);
                               }}
-                              className={`w-full flex items-center space-x-2 px-2 py-1.5 rounded text-xs transition-colors cursor-pointer text-left ${
+                              className={`w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded text-xs transition-colors cursor-pointer text-left ${
                                 isSubActive
                                   ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                                  : 'text-slate-300 hover:text-white hover:bg-slate-900'
                               }`}
                             >
-                              <SubIcon className={`h-3 w-3 shrink-0 ${isSubActive ? 'text-white' : 'text-slate-400'}`} />
-                              <span className="truncate text-[11px]">{sub.label}</span>
+                              <SubIcon className={`h-3.5 w-3.5 shrink-0 ${isSubActive ? 'text-white' : 'text-slate-400'}`} />
+                              <span className="truncate text-xs">{sub.label}</span>
                             </button>
                           );
                         })}
@@ -341,17 +341,17 @@ export function AdminLayout({
         </div>
 
         {/* Clean User Account Profile Footer */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0">
+        <div className="p-3.5 border-t border-slate-800 bg-slate-950 shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2.5 min-w-0">
-              <div className="h-7 w-7 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="h-8 w-8 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
                 {user?.name?.charAt(0) || 'A'}
               </div>
               <div className="min-w-0">
                 <div className="text-xs font-bold truncate text-white">
                   {user?.name || 'Administrator'}
                 </div>
-                <div className="text-[10px] text-slate-400 truncate font-mono">
+                <div className="text-[11px] text-slate-400 truncate font-mono mt-0.5">
                   {user?.username ? `@${user.username}` : user?.emp_id || 'Root Admin'}
                 </div>
               </div>
@@ -370,8 +370,8 @@ export function AdminLayout({
 
       </aside>
 
-      {/* Main Content Area (offset by sidebar w-64 on desktop) */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
+      {/* Main Content Area (offset by sidebar w-72 on desktop) */}
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-72">
         
         {/* Top Navbar */}
         <header className={`h-16 border-b sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 backdrop-blur-md transition-colors ${
