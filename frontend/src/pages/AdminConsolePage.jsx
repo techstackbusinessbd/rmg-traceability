@@ -36,6 +36,7 @@ import RegisterUserModal from '../modules/AuthAdmin/components/RegisterUserModal
 import RegisterDeviceModal from '../modules/AuthAdmin/components/RegisterDeviceModal';
 import EditUserModal from '../modules/AuthAdmin/components/EditUserModal';
 import RolesDataTable from '../modules/AuthAdmin/components/RolesDataTable';
+import SystemSettingsDashboard from '../modules/AuthAdmin/components/SystemSettingsDashboard';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
@@ -695,79 +696,14 @@ export default function AdminConsolePage() {
           )}
 
           {activeTab === 'settings' && (
-            <div className={`p-6 rounded border transition-colors ${
-              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-2xs'
-            }`}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-700/20">
-                <div>
-                  <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    Global System Configuration (Redis Cached)
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                    Dynamic parameters for factory tolerance, QC thresholds, and floor terminal security
-                  </p>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs font-mono px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center space-x-1.5">
-                    <Radio className="h-3 w-3 animate-pulse" />
-                    <span>0-DB Query Redis Sync</span>
-                  </span>
-                </div>
-              </div>
-
-              <form onSubmit={handleSaveSettings} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {settingsList.map((setting) => (
-                    <div 
-                      key={setting.key} 
-                      className={`p-4 rounded-md border transition-colors ${
-                        isDark ? 'bg-slate-950/70 border-slate-800' : 'bg-slate-50/80 border-slate-200'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-bold text-slate-200">
-                          {setting.label || setting.key}
-                        </label>
-                        <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-bold bg-slate-800 text-slate-400 border border-slate-700">
-                          {setting.group}
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-slate-400 mb-3 min-h-[32px]">
-                        {setting.description}
-                      </p>
-
-                      <div>
-                        <input
-                          type={setting.type === 'number' ? 'number' : 'text'}
-                          step={setting.type === 'number' ? '0.01' : undefined}
-                          value={settingsForm[setting.key] !== undefined ? settingsForm[setting.key] : ''}
-                          onChange={(e) => setSettingsForm(prev => ({
-                            ...prev,
-                            [setting.key]: e.target.value
-                          }))}
-                          className={`w-full px-3 py-2 rounded text-xs sm:text-sm border focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono ${
-                            isDark ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-                          }`}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-end pt-4 border-t border-slate-700/20">
-                  <button
-                    type="submit"
-                    disabled={saveLoading}
-                    className="px-6 py-2.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold flex items-center space-x-2 shadow-sm cursor-pointer transition-colors disabled:opacity-50"
-                  >
-                    <SlidersHorizontal className="h-4 w-4" />
-                    <span>{saveLoading ? 'Saving Settings...' : 'Save Configurations'}</span>
-                  </button>
-                </div>
-              </form>
-            </div>
+            <SystemSettingsDashboard
+              settings={settingsList}
+              settingsForm={settingsForm}
+              setSettingsForm={setSettingsForm}
+              onSave={handleSaveSettings}
+              saving={saveLoading}
+              isDark={isDark}
+            />
           )}
 
         </div>
