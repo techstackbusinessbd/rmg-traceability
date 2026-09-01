@@ -38,7 +38,7 @@ class PlantStructureController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'code' => 'required|string|max:50|unique:units,code',
+            'code' => 'nullable|string|max:50|unique:units,code',
             'address' => 'nullable|string|max:255',
             'contact_person' => 'nullable|string|max:100',
             'contact_phone' => 'nullable|string|max:50',

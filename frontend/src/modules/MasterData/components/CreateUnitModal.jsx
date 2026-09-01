@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Building2, Plus, Save } from 'lucide-react';
+import { X, Building2, Plus, Save, Sparkles } from 'lucide-react';
 
 export default function CreateUnitModal({
   show,
@@ -15,7 +15,42 @@ export default function CreateUnitModal({
   const [contactPerson, setContactPerson] = useState(unit?.contact_person || '');
   const [contactPhone, setContactPhone] = useState(unit?.contact_phone || '');
   const [isActive, setIsActive] = useState(unit ? Boolean(unit.is_active) : true);
+  const [isManualCode, setIsManualCode] = useState(Boolean(unit));
   const [submitting, setSubmitting] = useState(false);
+
+  // Auto-generate code from name
+  const generateCodeFromName = (unitName) => {
+    if (!unitName) return '';
+    const clean = unitName.toUpperCase().trim();
+    
+    // Check if contains number (e.g. Unit 04, Plant 3)
+    const numMatch = clean.match(/\d+/);
+    const numStr = numMatch ? String(numMatch[0]).padStart(2, '0') : '01';
+
+    if (clean.includes('WASH')) {
+      return `WASH-${numStr}`;
+    } else if (clean.includes('CUT')) {
+      return `CUT-${numStr}`;
+    } else if (clean.includes('FINISH')) {
+      return `FIN-${numStr}`;
+    } else {
+      return `UNIT-${numStr}`;
+    }
+  };
+
+  const handleNameChange = (e) => {
+    const newName = e.target.value;
+    setName(newName);
+    if (!isManualCode && !unit) {
+      setCode(generateCodeFromName(newName));
+    }
+  };
+
+  const handleAutoGenerateClick = () => {
+    const autoCode = generateCodeFromName(name) || 'UNIT-01';
+    setCode(autoCode);
+    setIsManualCode(false);
+  };
 
   React.useEffect(() => {
     if (unit) {
@@ -25,6 +60,7 @@ export default function CreateUnitModal({
       setContactPerson(unit.contact_person || '');
       setContactPhone(unit.contact_phone || '');
       setIsActive(Boolean(unit.is_active));
+      setIsManualCode(true);
     } else {
       setName('');
       setCode('');
@@ -32,6 +68,7 @@ export default function CreateUnitModal({
       setContactPerson('');
       setContactPhone('');
       setIsActive(true);
+      setIsManualCode(false);
     }
   }, [unit, show]);
 
@@ -44,7 +81,7 @@ export default function CreateUnitModal({
       await onSubmit({
         id: unit?.id,
         name,
-        code,
+        code: code || generateCodeFromName(name) || 'UNIT-01',
         address,
         contact_person: contactPerson,
         contact_phone: contactPhone,
@@ -74,7 +111,7 @@ export default function CreateUnitModal({
                 {unit ? 'Edit Manufacturing Unit' : 'Register Manufacturing Unit'}
               </h3>
               <p className="text-xs text-slate-400">
-                Setup factory complex location and facility parameters
+                Setup factory complex location with auto-generated Unit Code
               </p>
             </div>
           </div>
@@ -99,8 +136,8 @@ export default function CreateUnitModal({
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Standard Unit 01 (Factory)"
+                onChange={handleNameChange}
+                placeholder="e.g. Standard Unit 03 (Factory)"
                 className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
@@ -109,16 +146,29 @@ export default function CreateUnitModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold mb-1.5">
-                Unit Code <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold">
+                  Unit Code <span className="text-xs text-emerald-500 font-normal">(Auto)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAutoGenerateClick}
+                  className="text-[10px] font-mono text-blue-400 hover:underline cursor-pointer flex items-center space-x-1"
+                >
+                  <Sparkles className="h-2.5 w-2.5" />
+                  <span>Auto-Gen</span>
+                </button>
+              </div>
               <input
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="e.g. UNIT-01"
-                className={`w-full px-3 py-2 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setIsManualCode(true);
+                }}
+                placeholder="Auto e.g. UNIT-03"
+                className={`w-full px-3 py-2 rounded text-xs font-mono font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-blue-400' : 'bg-white border-slate-300 text-blue-600'
                 }`}
               />
               {errors?.code && <p className="text-[11px] text-red-500 mt-1">{errors.code[0]}</p>}

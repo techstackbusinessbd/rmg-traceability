@@ -30,9 +30,19 @@ class PlantStructureService
     public function createUnit(array $data, User $actor, ?string $ip = null): Unit
     {
         return DB::transaction(function () use ($data, $actor, $ip) {
+            $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : null;
+            if (!$code) {
+                $count = Unit::count() + 1;
+                $code = sprintf('UNIT-%02d', $count);
+                while (Unit::where('code', $code)->exists()) {
+                    $count++;
+                    $code = sprintf('UNIT-%02d', $count);
+                }
+            }
+
             $unit = Unit::create([
                 'name' => trim($data['name']),
-                'code' => strtoupper(trim($data['code'])),
+                'code' => $code,
                 'address' => $data['address'] ?? null,
                 'contact_person' => $data['contact_person'] ?? null,
                 'contact_phone' => $data['contact_phone'] ?? null,
