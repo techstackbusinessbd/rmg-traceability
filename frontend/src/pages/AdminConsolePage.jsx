@@ -47,6 +47,7 @@ import ShiftManagementDashboard from '../modules/AuthAdmin/components/ShiftManag
 import CreateShiftModal from '../modules/AuthAdmin/components/CreateShiftModal';
 import EditShiftModal from '../modules/AuthAdmin/components/EditShiftModal';
 import EnterpriseAuditTrailDashboard from '../modules/AuthAdmin/components/EnterpriseAuditTrailDashboard';
+import GlobalExecutiveDashboard from '../modules/AuthAdmin/components/GlobalExecutiveDashboard';
 
 // Module 02 Components (Master Data Setup)
 import PlantStructureDashboard from '../modules/MasterData/components/PlantStructureDashboard';
@@ -80,7 +81,7 @@ export default function AdminConsolePage() {
   const { token, isAuthenticated } = useAuthStore();
   const { isDark } = useThemeStore();
   
-  const activeTab = subRoute || 'users';
+  const activeTab = subRoute || 'dashboard';
 
   const handleTabChange = (tabId) => {
     navigate(`/admin/${tabId}`);
@@ -949,6 +950,8 @@ export default function AdminConsolePage() {
 
   const getBreadcrumbs = () => {
     switch (activeTab) {
+      case 'dashboard': return ['Enterprise Command Center', 'Executive Overview', 'Global Dashboard'];
+      
       // Module 01
       case 'users': return ['Identity & Security', 'Users & Operators'];
       case 'devices': return ['Identity & Security', 'Floor Tablets'];
@@ -977,6 +980,38 @@ export default function AdminConsolePage() {
       breadcrumbs={getBreadcrumbs()}
     >
       <Toaster position="top-right" />
+
+      {/* ========================================================= */}
+      {/* GLOBAL EXECUTIVE DASHBOARD (DEFAULT ON LOGIN)              */}
+      {/* ========================================================= */}
+      {activeTab === 'dashboard' && (
+        <GlobalExecutiveDashboard
+          usersCount={usersList.length}
+          devicesCount={devicesList.length}
+          rolesCount={rolesList.length}
+          shiftsCount={shiftsList.length}
+          auditLogs={auditList}
+          companies={companiesList}
+          units={unitsList}
+          floors={floorsList}
+          lines={linesList}
+          buyers={buyersList}
+          styles={stylesList}
+          onNavigateTab={handleTabChange}
+          onOpenCreateUser={() => {
+            setUserFormErrors({});
+            setShowNewUserModal(true);
+          }}
+          onOpenCreateUnit={() => {
+            setUnitFormErrors({});
+            setShowCreateUnitModal(true);
+          }}
+          onOpenCreateLine={() => {
+            setLineFormErrors({});
+            setShowCreateLineModal(true);
+          }}
+        />
+      )}
 
       {/* ========================================================= */}
       {/* MODULE 01: AUTH & ADMINISTRATION VIEW                      */}

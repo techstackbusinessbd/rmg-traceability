@@ -28,7 +28,8 @@ import {
   Radio,
   Clock,
   Sparkles,
-  Shield
+  Shield,
+  LayoutDashboard
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
@@ -267,7 +268,27 @@ export function AdminLayout({
         </div>
 
         {/* Clean Navigation Modules (12 Modules) */}
-        <div className="flex-1 overflow-y-auto px-3 py-3.5 space-y-4 sidebar-scroll">
+        <div className="flex-1 overflow-y-auto px-3 py-3.5 space-y-3.5 sidebar-scroll">
+          
+          {/* Executive Global Dashboard Primary Link */}
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                onTabChange('dashboard');
+                setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'dashboard'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-200 hover:text-white hover:bg-slate-900 border border-slate-800/80 bg-slate-900/40'
+              }`}
+            >
+              <LayoutDashboard className={`h-4 w-4 shrink-0 ${activeTab === 'dashboard' ? 'text-white' : 'text-blue-400'}`} />
+              <span className="truncate">Global Executive Dashboard</span>
+            </button>
+          </div>
+
           {navigationGroups.map((grp, idx) => (
             <div key={idx} className="space-y-1">
               
