@@ -179,10 +179,20 @@ class PlantStructureService
     public function createFloor(array $data, User $actor, ?string $ip = null): Floor
     {
         return DB::transaction(function () use ($data, $actor, $ip) {
+            $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : null;
+            if (! $code) {
+                $count = Floor::where('unit_id', $data['unit_id'])->count() + 1;
+                $code = 'FL-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+                while (Floor::where('unit_id', $data['unit_id'])->where('code', $code)->exists()) {
+                    $count++;
+                    $code = 'FL-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+                }
+            }
+
             $floor = Floor::create([
                 'unit_id' => $data['unit_id'],
                 'name' => trim($data['name']),
-                'code' => strtoupper(trim($data['code'])),
+                'code' => $code,
                 'process_type' => strtoupper(trim($data['process_type'] ?? 'SEWING')),
                 'sequence_order' => $data['sequence_order'] ?? 1,
                 'is_active' => $data['is_active'] ?? true,
@@ -264,11 +274,21 @@ class PlantStructureService
     public function createLine(array $data, User $actor, ?string $ip = null): ProductionLine
     {
         return DB::transaction(function () use ($data, $actor, $ip) {
+            $code = !empty($data['code']) ? strtoupper(trim($data['code'])) : null;
+            if (! $code) {
+                $count = ProductionLine::where('floor_id', $data['floor_id'])->count() + 1;
+                $code = 'L-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+                while (ProductionLine::where('floor_id', $data['floor_id'])->where('code', $code)->exists()) {
+                    $count++;
+                    $code = 'L-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+                }
+            }
+
             $line = ProductionLine::create([
                 'unit_id' => $data['unit_id'],
                 'floor_id' => $data['floor_id'],
                 'name' => trim($data['name']),
-                'code' => strtoupper(trim($data['code'])),
+                'code' => $code,
                 'section' => strtoupper(trim($data['section'] ?? 'SEWING')),
                 'total_machines' => $data['total_machines'] ?? 30,
                 'hourly_target' => $data['hourly_target'] ?? 100,

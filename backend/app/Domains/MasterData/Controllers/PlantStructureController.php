@@ -136,7 +136,7 @@ class PlantStructureController extends Controller
         $validated = $request->validate([
             'unit_id' => 'required|uuid|exists:units,id',
             'name' => 'required|string|max:100',
-            'code' => 'required|string|max:50',
+            'code' => 'nullable|string|max:50',
             'process_type' => 'required|string|in:CUTTING,SEWING,FINISHING,PACKING,QC,STORE,OTHER',
             'sequence_order' => 'nullable|integer|min:1|max:100',
             'is_active' => 'nullable|boolean',
@@ -158,7 +158,7 @@ class PlantStructureController extends Controller
         $validated = $request->validate([
             'unit_id' => 'sometimes|required|uuid|exists:units,id',
             'name' => 'sometimes|required|string|max:100',
-            'code' => 'sometimes|required|string|max:50',
+            'code' => 'sometimes|nullable|string|max:50',
             'process_type' => 'sometimes|required|string|in:CUTTING,SEWING,FINISHING,PACKING,QC,STORE,OTHER',
             'sequence_order' => 'nullable|integer|min:1|max:100',
             'is_active' => 'nullable|boolean',
@@ -202,7 +202,7 @@ class PlantStructureController extends Controller
             'unit_id' => 'required|uuid|exists:units,id',
             'floor_id' => 'required|uuid|exists:floors,id',
             'name' => 'required|string|max:100',
-            'code' => 'required|string|max:50',
+            'code' => 'nullable|string|max:50',
             'section' => 'required|string|in:CUTTING,SEWING,FINISHING,PACKING',
             'total_machines' => 'nullable|integer|min:1|max:200',
             'hourly_target' => 'nullable|integer|min:1|max:2000',

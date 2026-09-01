@@ -48,7 +48,7 @@ export default function CreateFloorModal({
         id: floor?.id,
         unit_id: unitId,
         name,
-        code,
+        code: code ? code.toUpperCase().trim() : null,
         process_type: processType,
         sequence_order: parseInt(sequenceOrder, 10) || 1,
         is_active: isActive
@@ -69,7 +69,7 @@ export default function CreateFloorModal({
           isDark ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-50 border-slate-200'
         }`}>
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <div className="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
               <Layers className="h-5 w-5" />
             </div>
             <div>
@@ -121,7 +121,7 @@ export default function CreateFloorModal({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. 1st Floor (Sewing A)"
+                placeholder="e.g. 10th Floor or Sewing A"
                 className={`w-full px-3 py-2 rounded text-xs border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                   isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
                 }`}
@@ -131,15 +131,15 @@ export default function CreateFloorModal({
 
             <div>
               <label className="block text-xs font-bold mb-1.5">
-                Floor Code <span className="text-red-500">*</span>
+                Floor Code <span className="text-slate-400 font-normal">(Auto-generated)</span>
               </label>
               <input
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="e.g. FL-01"
-                className={`w-full px-3 py-2 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                placeholder="Auto (e.g. FL-01)"
+                className={`w-full px-3 py-2 rounded text-xs font-mono font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-blue-400 placeholder-slate-500' : 'bg-white border-slate-300 text-blue-600 placeholder-slate-400'
                 }`}
               />
               {errors?.code && <p className="text-[11px] text-red-500 mt-1">{errors.code[0]}</p>}
@@ -206,7 +206,7 @@ export default function CreateFloorModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 rounded bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
+              className="px-5 py-2 rounded bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
             >
               {floor ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               <span>{submitting ? 'Saving...' : floor ? 'Update Floor' : 'Save Floor'}</span>

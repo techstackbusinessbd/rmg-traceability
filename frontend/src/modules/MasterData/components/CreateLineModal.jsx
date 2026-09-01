@@ -66,7 +66,7 @@ export default function CreateLineModal({
         unit_id: unitId,
         floor_id: floorId,
         name,
-        code,
+        code: code ? code.toUpperCase().trim() : null,
         section,
         total_machines: parseInt(totalMachines, 10) || 30,
         hourly_target: parseInt(hourlyTarget, 10) || 100,
@@ -131,7 +131,7 @@ export default function CreateLineModal({
                 }`}
               >
                 {units.map(u => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
+                  <option key={u.id} value={u.id}>{u.name} ({u.code})</option>
                 ))}
               </select>
             </div>
@@ -174,15 +174,15 @@ export default function CreateLineModal({
 
             <div>
               <label className="block text-xs font-bold mb-1.5">
-                Line Code <span className="text-red-500">*</span>
+                Line Code <span className="text-slate-400 font-normal">(Auto-generated)</span>
               </label>
               <input
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="e.g. L-01"
-                className={`w-full px-3 py-2 rounded text-xs font-mono border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                placeholder="Auto (e.g. L-01)"
+                className={`w-full px-3 py-2 rounded text-xs font-mono font-bold border focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  isDark ? 'bg-slate-950 border-slate-800 text-blue-400 placeholder-slate-500' : 'bg-white border-slate-300 text-blue-600 placeholder-slate-400'
                 }`}
               />
               {errors?.code && <p className="text-[11px] text-red-500 mt-1">{errors.code[0]}</p>}
@@ -280,7 +280,7 @@ export default function CreateLineModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 rounded bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
+              className="px-5 py-2 rounded bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
             >
               {line ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               <span>{submitting ? 'Saving...' : line ? 'Update Line' : 'Save Line'}</span>
