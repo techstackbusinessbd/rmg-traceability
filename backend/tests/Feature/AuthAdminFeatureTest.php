@@ -87,6 +87,15 @@ class AuthAdminFeatureTest extends TestCase
 
     public function test_floor_tablet_can_authenticate_via_pin(): void
     {
+        Device::create([
+            'device_code' => 'TAB-SEW-L01',
+            'device_name' => 'Sewing Line 01 In-charge Tablet',
+            'pin_code' => Hash::make('123456'),
+            'line_name' => 'Sewing Line 01',
+            'device_type' => 'Tablet',
+            'is_active' => true,
+        ]);
+
         $response = $this->postJson('/api/v1/auth/device-login', [
             'device_code' => 'TAB-SEW-L01',
             'pin_code' => '123456',

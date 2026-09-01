@@ -22,6 +22,23 @@ class ShiftManagementFeatureTest extends TestCase
     {
         $admin = User::where('email', 'admin@rmgtrace.com')->first();
 
+        Shift::create([
+            'shift_name' => 'General Floor 1 Shift',
+            'shift_code' => 'SH-GEN-01',
+            'shift_type' => 'DAY',
+            'allows_overtime' => true,
+            'max_ot_hours' => 2.0,
+            'unit_name' => 'Unit 01',
+            'floor_name' => '1st Floor',
+            'start_time' => '08:00:00',
+            'end_time' => '17:00:00',
+            'grace_period_mins' => 15,
+            'break_start_time' => '13:00:00',
+            'break_end_time' => '14:00:00',
+            'net_work_hours' => 8.00,
+            'is_active' => true,
+        ]);
+
         $response = $this->actingAs($admin, 'sanctum')
             ->getJson('/api/v1/admin/shifts?floor=1st Floor');
 
